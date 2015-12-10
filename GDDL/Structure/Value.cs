@@ -205,36 +205,36 @@ namespace GDDL.Structure
 
         public static explicit operator long(Value v)
         {
-            if (v.Data is Double)
+            if (v.Data is double)
                 return (long)v.Float;
-            if (v.Data is Int64)
+            if (v.Data is long)
                 return v.Integer;
             throw new InvalidCastException();
         }
 
         public static explicit operator double(Value v)
         {
-            if (v.Data is Double)
+            if (v.Data is double)
                 return v.Float;
-            if (v.Data is Int64)
+            if (v.Data is long)
                 return v.Integer;
             throw new InvalidCastException();
         }
 
         public static explicit operator int(Value v)
         {
-            if (v.Data is Double)
+            if (v.Data is double)
                 return (int)v.Float;
-            if (v.Data is Int64)
+            if (v.Data is long)
                 return (int)v.Integer;
             throw new InvalidCastException();
         }
 
         public static explicit operator float(Value v)
         {
-            if (v.Data is Double)
+            if (v.Data is double)
                 return (float)v.Float;
-            if (v.Data is Int64)
+            if (v.Data is long)
                 return v.Integer;
             throw new InvalidCastException();
         }

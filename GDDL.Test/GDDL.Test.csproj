@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9A4C695C-0F1E-4D73-9F71-059441E8EB22}</ProjectGuid>
+    <ProjectGuid>{9DD360AB-54A0-4403-825D-8D71B11D17EA}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GDDL.Sample</RootNamespace>
-    <AssemblyName>GDDL.Sample</AssemblyName>
+    <RootNamespace>GDDL.Test</RootNamespace>
+    <AssemblyName>GDDL.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

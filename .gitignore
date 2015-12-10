@@ -1,8 +1,7 @@
-/GDDL.Sample/bin
-/GDDL.Sample/obj
 /GDDL/bin
 /GDDL/obj
+/GDDL.Test/bin
+/GDDL.Test/obj
 
 *.user
 *.suo
-

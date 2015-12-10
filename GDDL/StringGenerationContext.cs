@@ -20,7 +20,7 @@ namespace GDDL
         None = 0,
 
         // Decoration level
-        Compact = 0,
+        Compact = 0, // Default
         Nice = 1,
 
     }

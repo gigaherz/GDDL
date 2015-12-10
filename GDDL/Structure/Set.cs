@@ -206,7 +206,7 @@ namespace GDDL.Structure
 
         public IEnumerable<TypedSet> ByType(string typeName)
         {
-            return contents.OfType<TypedSet>().Where(e => String.CompareOrdinal(e.TypeName, typeName) == 0);
+            return contents.OfType<TypedSet>().Where(e => string.CompareOrdinal(e.TypeName, typeName) == 0);
         }
     }
 }

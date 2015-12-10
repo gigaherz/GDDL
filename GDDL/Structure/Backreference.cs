@@ -7,6 +7,7 @@ namespace GDDL.Structure
     {
         protected List<string> NamePart;
 
+        // TODO: Figure out what this syntax feature was meant to be used for XD
         protected bool Rooted;
 
         private bool resolved;
@@ -103,6 +104,5 @@ namespace GDDL.Structure
 
             return this;
         }
-
     }
 }

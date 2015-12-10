@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GDDL.Sample")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("GDDL.Test")]
+[assembly: AssemblyDescription("GDDL Example Program")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GDDL.Sample")]
+[assembly: AssemblyProduct("GDDL.Test")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("9a4c695c-0f1e-4d73-9f71-059441e8eb22")]
+[assembly: Guid("9dd360ab-54a0-4403-825d-8d71b11d17ea")]
 
 // Version information for an assembly consists of the following four values:
 //

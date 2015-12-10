@@ -7,50 +7,6 @@ using System.IO;
 
 namespace GDDL
 {
-    enum Token
-    {
-        COMMA,
-        HEXINT,
-        INTEGER,
-        DOUBLE,
-        STRING,
-        EQUALS,
-        COLON,
-        LBRACE,
-        RBRACE,
-        IDENT,
-        END,
-        CHAR,
-    }
-
-    interface IToken
-    {
-        Token Name { get; }
-        string Text { get; }
-        ReaderContext Context { get; }
-    }
-
-    interface ILexer
-    {
-        ReaderContext GetFileContext();
-
-        Token Peek();
-        IToken Pop();
-
-        ITokenEnum BeginPrefixScan();
-        void EndPrefixScan();
-    }
-
-    interface ITokenEnum
-    {
-        int CurrentPos { get; }
-        Token Current { get; }
-        void Next();
-
-        void PushRef();
-        void PopRef();
-    }
-
     public class Parser
     {
         public static Parser FromFile(string filename)
@@ -68,9 +24,14 @@ namespace GDDL
 
         internal ILexer Lexer { get { return lex; } }
 
-        public RootSet Parse()
+        public RootSet Parse(bool resolveReferences = true)
         {
-            return program();
+            var ret = program();
+
+            if(resolveReferences)
+                ret.Resolve(ret);
+
+            return ret;
         }
 
         private IToken pop_expected(Token expectedToken)
@@ -347,13 +308,13 @@ namespace GDDL
         }
     }
 
-    public class ReaderContext
+    public class ParseContext
     {
         public string Filename;
         public int Line;
         public int Column;
 
-        public ReaderContext(string f, int l, int c)
+        public ParseContext(string f, int l, int c)
         {
             Filename = f;
             Line = l;
@@ -364,6 +325,50 @@ namespace GDDL
         {
             return string.Format("{0}({1},{2})", Filename, Line, Column);
         }
+    }
+
+    enum Token
+    {
+        COMMA,
+        HEXINT,
+        INTEGER,
+        DOUBLE,
+        STRING,
+        EQUALS,
+        COLON,
+        LBRACE,
+        RBRACE,
+        IDENT,
+        END,
+        CHAR,
+    }
+
+    interface IToken
+    {
+        Token Name { get; }
+        string Text { get; }
+        ParseContext Context { get; }
+    }
+
+    interface ILexer
+    {
+        ParseContext GetFileContext();
+
+        Token Peek();
+        IToken Pop();
+
+        ITokenEnum BeginPrefixScan();
+        void EndPrefixScan();
+    }
+
+    interface ITokenEnum
+    {
+        int CurrentPos { get; }
+        Token Current { get; }
+        void Next();
+
+        void PushRef();
+        void PopRef();
     }
 
     class Reader
@@ -480,9 +485,9 @@ namespace GDDL
             return string.Format("{{Reader ahead={0}}}", b.ToString());
         }
 
-        internal ReaderContext GetFileContext()
+        internal ParseContext GetFileContext()
         {
-            return new ReaderContext(sourceName, line, column);
+            return new ParseContext(sourceName, line, column);
         }
     }
 
@@ -551,10 +556,10 @@ namespace GDDL
         {
             public Token Name { get; private set; }
             public string Text { get; private set; }
-            public ReaderContext Context { get; private set; }
+            public ParseContext Context { get; private set; }
 
 
-            public SimpleToken(Token name, ReaderContext context, string text)
+            public SimpleToken(Token name, ParseContext context, string text)
             {
                 Name = name;
                 Text = text;
@@ -919,7 +924,7 @@ namespace GDDL
             return string.Format("{{Lexer ahead={0}, reader={1}}}", string.Join(", ", lookAhead), reader);
         }
 
-        public ReaderContext GetFileContext()
+        public ParseContext GetFileContext()
         {
             Require(1);
             return lookAhead[0].Context;
