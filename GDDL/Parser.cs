@@ -76,7 +76,7 @@ namespace GDDL
         private IToken pop_expected(Token expectedToken)
         {
             if (lex.Peek() != expectedToken)
-                throw new ParseErrorException(this, string.Format("Unexpected token {0}: Expected {1}.", lex.Peek(), expectedToken));
+                throw new ParserException(this, string.Format("Unexpected token {0}: Expected {1}.", lex.Peek(), expectedToken));
             return lex.Pop();
         }
 
@@ -144,7 +144,7 @@ namespace GDDL
             if (prefix_namedElement()) return namedElement();
             if (prefix_basicElement()) return basicElement();
 
-            throw new ParseErrorException(this);
+            throw new ParserException(this, "Internal Error");
         }
 
         bool prefix_basicElement()
@@ -177,7 +177,7 @@ namespace GDDL
             if (prefix_namedSet()) return namedSet();
             if (prefix_backreference()) return backreference();
 
-            throw new ParseErrorException(this);
+            throw new ParserException(this, "Internal Error");
         }
 
         bool prefix_namedElement()
@@ -203,7 +203,7 @@ namespace GDDL
             pop_expected(Token.EQUALS);
 
             if (!prefix_basicElement())
-                throw new ParseErrorException(this);
+                throw new ParserException(this, string.Format("Expected a basic element after EQUALS, found {0} instead", lex.Peek()));
 
             var B = basicElement();
 
@@ -239,7 +239,7 @@ namespace GDDL
             //(I=identifier { $B = Element.Backreference(rooted, I); })
 
             if (!prefix_identifier())
-                throw new ParseErrorException(this);
+                throw new ParserException(this, string.Format("Expected identifier, found {0} instead", lex.Peek()));
 
             var I = identifier();
             var B = Element.Backreference(rooted, I);
@@ -282,7 +282,7 @@ namespace GDDL
                 finished_with_rbrace = false;
 
                 if (!prefix_element())
-                    throw new ParseErrorException(this);
+                    throw new ParserException(this, string.Format("Expected element after LBRACE, found {0} instead", lex.Peek()));
 
                 S.Append(element());
 
@@ -322,7 +322,7 @@ namespace GDDL
             var I = identifier();
 
             if (!prefix_set())
-                throw new ParseErrorException(this);
+                throw new ParserException(this, "Internal error");
             var S = set();
 
             return Element.TypedSet(I, S);
@@ -343,7 +343,7 @@ namespace GDDL
         {
             if (lex.Peek() == Token.IDENT) return pop_expected(Token.IDENT).Text;
 
-            throw new ParseErrorException(this);
+            throw new ParserException(this, "Internal error");
         }
     }
 
@@ -399,7 +399,7 @@ namespace GDDL
             {
                 if (endQueued)
                 {
-                    throw new ReaderErrorException(this);
+                    throw new ReaderException(this, "Tried to read beyond the end of the file.");
                 }
 
                 int ch = dataSource.Read();
@@ -457,7 +457,7 @@ namespace GDDL
             {
                 var ch = Pop();
                 if (ch < 0)
-                    throw new ReaderErrorException(this);
+                    throw new ReaderException(this, "Tried to read beyond the end of the file.");
                 b.Append((char)ch);
             }
             return b.ToString();
@@ -547,6 +547,31 @@ namespace GDDL
             }
         }
 
+        internal class SimpleToken : IToken
+        {
+            public Token Name { get; private set; }
+            public string Text { get; private set; }
+            public ReaderContext Context { get; private set; }
+
+
+            public SimpleToken(Token name, ReaderContext context, string text)
+            {
+                Name = name;
+                Text = text;
+                Context = context;
+            }
+
+            public override string ToString()
+            {
+                if (string.IsNullOrEmpty(Text))
+                    return string.Format("({0} @ {1}{2})", Name, Context.Line, Context.Column);
+
+                if (Text.Length > 22)
+                    return string.Format("({0} @ {1}{2}: {3}...)", Name, Context.Line, Context.Column, Text.Substring(20));
+
+                return string.Format("({0} @ {1}{2}: {3})", Name, Context.Line, Context.Column, Text);
+            }
+        }
         private void Require(int count)
         {
             int needed = count - lookAhead.Count;
@@ -684,7 +709,7 @@ namespace GDDL
                 {
                     if (ich == '\r')
                     {
-                        throw new LexerErrorException(this, string.Format("Expected '\\r', found {0}", (char)ich));
+                        throw new LexerException(this, string.Format("Expected '\\r', found {0}", (char)ich));
                     }
                     number++;
                 }
@@ -692,7 +717,7 @@ namespace GDDL
                 ich = reader.Peek(number);
                 if (ich != '\'')
                 {
-                    throw new LexerErrorException(this, string.Format("Expected '\\'', found {0}", (char)ich));
+                    throw new LexerException(this, string.Format("Expected '\\'', found {0}", (char)ich));
                 }
 
                 number++;
@@ -716,7 +741,7 @@ namespace GDDL
                     {
                         if (ich == '\r')
                         {
-                            throw new LexerErrorException(this, string.Format("Expected '\\r', found {0}", (char)ich));
+                            throw new LexerException(this, string.Format("Expected '\\r', found {0}", (char)ich));
                         }
                         number++;
                     }
@@ -726,7 +751,7 @@ namespace GDDL
 
                 if (ich != '"')
                 {
-                    throw new LexerErrorException(this, string.Format("Expected '\"', found {0}", (char)ich));
+                    throw new LexerException(this, string.Format("Expected '\"', found {0}", (char)ich));
                 }
 
                 number++;
@@ -785,7 +810,7 @@ namespace GDDL
 
                     ich = reader.Peek(number);
                     if (!char.IsDigit((char)ich))
-                        throw new LexerErrorException(this, string.Format("Expected DIGIT, found {0}", (char)ich));
+                        throw new LexerException(this, string.Format("Expected DIGIT, found {0}", (char)ich));
 
                     while (char.IsNumber((char)ich))
                     {
@@ -813,7 +838,7 @@ namespace GDDL
                     }
 
                     if (!char.IsDigit((char)ich))
-                        throw new LexerErrorException(this, string.Format("Expected DIGIT, found {0}", (char)ich));
+                        throw new LexerException(this, string.Format("Expected DIGIT, found {0}", (char)ich));
 
                     while (char.IsNumber((char)ich))
                     {
@@ -829,14 +854,14 @@ namespace GDDL
                 return new SimpleToken(Token.INTEGER, reader.GetFileContext(), reader.Read(number));
             }
 
-            throw new LexerErrorException(this, string.Format("Unexpected character: {0}", reader.Peek()));
+            throw new LexerException(this, string.Format("Unexpected character: {0}", reader.Peek()));
         }
 
         private int count_escape_seq(int number)
         {
             int ich = reader.Peek(number);
             if (ich != '\\')
-                throw new LexerErrorException(this);
+                throw new LexerException(this, "Internal Error");
 
             number++;
 
@@ -886,7 +911,7 @@ namespace GDDL
                 return number;
             }
 
-            throw new LexerErrorException(this, string.Format("Unknown escape sequence \\{0}", ich));
+            throw new LexerException(this, string.Format("Unknown escape sequence \\{0}", ich));
         }
 
         public override string ToString()
@@ -901,52 +926,4 @@ namespace GDDL
         }
     }
 
-    internal class SimpleToken : IToken
-    {
-        private Token name;
-        private string text;
-        private ReaderContext context;
-
-        public SimpleToken(Token name, ReaderContext context, string text)
-        {
-            this.name = name;
-            this.text = text;
-            this.context = context;
-        }
-
-        public Token Name
-        {
-            get
-            {
-                return name;
-            }
-        }
-
-        public string Text
-        {
-            get
-            {
-                return text;
-            }
-        }
-
-        public ReaderContext Context
-        {
-            get
-            {
-                return context;
-            }
-        }
-
-        public override string ToString()
-        {
-            if (string.IsNullOrEmpty(text))
-                return string.Format("({0} @ {1}{2})", Name, context.Line, context.Column);
-
-            if (text.Length > 22)
-                return string.Format("({0} @ {1}{2}: {3}...)", Name, context.Line, context.Column, text.Substring(20));
-
-            return string.Format("({0} @ {1}{2}: {3})", Name, context.Line, context.Column, text);
-        }
-    }
 }

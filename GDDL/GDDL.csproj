@@ -48,10 +48,10 @@
   <ItemGroup>
     <Compile Include="Deque\Deque.cs" />
     <Compile Include="Deque\Utility.cs" />
-    <Compile Include="LexerErrorException.cs" />
-    <Compile Include="ParseErrorException.cs" />
+    <Compile Include="LexerException.cs" />
+    <Compile Include="ParserException.cs" />
     <Compile Include="Parser.cs" />
-    <Compile Include="ReaderErrorException.cs" />
+    <Compile Include="ReaderException.cs" />
     <Compile Include="Structure\Backreference.cs" />
     <Compile Include="Structure\Element.cs" />
     <Compile Include="Structure\INamed.cs" />
