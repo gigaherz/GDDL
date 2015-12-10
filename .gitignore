@@ -1,0 +1,8 @@
+/GDDL.Sample/bin
+/GDDL.Sample/obj
+/GDDL/bin
+/GDDL/obj
+
+*.user
+*.suo
+
