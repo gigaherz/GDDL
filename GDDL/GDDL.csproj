@@ -56,7 +56,6 @@
     <Compile Include="Structure\Element.cs" />
     <Compile Include="Structure\INamed.cs" />
     <Compile Include="Structure\NamedElement.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Structure\RootSet.cs" />
     <Compile Include="Structure\Set.cs" />

@@ -47,8 +47,8 @@ namespace GDDL
         Token Current { get; }
         void Next();
 
-        ITokenEnum PushRef(ITokenEnum e);
-        ITokenEnum PopRef();
+        void PushRef();
+        void PopRef();
     }
 
     public class Parser
@@ -492,10 +492,12 @@ namespace GDDL
 
         bool seenEnd = false;
 
+        readonly PrefixScanner preview;
         Reader reader;
         public Lexer(Reader r)
         {
             reader = r;
+            preview = new PrefixScanner(this);
         }
 
         class PrefixScanner : ITokenEnum
@@ -503,7 +505,8 @@ namespace GDDL
             Lexer parent;
             int currentPos = 0;
             IToken current;
-            ITokenEnum previous;
+
+            Stack<int> posStack = new Stack<int>();
 
             public int CurrentPos { get { return currentPos; } }
             public Token Current { get { return current.Name; } }
@@ -520,26 +523,27 @@ namespace GDDL
                 current = parent.lookAhead[currentPos++];
             }
 
-            public void EndPreview()
+            public void PushRef()
             {
+                posStack.Push(currentPos);
+            }
+
+            public void PopRef()
+            {
+                currentPos = posStack.Pop();
+                if (currentPos > 0)
+                {
+                    current = parent.lookAhead[currentPos - 1];
+                }
+                else
+                {
+                    current = null;
+                }
             }
 
             public override string ToString()
             {
                 return string.Format("{0}]", current);
-            }
-
-            public ITokenEnum PushRef(ITokenEnum previous)
-            {
-                this.previous = previous;
-                if (previous != null)
-                    currentPos = previous.CurrentPos;
-                return this;
-            }
-
-            public ITokenEnum PopRef()
-            {
-                return previous;
             }
         }
 
@@ -552,16 +556,15 @@ namespace GDDL
             }
         }
 
-        ITokenEnum preview = null;
         public ITokenEnum BeginPrefixScan()
         {
-            preview = new PrefixScanner(this).PushRef(preview);
+            preview.PushRef();
             return preview;
         }
 
         public void EndPrefixScan()
         {
-            preview = preview.PopRef();
+            preview.PopRef();
         }
 
         public Token Peek()
