@@ -65,7 +65,6 @@ namespace GDDL
             return r;
         }
 
-        bool prefix_root() { return prefix_element(); }
         RootSet root()
 #if DEBUG_RULES
         {
@@ -77,8 +76,6 @@ namespace GDDL
         RootSet rule_root()
 #endif
         {
-            // elements
-
             var S = element();
 
             var SS = Element.Set();
@@ -103,8 +100,6 @@ namespace GDDL
         Element rule_element()
 #endif
         {
-            // B=basicElement   { $E = B; } | N=namedElement   { $E = N; }
-
             if (prefix_namedElement()) return namedElement();
             if (prefix_basicElement()) return basicElement();
 
@@ -114,7 +109,7 @@ namespace GDDL
         bool prefix_basicElement()
         {
             return has_prefix(Token.HEXINT, Token.INTEGER, Token.DOUBLE, Token.STRING)
-                || prefix_backreference() || prefix_set() || prefix_namedSet();
+                || prefix_backreference() || prefix_set() || prefix_typedSet();
         }
         Element basicElement()
 #if DEBUG_RULES
@@ -127,20 +122,12 @@ namespace GDDL
         Element rule_basicElement()
 #endif
         {
-            //   H=HEXINT  { $E = Element.IntValue(H.Text,16); }
-            // | I=INTEGER  { $E = Element.IntValue(I.Text); }
-            // | D=DOUBLE  { $E = Element.FloatValue(D.Text); }
-            // | S=STRING  { $E = Element.StringValue(S.Text); }
-            // | B=backreference { $E = B; }
-            // | T=set  { $E = T; }
-            // | N=namedSet  { $E = N; }
-
             if (lex.Peek() == Token.HEXINT) return Element.IntValue(pop_expected(Token.HEXINT).Text, 16);
             if (lex.Peek() == Token.INTEGER) return Element.IntValue(pop_expected(Token.INTEGER).Text);
             if (lex.Peek() == Token.DOUBLE) return Element.FloatValue(pop_expected(Token.DOUBLE).Text);
             if (lex.Peek() == Token.STRING) return Element.StringValue(pop_expected(Token.STRING).Text);
             if (prefix_set()) return set();
-            if (prefix_namedSet()) return namedSet();
+            if (prefix_typedSet()) return typedSet();
             if (prefix_backreference()) return backreference();
 
             throw new ParserException(this, "Internal Error");
@@ -164,8 +151,6 @@ namespace GDDL
         NamedElement rule_namedElement()
 #endif
         {
-            // I=identifier EQUALS B=basicElement  { $N = Element.NamedElement(I, B); }
-
             var I = identifier();
 
             pop_expected(Token.EQUALS);
@@ -198,23 +183,18 @@ namespace GDDL
 #endif
         {
             bool rooted = false;
-
-            //  (COLON { rooted = true; })?
+            
             if (lex.Peek() == Token.COLON)
             {
                 pop_expected(Token.COLON);
                 rooted = true;
             }
-
-            //(I=identifier { $B = Element.Backreference(rooted, I); })
-
             if (!prefix_identifier())
                 throw new ParserException(this, string.Format("Expected identifier, found {0} instead", lex.Peek()));
 
             var I = identifier();
             var B = Element.Backreference(rooted, I);
-
-            // (COLON I=identifier { $B.Append(I); })*
+            
             while (has_prefix(Token.COLON))
             {
                 pop_expected(Token.COLON);
@@ -242,9 +222,6 @@ namespace GDDL
         Set rule_set()
 #endif
         {
-            //   LBRACE E=elements RBRACE  { $S = E; }
-            // | LBRACE RBRACE  { $S = Element.Set(); }
-
             pop_expected(Token.LBRACE);
 
             var S = Element.Set();
@@ -274,25 +251,24 @@ namespace GDDL
             return S;
         }
 
-        bool prefix_namedSet()
+        bool prefix_typedSet()
         {
             var p = lex.BeginPrefixScan();
             var r = has_any(p, Token.IDENT) && has_any(p, Token.LBRACE);
             lex.EndPrefixScan();
             return r;
         }
-        TypedSet namedSet()
+        TypedSet typedSet()
 #if DEBUG_RULES
         {
-            Debug.WriteLine("Entering rule_namedSet()");
-            var ret = rule_namedSet();
-            Debug.WriteLine(string.Format("Finished rule_namedSet(), returned: {0}", ret));
+            Debug.WriteLine("Entering rule_typedSet()");
+            var ret = rule_typedSet();
+            Debug.WriteLine(string.Format("Finished rule_typedSet(), returned: {0}", ret));
             return ret;
         }
-        TypedSet rule_namedSet()
+        TypedSet rule_typedSet()
 #endif
         {
-            // I=identifier S=set  { $N = Element.TypedSet(I, S); }
             var I = identifier();
 
             if (!prefix_set())
