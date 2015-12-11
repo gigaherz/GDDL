@@ -2,6 +2,8 @@ RootSetName = typeNameHere {
 
     # Basic elements
 
+    null, nil,
+    false, true,
     12345,
     0x12345,
     123.45,
@@ -29,5 +31,4 @@ RootSetName = typeNameHere {
     replace_this_with = RootSetName:namedNumber,
 
     # The comma in the previous element is optional but allowed.
-  }
 }

@@ -50,6 +50,8 @@ Syntax
 
 Literals:
 
+* Nil: ```nil``` or ```null```
+* Boolean: ```true``` and ```false```
 * Identifier: ```[a-zA-Z_][a-zA-Z_0-9]*```
 * Integer: ```[0-9]+```
 * HexInt: ```0x[0-9a-fA-F]*```
@@ -115,9 +117,9 @@ Potential future improvements (some crazier than others)
 1. Allow references by type, index within the parent set, and/or range selectors.
   * Tentative syntax: Root:[3]:typename1[*]:typename2[2..3]
 
-2. Allow more fine-grained typing.
+1. Allow more fine-grained typing.
   * Tentative syntax: 1234ui64 --> unsigned integer of 64bits.
 
-3. Templating support: element substitution engine.
+1. Templating support: element substitution engine.
   * Basically turns the system into effectively a lambda-calculus engine!
   * Syntax to be determined.

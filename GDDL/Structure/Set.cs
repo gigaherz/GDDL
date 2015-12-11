@@ -8,8 +8,8 @@ namespace GDDL.Structure
     public class Set : Element, IList<Element>
     {
         private readonly List<Element> contents = new List<Element>();
-        private readonly Dictionary<string, NamedElement> names = new Dictionary<string, NamedElement>();
-        
+        private readonly Dictionary<string, Element> names = new Dictionary<string, Element>();
+
         internal ICollection<Element> Contents
         {
             get { return contents.AsReadOnly(); }
@@ -21,15 +21,15 @@ namespace GDDL.Structure
             set
             {
                 var old = contents[index];
-                if (old is NamedElement)
-                    names.Remove((old as NamedElement).Name);
+                if (old.HasName)
+                    names.Remove(old.Name);
                 contents[index] = value;
-                if (value is NamedElement)
-                    names.Add((value as NamedElement).Name, (value as NamedElement));
+                if (value.HasName)
+                    names.Add(value.Name, value);
             }
         }
 
-        public NamedElement this[string name] 
+        public Element this[string name]
         {
             get { return names[name]; }
         }
@@ -42,6 +42,16 @@ namespace GDDL.Structure
         public int Count
         {
             get { return contents.Count; }
+        }
+
+        public string TypeName
+        {
+            get; set;
+        }
+
+        public bool HasTypeName
+        {
+            get { return !string.IsNullOrEmpty(TypeName); }
         }
 
         internal Set()
@@ -72,35 +82,35 @@ namespace GDDL.Structure
         internal void Append(Element e)
         {
             contents.Add(e);
-            if (e is NamedElement)
-                names.Add((e as NamedElement).Name, (e as NamedElement));
+            if (e.HasName)
+                names.Add(e.Name, e);
         }
 
         public void Add(Element e)
         {
             contents.Add(e);
-            if (e is NamedElement)
-                names.Add((e as NamedElement).Name, (e as NamedElement));
+            if (e.HasName)
+                names.Add(e.Name, e);
         }
-        
+
         public void Insert(int before, Element e)
         {
             contents.Insert(before, e);
-            if (e is NamedElement)
-                names.Add((e as NamedElement).Name, (e as NamedElement));
+            if (e.HasName)
+                names.Add(e.Name, e);
         }
 
         public void AddRange(IEnumerable<Element> set)
         {
-            foreach(var e in set)
+            foreach (var e in set)
                 Add(e);
         }
 
         public bool Remove(Element e)
         {
             var r = contents.Remove(e);
-            if (e is NamedElement)
-                names.Remove((e as NamedElement).Name);
+            if (e.HasName)
+                names.Remove(e.Name);
             return r;
         }
 
@@ -108,8 +118,8 @@ namespace GDDL.Structure
         {
             var e = contents[index];
             contents.RemoveAt(index);
-            if (e is NamedElement)
-                names.Remove((e as NamedElement).Name);
+            if (e.HasName)
+                names.Remove(e.Name);
         }
 
         public void Clear()
@@ -122,7 +132,7 @@ namespace GDDL.Structure
         {
             return
                 !(contents.Any(a => a is Set) ||
-                  contents.Select(a => a as NamedElement).Where(a => a != null).Any(a => a.Value is Set));
+                  contents.Where(a => a.HasName).Any(a => a is Set));
         }
 
         public void CopyTo(Element[] dest, int offset)
@@ -130,17 +140,19 @@ namespace GDDL.Structure
             contents.CopyTo(dest, offset);
         }
 
-        public override string ToString() 
+        protected override string ToStringInternal()
         {
-            return ToString(true);
+            if (HasTypeName)
+                return string.Format("{0} {1}", TypeName, ToStringInternal(true));
+            return ToStringInternal(true);
         }
 
-        public virtual string ToString(bool addBraces)
+        protected virtual string ToStringInternal(bool addBraces)
         {
             return string.Format(addBraces ? "{{{0}}}" : "{0}", string.Join(", ", contents));
         }
 
-        public override string ToString(StringGenerationContext ctx)
+        protected override string ToStringInternal(StringGenerationContext ctx)
         {
             var addBraces = ctx.IndentLevel > 0;
             int tabsToGen = ctx.IndentLevel - 1;
@@ -148,7 +160,7 @@ namespace GDDL.Structure
             string tabs1 = "";
             for (int i = 0; i < tabsToGen; i++)
                 tabs1 += "  ";
-            
+
             string tabs2 = tabs1;
 
             if (addBraces)
@@ -163,50 +175,52 @@ namespace GDDL.Structure
                                 ? string.Join(", " + Environment.NewLine, contents.Select(a => tabs2 + a.ToString(ctx)))
                                 : string.Join(", ", contents.Select(a => a.ToString(ctx)));
 
-            if(addBraces)
+            if (addBraces)
             {
                 result = string.Format(nice ? "{{{0}{2}{0}{1}}}" : "{{{2}}}", Environment.NewLine, tabs1, result);
             }
-            
+
+            if (HasTypeName)
+            {
+                result = string.Format("{0} {1}", TypeName, result);
+            }
+
             ctx.IndentLevel--;
 
             return result;
         }
 
-        internal override void Resolve(Set rootSet)
+        internal override void Resolve(Element root)
         {
             foreach (var el in contents)
             {
-                el.Resolve(rootSet);
+                el.Resolve(root);
             }
         }
 
         public override Element Simplify()
         {
-            for(int i=0;i<contents.Count;i++)
+            for (int i = 0; i < contents.Count; i++)
             {
                 contents[i] = contents[i].Simplify();
             }
 
-            //if (contents.Count == 1) 
-            //    return contents[0];
-            
             return this;
         }
 
-        public bool TryGetByName(string name, out NamedElement elm)
+        public bool TryGetByName(string name, out Element elm)
         {
             return names.TryGetValue(name, out elm);
         }
 
         public IEnumerable<Element> ByName(string name)
         {
-            return from c in contents let n = (c as INamed) where n != null && n.Name == name select c;
+            return contents.Where(c => string.CompareOrdinal(c.Name, name) == 0);
         }
 
-        public IEnumerable<TypedSet> ByType(string typeName)
+        public IEnumerable<Set> ByType(string typeName)
         {
-            return contents.OfType<TypedSet>().Where(e => string.CompareOrdinal(e.TypeName, typeName) == 0);
+            return contents.OfType<Set>().Where(e => string.CompareOrdinal(e.TypeName, typeName) == 0);
         }
     }
 }

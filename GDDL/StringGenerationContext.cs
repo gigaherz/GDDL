@@ -6,7 +6,7 @@ namespace GDDL
     {
         public StringGenerationOptions Options;
 
-        public int IndentLevel = 0;
+        public int IndentLevel = 1;
 
         public StringGenerationContext(StringGenerationOptions options)
         {

@@ -15,27 +15,27 @@ namespace GDDL
             return new Parser(new Lexer(new Reader(filename)));
         }
 
-        readonly ILexer lex;
-        internal Parser(ILexer lexer)
+        readonly Lexer lex;
+        internal Parser(Lexer lexer)
         {
             lex = lexer;
         }
 
         bool finished_with_rbrace = false;
 
-        internal ILexer Lexer { get { return lex; } }
+        internal Lexer Lexer { get { return lex; } }
 
-        public RootSet Parse(bool resolveReferences = true)
+        public Element Parse(bool resolveReferences = true)
         {
             var ret = root();
 
-            if(resolveReferences)
+            if (resolveReferences)
                 ret.Resolve(ret);
 
             return ret;
         }
 
-        private IToken pop_expected(Token expectedToken)
+        private SimpleToken pop_expected(Token expectedToken)
         {
             if (lex.Peek() != expectedToken)
                 throw new ParserException(this, string.Format("Unexpected token {0}: Expected {1}.", lex.Peek(), expectedToken));
@@ -65,7 +65,7 @@ namespace GDDL
             return r;
         }
 
-        RootSet root()
+        Element root()
 #if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_root()");
@@ -73,15 +73,10 @@ namespace GDDL
             Debug.WriteLine(string.Format("Finished rule_root(), returned: {0}", ret));
             return ret;
         }
-        RootSet rule_root()
+        Element rule_root()
 #endif
         {
-            var S = element();
-
-            var SS = Element.Set();
-            SS.Append(S);
-
-            var E = Element.RootSet(SS);
+            var E = element();
 
             pop_expected(Token.END);
 
@@ -108,7 +103,8 @@ namespace GDDL
 
         bool prefix_basicElement()
         {
-            return has_prefix(Token.HEXINT, Token.INTEGER, Token.DOUBLE, Token.STRING)
+            return has_prefix(Token.NIL, Token.NULL, Token.TRUE, Token.FALSE,
+                Token.HEXINT, Token.INTEGER, Token.DOUBLE, Token.STRING)
                 || prefix_backreference() || prefix_set() || prefix_typedSet();
         }
         Element basicElement()
@@ -122,6 +118,11 @@ namespace GDDL
         Element rule_basicElement()
 #endif
         {
+            if (lex.Peek() == Token.NIL) { pop_expected(Token.NIL); return Element.Null(); }
+            if (lex.Peek() == Token.NULL) { pop_expected(Token.NULL); return Element.Null(); }
+            if (lex.Peek() == Token.TRUE) { pop_expected(Token.TRUE); return Element.BooleanValue(true); }
+            if (lex.Peek() == Token.FALSE) { pop_expected(Token.FALSE); return Element.BooleanValue(false); }
+            if (lex.Peek() == Token.INTEGER) return Element.IntValue(pop_expected(Token.INTEGER).Text);
             if (lex.Peek() == Token.HEXINT) return Element.IntValue(pop_expected(Token.HEXINT).Text, 16);
             if (lex.Peek() == Token.INTEGER) return Element.IntValue(pop_expected(Token.INTEGER).Text);
             if (lex.Peek() == Token.DOUBLE) return Element.FloatValue(pop_expected(Token.DOUBLE).Text);
@@ -140,7 +141,7 @@ namespace GDDL
             lex.EndPrefixScan();
             return r;
         }
-        NamedElement namedElement()
+        Element namedElement()
 #if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_namedElement()");
@@ -160,7 +161,9 @@ namespace GDDL
 
             var B = basicElement();
 
-            return Element.NamedElement(I, B);
+            B.Name = I;
+
+            return B;
         }
 
         bool prefix_backreference()
@@ -183,7 +186,7 @@ namespace GDDL
 #endif
         {
             bool rooted = false;
-            
+
             if (lex.Peek() == Token.COLON)
             {
                 pop_expected(Token.COLON);
@@ -194,7 +197,7 @@ namespace GDDL
 
             var I = identifier();
             var B = Element.Backreference(rooted, I);
-            
+
             while (has_prefix(Token.COLON))
             {
                 pop_expected(Token.COLON);
@@ -258,7 +261,7 @@ namespace GDDL
             lex.EndPrefixScan();
             return r;
         }
-        TypedSet typedSet()
+        Set typedSet()
 #if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_typedSet()");
@@ -275,7 +278,9 @@ namespace GDDL
                 throw new ParserException(this, "Internal error");
             var S = set();
 
-            return Element.TypedSet(I, S);
+            S.Name = I;
+
+            return S;
         }
 
         bool prefix_identifier()
@@ -320,6 +325,10 @@ namespace GDDL
 
     enum Token
     {
+        NIL,
+        NULL,
+        TRUE,
+        FALSE,
         COMMA,
         HEXINT,
         INTEGER,
@@ -334,24 +343,6 @@ namespace GDDL
         CHAR,
     }
 
-    interface IToken
-    {
-        Token Name { get; }
-        string Text { get; }
-        ParseContext Context { get; }
-    }
-
-    interface ILexer
-    {
-        ParseContext GetFileContext();
-
-        Token Peek();
-        IToken Pop();
-
-        ITokenEnum BeginPrefixScan();
-        void EndPrefixScan();
-    }
-
     interface ITokenEnum
     {
         int CurrentPos { get; }
@@ -360,6 +351,31 @@ namespace GDDL
 
         void PushRef();
         void PopRef();
+    }
+
+    internal class SimpleToken
+    {
+        public Token Name { get; private set; }
+        public string Text { get; private set; }
+        public ParseContext Context { get; private set; }
+
+        public SimpleToken(Token name, ParseContext context, string text)
+        {
+            Name = name;
+            Text = text;
+            Context = context;
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Text))
+                return string.Format("({0} @ {1}{2})", Name, Context.Line, Context.Column);
+
+            if (Text.Length > 22)
+                return string.Format("({0} @ {1}{2}: {3}...)", Name, Context.Line, Context.Column, Text.Substring(20));
+
+            return string.Format("({0} @ {1}{2}: {3})", Name, Context.Line, Context.Column, Text);
+        }
     }
 
     class Reader
@@ -482,9 +498,9 @@ namespace GDDL
         }
     }
 
-    class Lexer : ILexer
+    class Lexer
     {
-        readonly Deque<IToken> lookAhead = new Deque<IToken>();
+        readonly Deque<SimpleToken> lookAhead = new Deque<SimpleToken>();
 
         bool seenEnd = false;
 
@@ -500,7 +516,7 @@ namespace GDDL
         {
             Lexer parent;
             int currentPos = 0;
-            IToken current;
+            SimpleToken current;
 
             Stack<int> posStack = new Stack<int>();
 
@@ -539,35 +555,10 @@ namespace GDDL
 
             public override string ToString()
             {
-                return string.Format("{0}]", current);
+                return string.Format("[{0}]", current);
             }
         }
 
-        internal class SimpleToken : IToken
-        {
-            public Token Name { get; private set; }
-            public string Text { get; private set; }
-            public ParseContext Context { get; private set; }
-
-
-            public SimpleToken(Token name, ParseContext context, string text)
-            {
-                Name = name;
-                Text = text;
-                Context = context;
-            }
-
-            public override string ToString()
-            {
-                if (string.IsNullOrEmpty(Text))
-                    return string.Format("({0} @ {1}{2})", Name, Context.Line, Context.Column);
-
-                if (Text.Length > 22)
-                    return string.Format("({0} @ {1}{2}: {3}...)", Name, Context.Line, Context.Column, Text.Substring(20));
-
-                return string.Format("({0} @ {1}{2}: {3})", Name, Context.Line, Context.Column, Text);
-            }
-        }
         private void Require(int count)
         {
             int needed = count - lookAhead.Count;
@@ -595,7 +586,7 @@ namespace GDDL
             return lookAhead[0].Name;
         }
 
-        public IToken Pop()
+        public SimpleToken Pop()
         {
             Require(2);
 
@@ -614,10 +605,8 @@ namespace GDDL
             }
         }
 
-        private IToken ParseOne()
+        private SimpleToken ParseOne()
         {
-            char ch;
-
             if (seenEnd)
                 return new SimpleToken(Token.END, reader.GetFileContext(), "");
 
@@ -626,8 +615,7 @@ namespace GDDL
             {
                 if (ich < 0) return new SimpleToken(Token.END, reader.GetFileContext(), "");
 
-                ch = (char)ich;
-                switch (ch)
+                switch (ich)
                 {
                     case ' ':
                     case '\t':
@@ -654,8 +642,7 @@ namespace GDDL
             }
 
             blah:
-            ch = (char)ich;
-            switch (ch)
+            switch (ich)
             {
                 case '{': return new SimpleToken(Token.LBRACE, reader.GetFileContext(), reader.Read(1));
                 case '}': return new SimpleToken(Token.RBRACE, reader.GetFileContext(), reader.Read(1));
@@ -664,7 +651,7 @@ namespace GDDL
                 case '=': return new SimpleToken(Token.EQUALS, reader.GetFileContext(), reader.Read(1));
             }
 
-            if (char.IsLetter(ch) || ch == '_')
+            if (char.IsLetter((char)ich) || ich == '_')
             {
                 // IDENT : ('a'..'z'|'A'..'Z'|'_'|'-') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
                 int number = 1;
@@ -674,8 +661,7 @@ namespace GDDL
                     if (ich < 0)
                         break;
 
-                    ch = (char)ich;
-                    if (char.IsLetter(ch) || char.IsLetterOrDigit(ch) || ch == '_')
+                    if (char.IsLetter((char)ich) || char.IsLetterOrDigit((char)ich) || ich == '_')
                     {
                         number++;
                     }
@@ -685,10 +671,17 @@ namespace GDDL
                     }
                 }
 
-                return new SimpleToken(Token.IDENT, reader.GetFileContext(), reader.Read(number));
+                var id = new SimpleToken(Token.IDENT, reader.GetFileContext(), reader.Read(number));
+
+                if (string.Compare(id.Text, "nil", true) == 0) return new SimpleToken(Token.NIL, id.Context, id.Text);
+                if (string.Compare(id.Text, "null", true) == 0) return new SimpleToken(Token.NULL, id.Context, id.Text);
+                if (string.Compare(id.Text, "true", true) == 0) return new SimpleToken(Token.TRUE, id.Context, id.Text);
+                if (string.Compare(id.Text, "false", true) == 0) return new SimpleToken(Token.FALSE, id.Context, id.Text);
+
+                return id;
             }
 
-            if (ch == '\'')
+            if (ich == '\'')
             {
                 //CHAR : '\'' ( ESC_SEQ | ~('\''|'\\') ) '\''
                 int number = 1;
@@ -719,7 +712,7 @@ namespace GDDL
                 return new SimpleToken(Token.CHAR, reader.GetFileContext(), reader.Read(number));
             }
 
-            if (ch == '"')
+            if (ich == '"')
             {
                 //STRING : '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
                 int number = 1;
@@ -753,13 +746,13 @@ namespace GDDL
                 return new SimpleToken(Token.STRING, reader.GetFileContext(), reader.Read(number));
             }
 
-            if (char.IsDigit(ch) || ch == '.')
+            if (char.IsDigit((char)ich) || ich == '.')
             {
                 // numbers
                 int number = 0;
                 bool fractional = false;
 
-                if (char.IsDigit(ch))
+                if (char.IsDigit((char)ich))
                 {
                     if (reader.Peek(0) == '0' && reader.Peek(1) == 'x')
                     {
@@ -793,7 +786,7 @@ namespace GDDL
                     }
                 }
 
-                if (ch == '.')
+                if (ich == '.')
                 {
                     fractional = true;
                     // fragment
@@ -814,7 +807,7 @@ namespace GDDL
                     }
                 }
 
-                if (ch == 'e' || ch == 'E')
+                if (ich == 'e' || ich == 'E')
                 {
                     fractional = true;
                     //fragment
@@ -879,7 +872,7 @@ namespace GDDL
             //fragment
             //UNICODE_ESC :'\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
 
-            if (ich == 'x')
+            if (ich == 'x' || ich == 'u')
             {
                 number++;
 

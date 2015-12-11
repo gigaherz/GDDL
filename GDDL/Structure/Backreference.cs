@@ -5,7 +5,7 @@ namespace GDDL.Structure
 {
     public class Backreference : Element
     {
-        protected List<string> NamePart;
+        protected readonly List<string> NamePart = new List<string>();
 
         // TODO: Figure out what this syntax feature was meant to be used for XD
         protected bool Rooted;
@@ -26,7 +26,7 @@ namespace GDDL.Structure
         internal Backreference(bool rooted, string I)
         {
             Rooted = rooted;
-            NamePart = new List<string> {I};
+            NamePart.Add(I);
         }
 
         internal virtual void Append(string I)
@@ -34,11 +34,11 @@ namespace GDDL.Structure
             NamePart.Add(I);
         }
 
-        public override string ToString()
+        protected override string ToStringInternal()
         {
             var ss = new StringBuilder();
             int count = 0;
-            foreach (var it  in NamePart)
+            foreach (var it in NamePart)
             {
                 if (count++ > 0)
                     ss.Append(':');
@@ -57,12 +57,12 @@ namespace GDDL.Structure
             return ss.ToString();
         }
 
-        public override string ToString(StringGenerationContext ctx)
+        protected override string ToStringInternal(StringGenerationContext ctx)
         {
-            return ToString();
+            return ToStringInternal();
         }
 
-        internal override void Resolve(Set root)
+        internal override void Resolve(Element root)
         {
             if (IsResolved)
                 return;
@@ -76,10 +76,10 @@ namespace GDDL.Structure
                 if (s == null)
                     continue;
 
-                NamedElement ne;
+                Element ne;
                 if (s.TryGetByName(it, out ne))
                 {
-                    elm = ne.Value;
+                    elm = ne;
                     continue;
                 }
 

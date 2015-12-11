@@ -6,7 +6,7 @@ namespace GDDL.Test
     {
         static void Main(string[] args)
         {
-            var p = Parser.FromFile("Samples\\Test.txt");
+            var p = Parser.FromFile("..\\..\\..\\Samples\\Test.txt");
             var parsedData = p.Parse();
             File.WriteAllText("Output.txt", parsedData.ToString(new StringGenerationContext(StringGenerationOptions.Nice)));
         }

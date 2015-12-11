@@ -27,20 +27,30 @@ namespace GDDL.Structure
             set { Data = value; }
         }
 
+        public virtual bool Boolean
+        {
+            get { return (bool)Data; }
+            set { Data = value; }
+        }
+
+        public virtual bool IsNull
+        {
+            get { return Data == null; }
+        }
+
+        internal Value() { Data = null; }
+
+        internal Value(bool valueData) { Data = valueData; }
+
         internal Value(string valueData) { Data = valueData; }
 
         internal Value(long valueData) { Data = valueData; }
-        
+
         internal Value(double valueData) { Data = valueData; }
-            
-        public override string ToString()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0}", Data);
-        }
 
         internal static string UnescapeString(string p)
         {
-             var sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             bool q = false;
             bool b = false;
@@ -49,37 +59,37 @@ namespace GDDL.Structure
             int u1 = 0;
             int u2 = 0;
 
-            foreach(var c in p)
+            foreach (var c in p)
             {
-                if(q)
+                if (q)
                 {
-                    if(u)
+                    if (u)
                     {
-                        if(u2 == 4)
+                        if (u2 == 4)
                         {
                             sb.Append((char)u1);
                             u = false;
                         }
-                        else if(char.IsDigit(c))
+                        else if (char.IsDigit(c))
                         {
-                            u1 = u1*16 + (c - '0');
+                            u1 = u1 * 16 + (c - '0');
                         }
                         else if ((u2 < 4) && ((c >= 'a') && (c <= 'f')))
                         {
-                            u1 = u1*16 + 10 + (c - 'a');
+                            u1 = u1 * 16 + 10 + (c - 'a');
                         }
                         else if ((u2 < 4) && ((c >= 'A') && (c <= 'F')))
                         {
-                            u1 = u1*16 + 10 + (c - 'A');
+                            u1 = u1 * 16 + 10 + (c - 'A');
                         }
                         else
                         {
-                            sb.Append((char) u1);
+                            sb.Append((char)u1);
                             u = false;
                         }
                         u2++;
                     }
-                    
+
                     if (b)
                     {
                         switch (c)
@@ -106,6 +116,7 @@ namespace GDDL.Structure
                                 sb.Append('\r');
                                 break;
                             case 'u':
+                            case 'x':
                                 u = true;
                                 b = false;
                                 u1 = 0;
@@ -152,7 +163,7 @@ namespace GDDL.Structure
             var sb = new StringBuilder();
 
             sb.Append('"');
-            foreach(var c in p)
+            foreach (var c in p)
             {
                 if (!char.IsControl(c) && c != '"' && c != '\\')
                 {
@@ -185,7 +196,7 @@ namespace GDDL.Structure
                         sb.Append('\\');
                         break;
                     default:
-                        sb.AppendFormat("u{0:X4}", (int) c);
+                        sb.AppendFormat("u{0:X4}", (int)c);
                         break;
                 }
             }
@@ -194,13 +205,26 @@ namespace GDDL.Structure
             return sb.ToString();
         }
 
-        public override string ToString(StringGenerationContext ctx)
+        protected override string ToStringInternal()
         {
-            if(Data is string)
+            if (Data == null)
+            {
+                return "nil";
+            }
+            if (Data is bool)
+            {
+                return Boolean ? "true" : "false";
+            }
+            if (Data is string)
             {
                 return EscapeString(Data as string);
             }
-            return ToString();
+            return string.Format(CultureInfo.InvariantCulture, "{0}", Data);
+        }
+
+        protected override string ToStringInternal(StringGenerationContext ctx)
+        {
+            return ToStringInternal();
         }
 
         public static explicit operator long(Value v)
@@ -241,8 +265,7 @@ namespace GDDL.Structure
 
         public static explicit operator string(Value v)
         {
-            return v.ToString();
+            return v.ToStringInternal();
         }
-
     }
 }
