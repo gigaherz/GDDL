@@ -1,7 +1,8 @@
-﻿using GDDL.Structure;
+﻿//#define DEBUG_RULES
+
+using GDDL.Structure;
 using System.Collections.Generic;
 using System.Text;
-using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -26,7 +27,7 @@ namespace GDDL
 
         public RootSet Parse(bool resolveReferences = true)
         {
-            var ret = program();
+            var ret = root();
 
             if(resolveReferences)
                 ret.Resolve(ret);
@@ -48,11 +49,9 @@ namespace GDDL
             {
                 if (preview.Current == t)
                 {
-                    Debug.WriteLine(string.Format("Matched {0}", preview.Current));
                     return true;
                 }
             }
-            Debug.WriteLine(string.Format("Looking for one of ({0}), found {1} instead", string.Join(", ", tokens), preview.Current));
             return false;
         }
 
@@ -66,17 +65,19 @@ namespace GDDL
             return r;
         }
 
-        bool prefix_program() { return prefix_element(); }
-        RootSet program()
+        bool prefix_root() { return prefix_element(); }
+        RootSet root()
+#if DEBUG_RULES
         {
-            Debug.WriteLine("Entering rule_program()");
-            var ret = rule_program();
-            Debug.WriteLine(string.Format("Finished rule_program(), returned: {0}", ret));
+            Debug.WriteLine("Entering rule_root()");
+            var ret = rule_root();
+            Debug.WriteLine(string.Format("Finished rule_root(), returned: {0}", ret));
             return ret;
         }
-        RootSet rule_program()
+        RootSet rule_root()
+#endif
         {
-            // S=elements { $E = Element.RootSet(S); }
+            // elements
 
             var S = element();
 
@@ -92,6 +93,7 @@ namespace GDDL
 
         bool prefix_element() { return prefix_basicElement() || prefix_namedElement(); }
         Element element()
+#if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_element()");
             var ret = rule_element();
@@ -99,6 +101,7 @@ namespace GDDL
             return ret;
         }
         Element rule_element()
+#endif
         {
             // B=basicElement   { $E = B; } | N=namedElement   { $E = N; }
 
@@ -114,6 +117,7 @@ namespace GDDL
                 || prefix_backreference() || prefix_set() || prefix_namedSet();
         }
         Element basicElement()
+#if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_basicElement()");
             var ret = rule_basicElement();
@@ -121,6 +125,7 @@ namespace GDDL
             return ret;
         }
         Element rule_basicElement()
+#endif
         {
             //   H=HEXINT  { $E = Element.IntValue(H.Text,16); }
             // | I=INTEGER  { $E = Element.IntValue(I.Text); }
@@ -149,6 +154,7 @@ namespace GDDL
             return r;
         }
         NamedElement namedElement()
+#if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_namedElement()");
             var ret = rule_namedElement();
@@ -156,6 +162,7 @@ namespace GDDL
             return ret;
         }
         NamedElement rule_namedElement()
+#endif
         {
             // I=identifier EQUALS B=basicElement  { $N = Element.NamedElement(I, B); }
 
@@ -180,6 +187,7 @@ namespace GDDL
             return r || prefix_identifier();
         }
         Backreference backreference()
+#if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_backreference()");
             var ret = rule_backreference();
@@ -187,6 +195,7 @@ namespace GDDL
             return ret;
         }
         Backreference rule_backreference()
+#endif
         {
             bool rooted = false;
 
@@ -223,6 +232,7 @@ namespace GDDL
             return has_prefix(Token.LBRACE);
         }
         Set set()
+#if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_set()");
             var ret = rule_set();
@@ -230,6 +240,7 @@ namespace GDDL
             return ret;
         }
         Set rule_set()
+#endif
         {
             //   LBRACE E=elements RBRACE  { $S = E; }
             // | LBRACE RBRACE  { $S = Element.Set(); }
@@ -271,6 +282,7 @@ namespace GDDL
             return r;
         }
         TypedSet namedSet()
+#if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_namedSet()");
             var ret = rule_namedSet();
@@ -278,6 +290,7 @@ namespace GDDL
             return ret;
         }
         TypedSet rule_namedSet()
+#endif
         {
             // I=identifier S=set  { $N = Element.TypedSet(I, S); }
             var I = identifier();
@@ -294,6 +307,7 @@ namespace GDDL
             return has_prefix(Token.IDENT);
         }
         string identifier()
+#if DEBUG_RULES
         {
             Debug.WriteLine("Entering rule_identifier()");
             var ret = rule_identifier();
@@ -301,6 +315,7 @@ namespace GDDL
             return ret;
         }
         string rule_identifier()
+#endif
         {
             if (lex.Peek() == Token.IDENT) return pop_expected(Token.IDENT).Text;
 
@@ -609,8 +624,6 @@ namespace GDDL
             Require(2);
 
             var t = lookAhead.RemoveFront();
-
-            Debug.WriteLine(string.Format("Popped {0}. Next up: {1}", t, Peek()));
 
             return t;
         }
