@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using GDDL.Exceptions;
+using GDDL.Util;
 
 namespace GDDL
 {
-    class Reader
+    public class Reader : IContextProvider
     {
-        bool endQueued = false;
-        readonly Deque<int> unreadBuffer = new Deque<int>();
+        private readonly QueueList<int> unreadBuffer = new QueueList<int>();
 
-        TextReader dataSource;
-        string sourceName;
-        int line = 1;
-        int column = 1;
+        private readonly StreamReader dataSource;
+        private readonly string sourceName;
 
-        int lastEol;
+        private bool endQueued;
+        private int line = 1;
+        private int column = 1;
+        private int lastEol;
 
         public Reader(string source)
         {
@@ -38,11 +38,11 @@ namespace GDDL
             {
                 if (endQueued)
                 {
-                    throw new ReaderException(this, "Tried to read beyond the end of the file.");
+                    throw new ReaderException(this, "Tried to Read beyond the end of the file.");
                 }
 
                 int ch = dataSource.Read();
-                unreadBuffer.AddBack(ch);
+                unreadBuffer.Add(ch);
                 if (ch < 0)
                     endQueued = true;
             }
@@ -60,9 +60,9 @@ namespace GDDL
             return unreadBuffer[index];
         }
 
-        public int Pop()
+        public int Next()
         {
-            int ch = unreadBuffer.RemoveFront();
+            int ch = unreadBuffer.Remove();
 
             column++;
             if (ch == '\n')
@@ -94,19 +94,19 @@ namespace GDDL
             StringBuilder b = new StringBuilder();
             while (count-- > 0)
             {
-                var ch = Pop();
+                int ch = Next();
                 if (ch < 0)
-                    throw new ReaderException(this, "Tried to read beyond the end of the file.");
+                    throw new ReaderException(this, "Tried to Read beyond the end of the file.");
                 b.Append((char)ch);
             }
             return b.ToString();
         }
 
-        public void Drop(int count)
+        public void Skip(int count)
         {
             Require(count);
             while (count-- > 0)
-                Pop();
+                Next();
         }
 
         public override string ToString()
@@ -116,12 +116,12 @@ namespace GDDL
             {
                 b.Append((char)ch);
             }
-            return string.Format("{{Reader ahead={0}}}", b.ToString());
+            return $"{{Reader ahead={b}}}";
         }
 
-        internal ParseContext GetFileContext()
+        public ParsingContext GetParsingContext()
         {
-            return new ParseContext(sourceName, line, column);
+            return new ParsingContext(sourceName, line, column);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GDDL
+namespace GDDL.Config
 {
     public class StringGenerationContext
     {
@@ -12,16 +10,5 @@ namespace GDDL
         {
             Options = options;
         }
-    }
-
-    [Flags]
-    public enum StringGenerationOptions
-    {
-        None = 0,
-
-        // Decoration level
-        Compact = 0, // Default
-        Nice = 1,
-
     }
 }

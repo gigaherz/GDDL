@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
+using GDDL.Config;
 
 namespace GDDL.Structure
 {
@@ -7,37 +9,39 @@ namespace GDDL.Structure
     {
         protected readonly List<string> NamePart = new List<string>();
 
-        // TODO: Figure out what this syntax feature was meant to be used for XD
-        protected bool Rooted;
-
         private bool resolved;
         private Element resolvedValue;
 
-        public override Element ResolvedValue
+        public bool Rooted { get; set; }
+
+        public override bool IsResolved => resolved;
+        public override Element ResolvedValue => resolvedValue;
+
+        internal Backreference(params string[] parts)
         {
-            get { return resolvedValue; }
+            NamePart.AddRange(parts);
         }
 
-        public override bool IsResolved
-        {
-            get { return resolved; }
-        }
-
-        internal Backreference(bool rooted, string I)
+        internal Backreference(bool rooted, params string[] parts)
         {
             Rooted = rooted;
-            NamePart.Add(I);
+            NamePart.AddRange(parts);
         }
 
-        internal virtual void Append(string I)
+        public void Add(string name)
         {
-            NamePart.Add(I);
+            NamePart.Add(name);
         }
 
-        protected override string ToStringInternal()
+        public void AddRange(IEnumerable<string> names)
+        {
+            NamePart.AddRange(names);
+        }
+
+        protected override string ToStringInternal(StringGenerationContext ctx)
         {
             var ss = new StringBuilder();
-            int count = 0;
+            var count = 0;
             foreach (var it in NamePart)
             {
                 if (count++ > 0)
@@ -48,7 +52,7 @@ namespace GDDL.Structure
             if (IsResolved)
             {
                 ss.Append('=');
-                if (ResolvedValue == null)
+                if (ResolvedValue== null)
                     ss.Append("NULL");
                 else
                     ss.Append(ResolvedValue);
@@ -57,52 +61,85 @@ namespace GDDL.Structure
             return ss.ToString();
         }
 
-        protected override string ToStringInternal(StringGenerationContext ctx)
+
+        public override Element Copy()
         {
-            return ToStringInternal();
+            Backreference b = new Backreference();
+            CopyTo(b);
+            return b;
         }
 
-        internal override void Resolve(Element root)
+        protected override void CopyTo(Element other)
+        {
+            base.CopyTo(other);
+            if (!(other is Backreference))
+                throw new ArgumentException("CopyTo for invalid type", nameof(other));
+            var b = (Backreference)other;
+            b.AddRange(NamePart);
+            if (resolved)
+            {
+                b.resolved = true;
+                b.resolvedValue = resolvedValue;
+            }
+        }
+
+        public override void Resolve(Element root, Element parent)
         {
             if (IsResolved)
                 return;
 
-            Element elm = root;
-
-            foreach (var it in NamePart)
+            if (!Rooted && TryResolve(root, parent, true))
             {
+                resolved = true;
+                return;
+            }
+
+            resolved = TryResolve(root, parent, false);
+        }
+
+        private bool TryResolve(Element root, Element parent, bool relative)
+        {
+            var elm = relative ? parent : root;
+
+            bool parentRoot = parent.HasName() && NamePart[0] == parent.Name;
+
+            for (int i = parentRoot ? 1 : 0; i < NamePart.Count; i++)
+            {
+                string part = NamePart[0];
+
                 var s = elm as Set;
 
                 if (s == null)
                     continue;
 
                 Element ne;
-                if (s.TryGetByName(it, out ne))
+                if (s.TryGetValue(part, out ne))
                 {
                     elm = ne;
                     continue;
                 }
 
                 resolvedValue = null;
-                resolved = true;
-                return;
+                return false;
             }
 
-            resolvedValue = elm;
-            resolved = true;
-
             if (!elm.IsResolved)
-                elm.Resolve(root);
+                elm.Resolve(root, parent);
 
             resolvedValue = elm.ResolvedValue;
+
+            return resolvedValue != null;
         }
+
 
         public override Element Simplify()
         {
-            if (resolved && resolvedValue != null)
-                return resolvedValue;
+            if (!resolved || resolvedValue == null)
+                return this;
 
-            return this;
+            var copy = resolvedValue.Copy();
+            copy.Name = Name;
+            return copy;
         }
     }
 }

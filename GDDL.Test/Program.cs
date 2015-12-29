@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using GDDL.Config;
 
 namespace GDDL.Test
 {
@@ -8,7 +10,9 @@ namespace GDDL.Test
         {
             var p = Parser.FromFile("..\\..\\..\\Samples\\Test.txt");
             var parsedData = p.Parse();
-            File.WriteAllText("Output.txt", parsedData.ToString(new StringGenerationContext(StringGenerationOptions.Nice)));
+            var text = parsedData.ToString(new StringGenerationContext(StringGenerationOptions.Nice));
+            //File.WriteAllText("Output.txt", text);
+            Console.Write(text);
         }
     }
 }

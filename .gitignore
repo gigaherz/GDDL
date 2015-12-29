@@ -2,6 +2,7 @@
 /GDDL/obj
 /GDDL.Test/bin
 /GDDL.Test/obj
+/.idea
 
 *.user
 *.suo

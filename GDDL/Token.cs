@@ -1,48 +1,33 @@
-﻿namespace GDDL
+
+namespace GDDL
 {
-    enum Tokens
+    public class Token : IContextProvider
     {
-        NIL,
-        NULL,
-        TRUE,
-        FALSE,
-        COMMA,
-        HEXINT,
-        INTEGER,
-        DOUBLE,
-        STRING,
-        EQUALS,
-        COLON,
-        LBRACE,
-        RBRACE,
-        IDENT,
-        END,
-        CHAR,
-    }
+        public Tokens Name;
+        public string Text;
+        public ParsingContext Context;
 
-    internal class Token
-    {
-        public Tokens Name { get; private set; }
-        public string Text { get; private set; }
-        public ParseContext Context { get; private set; }
-
-        public Token(Tokens name, ParseContext context, string text)
+        public Token(Tokens name, IContextProvider context, string text)
         {
             Name = name;
             Text = text;
-            Context = context;
+            Context = context.GetParsingContext();
         }
 
         public override string ToString()
         {
-            if (string.IsNullOrEmpty(Text))
-                return string.Format("({0} @ {1}{2})", Name, Context.Line, Context.Column);
+            if (Text == null)
+                return $"({Name} @ {Context.Line}:{Context.Column})";
 
             if (Text.Length > 22)
-                return string.Format("({0} @ {1}{2}: {3}...)", Name, Context.Line, Context.Column, Text.Substring(20));
+                return $"({Name} @ {Context.Line}:{Context.Column}: {Text.Substring(0, 20)}...)";
 
-            return string.Format("({0} @ {1}{2}: {3})", Name, Context.Line, Context.Column, Text);
+            return $"({Name} @ {Context.Line}:{Context.Column}: {Text})";
+        }
+
+        public ParsingContext GetParsingContext()
+        {
+            return Context;
         }
     }
-
 }

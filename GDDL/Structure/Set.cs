@@ -2,114 +2,103 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using GDDL.Config;
 
 namespace GDDL.Structure
 {
-    public class Set : Element, IList<Element>
+    public class Set : Element, IList<Element>, IDictionary<String, Element>
     {
         private readonly List<Element> contents = new List<Element>();
         private readonly Dictionary<string, Element> names = new Dictionary<string, Element>();
+        private string typeName;
 
-        internal ICollection<Element> Contents
+        public string TypeName
         {
-            get { return contents.AsReadOnly(); }
+            get
+            {
+                return typeName;
+            }
+
+            set
+            {
+                if (!Lexer.IsValidIdentifier(value))
+                    throw new ArgumentException("Type value must be a valid identifier");
+                typeName = value;
+            }
+        }
+
+        public int Count => contents.Count;
+
+        public bool IsReadOnly => false;
+
+        public Element this[string name]
+        {
+            get { return names[name]; }
+            set { throw new InvalidOperationException(); }
         }
 
         public Element this[int index]
         {
             get { return contents[index]; }
+
             set
             {
                 var old = contents[index];
-                if (old.HasName)
+                if (old.HasName())
                     names.Remove(old.Name);
                 contents[index] = value;
-                if (value.HasName)
+                if (value.HasName())
                     names.Add(value.Name, value);
             }
         }
 
-        public Element this[string name]
+
+        public Set()
         {
-            get { return names[name]; }
         }
 
-        public bool IsReadOnly
+        public Set(IEnumerable<Element> init)
         {
-            get { return true; }
-        }
-
-        public int Count
-        {
-            get { return contents.Count; }
-        }
-
-        public string TypeName
-        {
-            get; set;
-        }
-
-        public bool HasTypeName
-        {
-            get { return !string.IsNullOrEmpty(TypeName); }
-        }
-
-        internal Set()
-        {
-            contents = new List<Element>();
-        }
-
-        internal Set(IEnumerable<Element> init)
-        {
-            contents = new List<Element>();
             contents.AddRange(init);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { return contents.GetEnumerator(); }
-
-        public IEnumerator<Element> GetEnumerator() { return contents.GetEnumerator(); }
-
-        public bool Contains(Element e)
+        public bool HasTypeName()
         {
-            return contents.Contains(e);
+            return TypeName != null;
         }
 
-        public int IndexOf(Element e)
+        public bool IsEmpty()
         {
-            return contents.IndexOf(e);
-        }
-
-        internal void Append(Element e)
-        {
-            contents.Add(e);
-            if (e.HasName)
-                names.Add(e.Name, e);
+            return contents.Count == 0;
         }
 
         public void Add(Element e)
         {
             contents.Add(e);
-            if (e.HasName)
+            if (e.HasName())
                 names.Add(e.Name, e);
         }
 
         public void Insert(int before, Element e)
         {
             contents.Insert(before, e);
-            if (e.HasName)
+            if (e.HasName())
                 names.Add(e.Name, e);
         }
 
-        public void AddRange(IEnumerable<Element> set)
+        public void AddRange(IEnumerable<Element> c)
         {
-            foreach (var e in set)
+            foreach (Element e in c)
+            {
                 Add(e);
+            }
         }
 
         public bool Remove(Element e)
         {
-            var r = contents.Remove(e);
-            if (e.HasName)
+            bool r = contents.Remove(e);
+            if (e.HasName())
                 names.Remove(e.Name);
             return r;
         }
@@ -118,8 +107,18 @@ namespace GDDL.Structure
         {
             var e = contents[index];
             contents.RemoveAt(index);
-            if (e.HasName)
+            if (e.HasName())
                 names.Remove(e.Name);
+        }
+
+        public int IndexOf(Element o)
+        {
+            return contents.IndexOf(o);
+        }
+
+        void ICollection<KeyValuePair<string, Element>>.Add(KeyValuePair<string, Element> item)
+        {
+            throw new NotImplementedException();
         }
 
         public void Clear()
@@ -128,73 +127,116 @@ namespace GDDL.Structure
             names.Clear();
         }
 
+        bool ICollection<KeyValuePair<string, Element>>.Contains(KeyValuePair<string, Element> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICollection<KeyValuePair<string, Element>>.CopyTo(KeyValuePair<string, Element>[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsSimple()
         {
-            return
-                !(contents.Any(a => a is Set) ||
-                  contents.Where(a => a.HasName).Any(a => a is Set));
-        }
-
-        public void CopyTo(Element[] dest, int offset)
-        {
-            contents.CopyTo(dest, offset);
-        }
-
-        protected override string ToStringInternal()
-        {
-            if (HasTypeName)
-                return string.Format("{0} {1}", TypeName, ToStringInternal(true));
-            return ToStringInternal(true);
-        }
-
-        protected virtual string ToStringInternal(bool addBraces)
-        {
-            return string.Format(addBraces ? "{{{0}}}" : "{0}", string.Join(", ", contents));
+            return !contents.Any(a => a is Set || a.HasName());
         }
 
         protected override string ToStringInternal(StringGenerationContext ctx)
         {
-            var addBraces = ctx.IndentLevel > 0;
+            bool addBraces = ctx.IndentLevel > 0;
             int tabsToGen = ctx.IndentLevel - 1;
 
             string tabs1 = "";
             for (int i = 0; i < tabsToGen; i++)
+            {
                 tabs1 += "  ";
+            }
 
-            string tabs2 = tabs1;
+            string tabs2 = addBraces ? "  " + tabs1 : tabs1;
 
-            if (addBraces)
-                tabs2 = "  " + tabs1;
+            StringBuilder builder = new StringBuilder();
 
-            var nice = ((ctx.Options & StringGenerationOptions.Nice) == StringGenerationOptions.Nice)
-                       && (!IsSimple() || contents.Count > 10);
+            bool nice = ctx.Options == StringGenerationOptions.Nice;
+            bool simple = IsSimple() && contents.Count <= 10;
+
+            int verbosity = 0;
+            if (nice && simple) verbosity = 1;
+            else if (nice) verbosity = 2;
 
             ctx.IndentLevel++;
 
-            string result = nice
-                                ? string.Join(", " + Environment.NewLine, contents.Select(a => tabs2 + a.ToString(ctx)))
-                                : string.Join(", ", contents.Select(a => a.ToString(ctx)));
+            if (HasTypeName())
+            {
+                builder.Append(TypeName);
+                builder.Append(" ");
+            }
+            if (addBraces)
+            {
+                switch (verbosity)
+                {
+                    case 0: builder.Append("{"); break;
+                    case 1: builder.Append("{ "); break;
+                    case 2: builder.Append("{\n"); break;
+                }
+            }
+
+            bool first = true;
+            foreach (Element e in contents)
+            {
+                if (!first)
+                {
+                    switch (verbosity)
+                    {
+                        case 0: builder.Append(","); break;
+                        case 1: builder.Append(", "); break;
+                        case 2: builder.Append(",\n"); break;
+                    }
+                }
+                if (verbosity == 2) builder.Append(tabs2);
+
+                builder.Append(e.ToString(ctx));
+
+                first = false;
+            }
 
             if (addBraces)
             {
-                result = string.Format(nice ? "{{{0}{2}{0}{1}}}" : "{{{2}}}", Environment.NewLine, tabs1, result);
-            }
-
-            if (HasTypeName)
-            {
-                result = string.Format("{0} {1}", TypeName, result);
+                switch (verbosity)
+                {
+                    case 0: builder.Append("}"); break;
+                    case 1: builder.Append(" }"); break;
+                    case 2: builder.Append("\n"); builder.Append(tabs1); builder.Append("}"); break;
+                }
             }
 
             ctx.IndentLevel--;
 
-            return result;
+            return builder.ToString();
         }
 
-        internal override void Resolve(Element root)
+        public override Element Copy()
+        {
+            var b = new Set();
+            CopyTo(b);
+            return b;
+        }
+
+        protected override void CopyTo(Element other)
+        {
+            base.CopyTo(other);
+            if (!(other is Set))
+                throw new ArgumentException("CopyTo for invalid type", nameof(other));
+            Set b = (Set)other;
+            foreach (var e in contents) b.Add(e.Copy());
+        }
+
+
+        public override void Resolve(Element root, Element parent)
         {
             foreach (var el in contents)
             {
-                el.Resolve(root);
+                el.Resolve(root, this);
             }
         }
 
@@ -208,19 +250,74 @@ namespace GDDL.Structure
             return this;
         }
 
-        public bool TryGetByName(string name, out Element elm)
+        public IEnumerable<Element> ByName(string elementName)
         {
-            return names.TryGetValue(name, out elm);
+            return contents.Where(t => t.HasName() && t.Name == elementName);
         }
 
-        public IEnumerable<Element> ByName(string name)
+        public IEnumerable<Set> ByType(string type)
         {
-            return contents.Where(c => string.CompareOrdinal(c.Name, name) == 0);
+            return contents.OfType<Set>().Where(e => e.TypeName == type);
         }
 
-        public IEnumerable<Set> ByType(string typeName)
+        public IEnumerator<Element> GetEnumerator()
         {
-            return contents.OfType<Set>().Where(e => string.CompareOrdinal(e.TypeName, typeName) == 0);
+            return contents.GetEnumerator();
         }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)contents).GetEnumerator();
+        }
+
+        public bool Contains(Element item)
+        {
+            return contents.Contains(item);
+        }
+
+        public void CopyTo(Element[] array, int arrayIndex)
+        {
+            contents.CopyTo(array, arrayIndex);
+        }
+
+        public bool TryGetValue(string key, out Element value)
+        {
+            return names.TryGetValue(key, out value);
+        }
+
+        public bool ContainsKey(string key)
+        {
+            return names.ContainsKey(key);
+        }
+
+        public bool Remove(string key)
+        {
+            Element value;
+            return TryGetValue(key, out value) && Remove(value);
+        }
+
+        #region IDictionary explicit
+        IEnumerator<KeyValuePair<string, Element>> IEnumerable<KeyValuePair<string, Element>>.GetEnumerator()
+        {
+            return names.GetEnumerator();
+        }
+
+        bool ICollection<KeyValuePair<string, Element>>.Remove(KeyValuePair<string, Element> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IDictionary<string, Element>.Add(string key, Element value)
+        {
+            throw new NotImplementedException();
+        }
+
+        ICollection<string> IDictionary<string, Element>.Keys => names.Keys;
+
+        ICollection<Element> IDictionary<string, Element>.Values
+        {
+            get { throw new NotImplementedException(); }
+        }
+        #endregion
     }
 }

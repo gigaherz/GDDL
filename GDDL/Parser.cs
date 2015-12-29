@@ -1,303 +1,304 @@
-﻿//#define DEBUG_RULES
-
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using GDDL.Exceptions;
 using GDDL.Structure;
-using System.Diagnostics;
 
 namespace GDDL
 {
-    public class Parser
+    public class Parser : IContextProvider
     {
+        int prefixPos = -1;
+        readonly Stack<int> prefixStack = new Stack<int>();
+        private bool finishedWithRbrace;
+
+        public Lexer Lexer { get; }
+
+        Parser(Lexer lexer)
+        {
+            Lexer = lexer;
+        }
+
         public static Parser FromFile(string filename)
         {
             return new Parser(new Lexer(new Reader(filename)));
         }
 
-        readonly Lexer lex;
-        internal Parser(Lexer lexer)
+
+        public Element Parse()
         {
-            lex = lexer;
+            return Parse(true);
         }
 
-        bool finished_with_rbrace = false;
-
-        internal Lexer Lexer { get { return lex; } }
-
-        public Element Parse(bool resolveReferences = true)
+        public Element Parse(bool simplify)
         {
-            var ret = root();
+            Element ret = Root();
 
-            if (resolveReferences)
-                ret.Resolve(ret);
-
-            return ret;
-        }
-
-        private Token pop_expected(Tokens expectedToken)
-        {
-            if (lex.Peek() != expectedToken)
-                throw new ParserException(this, string.Format("Unexpected token {0}: Expected {1}.", lex.Peek(), expectedToken));
-            return lex.Pop();
-        }
-
-        private bool has_any(params Tokens[] tokens)
-        {
-            lex.NextPrefix();
-            foreach (var t in tokens)
+            if (simplify)
             {
-                if (lex.Prefix == t)
-                {
-                    return true;
-                }
+                ret.Resolve(ret, ret);
+                ret = ret.Simplify();
             }
-            return false;
+
+            return ret;
         }
 
-        private bool has_prefix(params Tokens[] tokens)
+        private Token PopExpected(params Tokens[] expected)
         {
-            lex.BeginPrefixScan();
+            Tokens current = Lexer.Peek();
+            if (expected.Any(expectedToken => current == expectedToken))
+            {
+                return Lexer.Pop();
+            }
 
-            var r = has_any(tokens);
+            if (expected.Length != 1)
+                throw new ParserException(this,
+                    $"Unexpected token {current}. Expected one of: {string.Join(", ", expected)}.");
 
-            lex.EndPrefixScan();
+            throw new ParserException(this, $"Unexpected token {current}. Expected: {expected[0]}.");
+        }
+
+        public void BeginPrefixScan()
+        {
+            prefixStack.Push(prefixPos);
+        }
+
+        public Tokens NextPrefix()
+        {
+            return Lexer.Peek(++prefixPos);
+        }
+
+        public void EndPrefixScan()
+        {
+            prefixPos = prefixStack.Pop();
+        }
+
+        private bool HasAny(params Tokens[] tokens)
+        {
+            var prefix = NextPrefix();
+            return tokens.Any(t => prefix == t);
+        }
+
+        private bool prefix_element()
+        {
+            return prefix_basicElement() || prefix_namedElement();
+        }
+
+        private bool prefix_basicElement()
+        {
+            BeginPrefixScan();
+            var r = HasAny(Tokens.NIL, Tokens.NULL, Tokens.TRUE, Tokens.FALSE,
+                Tokens.HEXINT, Tokens.INTEGER, Tokens.DOUBLE, Tokens.STRING);
+            EndPrefixScan();
+
+            return r || prefix_backreference() || prefix_set() || prefix_typedSet();
+        }
+
+        private bool prefix_namedElement()
+        {
+            BeginPrefixScan();
+            var r = HasAny(Tokens.IDENT, Tokens.STRING) && HasAny(Tokens.EQUALS);
+            EndPrefixScan();
             return r;
         }
 
-        Element root()
-#if DEBUG_RULES
+        private bool prefix_backreference()
         {
-            Debug.WriteLine("Entering rule_root()");
-            var ret = rule_root();
-            Debug.WriteLine(string.Format("Finished rule_root(), returned: {0}", ret));
-            return ret;
-        }
-        Element rule_root()
-#endif
-        {
-            var E = element();
-
-            pop_expected(Tokens.END);
-
-            return E;
-        }
-
-        bool prefix_element() { return prefix_basicElement() || prefix_namedElement(); }
-        Element element()
-#if DEBUG_RULES
-        {
-            Debug.WriteLine("Entering rule_element()");
-            var ret = rule_element();
-            Debug.WriteLine(string.Format("Finished rule_element(), returned: {0}", ret));
-            return ret;
-        }
-        Element rule_element()
-#endif
-        {
-            if (prefix_namedElement()) return namedElement();
-            if (prefix_basicElement()) return basicElement();
-
-            throw new ParserException(this, "Internal Error");
-        }
-
-        bool prefix_basicElement()
-        {
-            return has_prefix(Tokens.NIL, Tokens.NULL, Tokens.TRUE, Tokens.FALSE,
-                Tokens.HEXINT, Tokens.INTEGER, Tokens.DOUBLE, Tokens.STRING)
-                || prefix_backreference() || prefix_set() || prefix_typedSet();
-        }
-        Element basicElement()
-#if DEBUG_RULES
-        {
-            Debug.WriteLine("Entering rule_basicElement()");
-            var ret = rule_basicElement();
-            Debug.WriteLine(string.Format("Finished rule_basicElement(), returned: {0}", ret));
-            return ret;
-        }
-        Element rule_basicElement()
-#endif
-        {
-            if (lex.Peek() == Tokens.NIL) { pop_expected(Tokens.NIL); return Element.Null(); }
-            if (lex.Peek() == Tokens.NULL) { pop_expected(Tokens.NULL); return Element.Null(); }
-            if (lex.Peek() == Tokens.TRUE) { pop_expected(Tokens.TRUE); return Element.BooleanValue(true); }
-            if (lex.Peek() == Tokens.FALSE) { pop_expected(Tokens.FALSE); return Element.BooleanValue(false); }
-            if (lex.Peek() == Tokens.INTEGER) return Element.IntValue(pop_expected(Tokens.INTEGER).Text);
-            if (lex.Peek() == Tokens.HEXINT) return Element.IntValue(pop_expected(Tokens.HEXINT).Text, 16);
-            if (lex.Peek() == Tokens.INTEGER) return Element.IntValue(pop_expected(Tokens.INTEGER).Text);
-            if (lex.Peek() == Tokens.DOUBLE) return Element.FloatValue(pop_expected(Tokens.DOUBLE).Text);
-            if (lex.Peek() == Tokens.STRING) return Element.StringValue(pop_expected(Tokens.STRING).Text);
-            if (prefix_set()) return set();
-            if (prefix_typedSet()) return typedSet();
-            if (prefix_backreference()) return backreference();
-
-            throw new ParserException(this, "Internal Error");
-        }
-
-        bool prefix_namedElement()
-        {
-            lex.BeginPrefixScan();
-            var r = has_any(Tokens.IDENT) && has_any(Tokens.EQUALS);
-            lex.EndPrefixScan();
-            return r;
-        }
-        Element namedElement()
-#if DEBUG_RULES
-        {
-            Debug.WriteLine("Entering rule_namedElement()");
-            var ret = rule_namedElement();
-            Debug.WriteLine(string.Format("Finished rule_namedElement(), returned: {0}", ret));
-            return ret;
-        }
-        NamedElement rule_namedElement()
-#endif
-        {
-            var I = identifier();
-
-            pop_expected(Tokens.EQUALS);
-
-            if (!prefix_basicElement())
-                throw new ParserException(this, string.Format("Expected a basic element after EQUALS, found {0} instead", lex.Peek()));
-
-            var B = basicElement();
-
-            B.Name = I;
-
-            return B;
-        }
-
-        bool prefix_backreference()
-        {
-            lex.BeginPrefixScan();
-            var r = has_any(Tokens.COLON) && has_any(Tokens.IDENT);
-            lex.EndPrefixScan();
+            BeginPrefixScan();
+            var r = HasAny(Tokens.COLON) && HasAny(Tokens.IDENT);
+            EndPrefixScan();
 
             return r || prefix_identifier();
         }
-        Backreference backreference()
-#if DEBUG_RULES
-        {
-            Debug.WriteLine("Entering rule_backreference()");
-            var ret = rule_backreference();
-            Debug.WriteLine(string.Format("Finished rule_backreference(), returned: {0}", ret));
-            return ret;
-        }
-        Backreference rule_backreference()
-#endif
-        {
-            bool rooted = false;
 
-            if (lex.Peek() == Tokens.COLON)
+        private bool prefix_set()
+        {
+            BeginPrefixScan();
+            var r = HasAny(Tokens.LBRACE);
+            EndPrefixScan();
+            return r;
+        }
+
+        private bool prefix_typedSet()
+        {
+            BeginPrefixScan();
+            var r = HasAny(Tokens.IDENT) && HasAny(Tokens.LBRACE);
+            EndPrefixScan();
+            return r;
+        }
+
+        private bool prefix_identifier()
+        {
+            BeginPrefixScan();
+            var r = HasAny(Tokens.IDENT);
+            EndPrefixScan();
+            return r;
+        }
+
+        private Element Root()
+        {
+            var e = Element();
+            PopExpected(Tokens.END);
+            return e;
+        }
+
+        private Element Element()
+        {
+            if (prefix_namedElement()) return NamedElement();
+            if (prefix_basicElement()) return BasicElement();
+
+            throw new ParserException(this, "Internal Error");
+        }
+
+        private Element BasicElement()
+        {
+            if (Lexer.Peek() == Tokens.NIL) return NullValue(PopExpected(Tokens.NIL));
+            if (Lexer.Peek() == Tokens.NULL) return NullValue(PopExpected(Tokens.NULL));
+            if (Lexer.Peek() == Tokens.TRUE) return BooleanValue(PopExpected(Tokens.TRUE));
+            if (Lexer.Peek() == Tokens.FALSE) return BooleanValue(PopExpected(Tokens.FALSE));
+            if (Lexer.Peek() == Tokens.INTEGER) return IntValue(PopExpected(Tokens.INTEGER));
+            if (Lexer.Peek() == Tokens.HEXINT) return IntValue(PopExpected(Tokens.HEXINT), 16);
+            if (Lexer.Peek() == Tokens.INTEGER) return IntValue(PopExpected(Tokens.INTEGER));
+            if (Lexer.Peek() == Tokens.DOUBLE) return FloatValue(PopExpected(Tokens.DOUBLE));
+            if (Lexer.Peek() == Tokens.STRING) return StringValue(PopExpected(Tokens.STRING));
+            if (prefix_set()) return Set();
+            if (prefix_typedSet()) return TypedSet();
+            if (prefix_backreference()) return Backreference();
+
+            throw new ParserException(this, "Internal Error");
+        }
+
+        private Element NamedElement()
+        {
+            var name = PopExpected(Tokens.IDENT, Tokens.STRING);
+
+            var n = name.Name == Tokens.IDENT ? name.Text : Lexer.UnescapeString(name);
+
+            PopExpected(Tokens.EQUALS);
+
+            if (!prefix_basicElement())
+                throw new ParserException(this, $"Expected a basic element after EQUALS, found {Lexer.Peek()} instead");
+
+            var b = BasicElement();
+
+            b.Name = n;
+
+            return b;
+        }
+
+        private Backreference Backreference()
+        {
+            var rooted = false;
+
+            if (Lexer.Peek() == Tokens.COLON)
             {
-                pop_expected(Tokens.COLON);
+                PopExpected(Tokens.COLON);
                 rooted = true;
             }
             if (!prefix_identifier())
-                throw new ParserException(this, string.Format("Expected identifier, found {0} instead", lex.Peek()));
+                throw new ParserException(this, $"Expected identifier, found {Lexer.Peek()} instead");
 
-            var I = identifier();
-            var B = Element.Backreference(rooted, I);
+            var name = Identifier();
+            var b = Structure.Element.Backreference(rooted, name);
 
-            while (has_prefix(Tokens.COLON))
+            while (Lexer.Peek() == Tokens.COLON)
             {
-                pop_expected(Tokens.COLON);
+                PopExpected(Tokens.COLON);
 
-                var O = identifier();
+                name = Identifier();
 
-                B.Append(O);
+                b.Add(name);
             }
 
-            return B;
+            return b;
         }
 
-        bool prefix_set()
+        private Set Set()
         {
-            return has_prefix(Tokens.LBRACE);
-        }
-        Set set()
-#if DEBUG_RULES
-        {
-            Debug.WriteLine("Entering rule_set()");
-            var ret = rule_set();
-            Debug.WriteLine(string.Format("Finished rule_set(), returned: {0}", ret));
-            return ret;
-        }
-        Set rule_set()
-#endif
-        {
-            pop_expected(Tokens.LBRACE);
+            PopExpected(Tokens.LBRACE);
 
-            var S = Element.Set();
+            var s = Structure.Element.Set();
 
-            while (lex.Peek() != Tokens.RBRACE)
+            while (Lexer.Peek() != Tokens.RBRACE)
             {
-                finished_with_rbrace = false;
+                finishedWithRbrace = false;
 
                 if (!prefix_element())
-                    throw new ParserException(this, string.Format("Expected element after LBRACE, found {0} instead", lex.Peek()));
+                    throw new ParserException(this, $"Expected element after LBRACE, found {Lexer.Peek()} instead");
 
-                S.Append(element());
+                s.Add(Element());
 
-                if (lex.Peek() != Tokens.RBRACE)
+                if (Lexer.Peek() != Tokens.RBRACE)
                 {
-                    if (!finished_with_rbrace || (lex.Peek() == Tokens.COMMA))
+                    if (!finishedWithRbrace || (Lexer.Peek() == Tokens.COMMA))
                     {
-                        pop_expected(Tokens.COMMA);
+                        PopExpected(Tokens.COMMA);
                     }
                 }
             }
 
-            pop_expected(Tokens.RBRACE);
+            PopExpected(Tokens.RBRACE);
 
-            finished_with_rbrace = true;
+            finishedWithRbrace = true;
 
-            return S;
+            return s;
         }
 
-        bool prefix_typedSet()
+        private Set TypedSet()
         {
-            lex.BeginPrefixScan();
-            var r = has_any(Tokens.IDENT) && has_any(Tokens.LBRACE);
-            lex.EndPrefixScan();
-            return r;
-        }
-        Set typedSet()
-#if DEBUG_RULES
-        {
-            Debug.WriteLine("Entering rule_typedSet()");
-            var ret = rule_typedSet();
-            Debug.WriteLine(string.Format("Finished rule_typedSet(), returned: {0}", ret));
-            return ret;
-        }
-        TypedSet rule_typedSet()
-#endif
-        {
-            var I = identifier();
+            var type = Identifier();
 
             if (!prefix_set())
                 throw new ParserException(this, "Internal error");
-            var S = set();
+            var s = Set();
 
-            S.Name = I;
+            s.Name = type;
 
-            return S;
+            return s;
         }
 
-        bool prefix_identifier()
+        private string Identifier()
         {
-            return has_prefix(Tokens.IDENT);
-        }
-        string identifier()
-#if DEBUG_RULES
-        {
-            Debug.WriteLine("Entering rule_identifier()");
-            var ret = rule_identifier();
-            Debug.WriteLine(string.Format("Finished rule_identifier(), returned: {0}", ret));
-            return ret;
-        }
-        string rule_identifier()
-#endif
-        {
-            if (lex.Peek() == Tokens.IDENT) return pop_expected(Tokens.IDENT).Text;
+            if (Lexer.Peek() == Tokens.IDENT) return PopExpected(Tokens.IDENT).Text;
 
             throw new ParserException(this, "Internal error");
+        }
+
+        public static Value NullValue(Token token)
+        {
+            return Structure.Element.NullValue();
+        }
+
+        public static Value BooleanValue(Token token)
+        {
+            return Structure.Element.BooleanValue(token.Name == Tokens.TRUE);
+        }
+
+        public static Value IntValue(Token token)
+        {
+            return Structure.Element.IntValue(long.Parse(token.Text, CultureInfo.InvariantCulture));
+        }
+
+        public static Value IntValue(Token token, int _base)
+        {
+            return
+                Structure.Element.IntValue(long.Parse(token.Text.Substring(2), NumberStyles.HexNumber,
+                    CultureInfo.InvariantCulture));
+        }
+
+        public static Value FloatValue(Token token)
+        {
+            return Structure.Element.FloatValue(double.Parse(token.Text, CultureInfo.InvariantCulture));
+        }
+
+        public static Value StringValue(Token token)
+        {
+            return Structure.Element.StringValue(Lexer.UnescapeString(token));
+        }
+
+        public ParsingContext GetParsingContext()
+        {
+            return Lexer.GetParsingContext();
         }
     }
 }
