@@ -1,10 +1,7 @@
 ﻿//#define DEBUG_RULES
 
 using GDDL.Structure;
-using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
-using System.IO;
 
 namespace GDDL
 {
@@ -35,19 +32,19 @@ namespace GDDL
             return ret;
         }
 
-        private SimpleToken pop_expected(Token expectedToken)
+        private Token pop_expected(Tokens expectedToken)
         {
             if (lex.Peek() != expectedToken)
                 throw new ParserException(this, string.Format("Unexpected token {0}: Expected {1}.", lex.Peek(), expectedToken));
             return lex.Pop();
         }
 
-        private bool has_any(ITokenEnum preview, params Token[] tokens)
+        private bool has_any(params Tokens[] tokens)
         {
-            preview.Next();
+            lex.NextPrefix();
             foreach (var t in tokens)
             {
-                if (preview.Current == t)
+                if (lex.Prefix == t)
                 {
                     return true;
                 }
@@ -55,11 +52,11 @@ namespace GDDL
             return false;
         }
 
-        private bool has_prefix(params Token[] tokens)
+        private bool has_prefix(params Tokens[] tokens)
         {
-            var preview = lex.BeginPrefixScan();
+            lex.BeginPrefixScan();
 
-            var r = has_any(preview, tokens);
+            var r = has_any(tokens);
 
             lex.EndPrefixScan();
             return r;
@@ -78,7 +75,7 @@ namespace GDDL
         {
             var E = element();
 
-            pop_expected(Token.END);
+            pop_expected(Tokens.END);
 
             return E;
         }
@@ -103,8 +100,8 @@ namespace GDDL
 
         bool prefix_basicElement()
         {
-            return has_prefix(Token.NIL, Token.NULL, Token.TRUE, Token.FALSE,
-                Token.HEXINT, Token.INTEGER, Token.DOUBLE, Token.STRING)
+            return has_prefix(Tokens.NIL, Tokens.NULL, Tokens.TRUE, Tokens.FALSE,
+                Tokens.HEXINT, Tokens.INTEGER, Tokens.DOUBLE, Tokens.STRING)
                 || prefix_backreference() || prefix_set() || prefix_typedSet();
         }
         Element basicElement()
@@ -118,15 +115,15 @@ namespace GDDL
         Element rule_basicElement()
 #endif
         {
-            if (lex.Peek() == Token.NIL) { pop_expected(Token.NIL); return Element.Null(); }
-            if (lex.Peek() == Token.NULL) { pop_expected(Token.NULL); return Element.Null(); }
-            if (lex.Peek() == Token.TRUE) { pop_expected(Token.TRUE); return Element.BooleanValue(true); }
-            if (lex.Peek() == Token.FALSE) { pop_expected(Token.FALSE); return Element.BooleanValue(false); }
-            if (lex.Peek() == Token.INTEGER) return Element.IntValue(pop_expected(Token.INTEGER).Text);
-            if (lex.Peek() == Token.HEXINT) return Element.IntValue(pop_expected(Token.HEXINT).Text, 16);
-            if (lex.Peek() == Token.INTEGER) return Element.IntValue(pop_expected(Token.INTEGER).Text);
-            if (lex.Peek() == Token.DOUBLE) return Element.FloatValue(pop_expected(Token.DOUBLE).Text);
-            if (lex.Peek() == Token.STRING) return Element.StringValue(pop_expected(Token.STRING).Text);
+            if (lex.Peek() == Tokens.NIL) { pop_expected(Tokens.NIL); return Element.Null(); }
+            if (lex.Peek() == Tokens.NULL) { pop_expected(Tokens.NULL); return Element.Null(); }
+            if (lex.Peek() == Tokens.TRUE) { pop_expected(Tokens.TRUE); return Element.BooleanValue(true); }
+            if (lex.Peek() == Tokens.FALSE) { pop_expected(Tokens.FALSE); return Element.BooleanValue(false); }
+            if (lex.Peek() == Tokens.INTEGER) return Element.IntValue(pop_expected(Tokens.INTEGER).Text);
+            if (lex.Peek() == Tokens.HEXINT) return Element.IntValue(pop_expected(Tokens.HEXINT).Text, 16);
+            if (lex.Peek() == Tokens.INTEGER) return Element.IntValue(pop_expected(Tokens.INTEGER).Text);
+            if (lex.Peek() == Tokens.DOUBLE) return Element.FloatValue(pop_expected(Tokens.DOUBLE).Text);
+            if (lex.Peek() == Tokens.STRING) return Element.StringValue(pop_expected(Tokens.STRING).Text);
             if (prefix_set()) return set();
             if (prefix_typedSet()) return typedSet();
             if (prefix_backreference()) return backreference();
@@ -136,8 +133,8 @@ namespace GDDL
 
         bool prefix_namedElement()
         {
-            var p = lex.BeginPrefixScan();
-            var r = has_any(p, Token.IDENT) && has_any(p, Token.EQUALS);
+            lex.BeginPrefixScan();
+            var r = has_any(Tokens.IDENT) && has_any(Tokens.EQUALS);
             lex.EndPrefixScan();
             return r;
         }
@@ -154,7 +151,7 @@ namespace GDDL
         {
             var I = identifier();
 
-            pop_expected(Token.EQUALS);
+            pop_expected(Tokens.EQUALS);
 
             if (!prefix_basicElement())
                 throw new ParserException(this, string.Format("Expected a basic element after EQUALS, found {0} instead", lex.Peek()));
@@ -168,8 +165,8 @@ namespace GDDL
 
         bool prefix_backreference()
         {
-            var preview = lex.BeginPrefixScan();
-            var r = has_any(preview, Token.COLON) && has_any(preview, Token.IDENT);
+            lex.BeginPrefixScan();
+            var r = has_any(Tokens.COLON) && has_any(Tokens.IDENT);
             lex.EndPrefixScan();
 
             return r || prefix_identifier();
@@ -187,9 +184,9 @@ namespace GDDL
         {
             bool rooted = false;
 
-            if (lex.Peek() == Token.COLON)
+            if (lex.Peek() == Tokens.COLON)
             {
-                pop_expected(Token.COLON);
+                pop_expected(Tokens.COLON);
                 rooted = true;
             }
             if (!prefix_identifier())
@@ -198,9 +195,9 @@ namespace GDDL
             var I = identifier();
             var B = Element.Backreference(rooted, I);
 
-            while (has_prefix(Token.COLON))
+            while (has_prefix(Tokens.COLON))
             {
-                pop_expected(Token.COLON);
+                pop_expected(Tokens.COLON);
 
                 var O = identifier();
 
@@ -212,7 +209,7 @@ namespace GDDL
 
         bool prefix_set()
         {
-            return has_prefix(Token.LBRACE);
+            return has_prefix(Tokens.LBRACE);
         }
         Set set()
 #if DEBUG_RULES
@@ -225,11 +222,11 @@ namespace GDDL
         Set rule_set()
 #endif
         {
-            pop_expected(Token.LBRACE);
+            pop_expected(Tokens.LBRACE);
 
             var S = Element.Set();
 
-            while (lex.Peek() != Token.RBRACE)
+            while (lex.Peek() != Tokens.RBRACE)
             {
                 finished_with_rbrace = false;
 
@@ -238,16 +235,16 @@ namespace GDDL
 
                 S.Append(element());
 
-                if (lex.Peek() != Token.RBRACE)
+                if (lex.Peek() != Tokens.RBRACE)
                 {
-                    if (!finished_with_rbrace || (lex.Peek() == Token.COMMA))
+                    if (!finished_with_rbrace || (lex.Peek() == Tokens.COMMA))
                     {
-                        pop_expected(Token.COMMA);
+                        pop_expected(Tokens.COMMA);
                     }
                 }
             }
 
-            pop_expected(Token.RBRACE);
+            pop_expected(Tokens.RBRACE);
 
             finished_with_rbrace = true;
 
@@ -256,8 +253,8 @@ namespace GDDL
 
         bool prefix_typedSet()
         {
-            var p = lex.BeginPrefixScan();
-            var r = has_any(p, Token.IDENT) && has_any(p, Token.LBRACE);
+            lex.BeginPrefixScan();
+            var r = has_any(Tokens.IDENT) && has_any(Tokens.LBRACE);
             lex.EndPrefixScan();
             return r;
         }
@@ -285,7 +282,7 @@ namespace GDDL
 
         bool prefix_identifier()
         {
-            return has_prefix(Token.IDENT);
+            return has_prefix(Tokens.IDENT);
         }
         string identifier()
 #if DEBUG_RULES
@@ -298,619 +295,9 @@ namespace GDDL
         string rule_identifier()
 #endif
         {
-            if (lex.Peek() == Token.IDENT) return pop_expected(Token.IDENT).Text;
+            if (lex.Peek() == Tokens.IDENT) return pop_expected(Tokens.IDENT).Text;
 
             throw new ParserException(this, "Internal error");
         }
     }
-
-    public class ParseContext
-    {
-        public string Filename;
-        public int Line;
-        public int Column;
-
-        public ParseContext(string f, int l, int c)
-        {
-            Filename = f;
-            Line = l;
-            Column = c;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0}({1},{2})", Filename, Line, Column);
-        }
-    }
-
-    enum Token
-    {
-        NIL,
-        NULL,
-        TRUE,
-        FALSE,
-        COMMA,
-        HEXINT,
-        INTEGER,
-        DOUBLE,
-        STRING,
-        EQUALS,
-        COLON,
-        LBRACE,
-        RBRACE,
-        IDENT,
-        END,
-        CHAR,
-    }
-
-    interface ITokenEnum
-    {
-        int CurrentPos { get; }
-        Token Current { get; }
-        void Next();
-
-        void PushRef();
-        void PopRef();
-    }
-
-    internal class SimpleToken
-    {
-        public Token Name { get; private set; }
-        public string Text { get; private set; }
-        public ParseContext Context { get; private set; }
-
-        public SimpleToken(Token name, ParseContext context, string text)
-        {
-            Name = name;
-            Text = text;
-            Context = context;
-        }
-
-        public override string ToString()
-        {
-            if (string.IsNullOrEmpty(Text))
-                return string.Format("({0} @ {1}{2})", Name, Context.Line, Context.Column);
-
-            if (Text.Length > 22)
-                return string.Format("({0} @ {1}{2}: {3}...)", Name, Context.Line, Context.Column, Text.Substring(20));
-
-            return string.Format("({0} @ {1}{2}: {3})", Name, Context.Line, Context.Column, Text);
-        }
-    }
-
-    class Reader
-    {
-        bool endQueued = false;
-        readonly Deque<int> unreadBuffer = new Deque<int>();
-
-        TextReader dataSource;
-        string sourceName;
-        int line = 1;
-        int column = 1;
-
-        int lastEol;
-
-        public Reader(string source)
-        {
-            sourceName = source;
-            dataSource = new StreamReader(source);
-        }
-
-        void Require(int number)
-        {
-            int needed = number - unreadBuffer.Count;
-            if (needed > 0)
-            {
-                NeedChars(needed);
-            }
-        }
-
-        private void NeedChars(int needed)
-        {
-            while (needed-- > 0)
-            {
-                if (endQueued)
-                {
-                    throw new ReaderException(this, "Tried to read beyond the end of the file.");
-                }
-
-                int ch = dataSource.Read();
-                unreadBuffer.AddBack(ch);
-                if (ch < 0)
-                    endQueued = true;
-            }
-        }
-
-        public int Peek()
-        {
-            return Peek(0);
-        }
-
-        public int Peek(int index)
-        {
-            Require(index + 1);
-
-            return unreadBuffer[index];
-        }
-
-        public int Pop()
-        {
-            int ch = unreadBuffer.RemoveFront();
-
-            column++;
-            if (ch == '\n')
-            {
-                if (lastEol != '\r')
-                {
-                    column = 1;
-                    line++;
-                }
-                lastEol = ch;
-            }
-            else if (ch == '\r')
-            {
-                lastEol = ch;
-            }
-            else if (lastEol > 0)
-            {
-                lastEol = 0;
-                column = 1;
-                line++;
-            }
-
-            return ch;
-        }
-
-        public string Read(int count)
-        {
-            Require(count);
-            StringBuilder b = new StringBuilder();
-            while (count-- > 0)
-            {
-                var ch = Pop();
-                if (ch < 0)
-                    throw new ReaderException(this, "Tried to read beyond the end of the file.");
-                b.Append((char)ch);
-            }
-            return b.ToString();
-        }
-
-        public void Drop(int count)
-        {
-            Require(count);
-            while (count-- > 0)
-                Pop();
-        }
-
-        public override string ToString()
-        {
-            StringBuilder b = new StringBuilder();
-            foreach (var ch in unreadBuffer)
-            {
-                b.Append((char)ch);
-            }
-            return string.Format("{{Reader ahead={0}}}", b.ToString());
-        }
-
-        internal ParseContext GetFileContext()
-        {
-            return new ParseContext(sourceName, line, column);
-        }
-    }
-
-    class Lexer
-    {
-        readonly Deque<SimpleToken> lookAhead = new Deque<SimpleToken>();
-
-        bool seenEnd = false;
-
-        readonly PrefixScanner preview;
-        Reader reader;
-        public Lexer(Reader r)
-        {
-            reader = r;
-            preview = new PrefixScanner(this);
-        }
-
-        class PrefixScanner : ITokenEnum
-        {
-            Lexer parent;
-            int currentPos = 0;
-            SimpleToken current;
-
-            Stack<int> posStack = new Stack<int>();
-
-            public int CurrentPos { get { return currentPos; } }
-            public Token Current { get { return current.Name; } }
-
-            internal PrefixScanner(Lexer l)
-            {
-                parent = l;
-            }
-
-            public void Next()
-            {
-                parent.Require(currentPos + 1);
-
-                current = parent.lookAhead[currentPos++];
-            }
-
-            public void PushRef()
-            {
-                posStack.Push(currentPos);
-            }
-
-            public void PopRef()
-            {
-                currentPos = posStack.Pop();
-                if (currentPos > 0)
-                {
-                    current = parent.lookAhead[currentPos - 1];
-                }
-                else
-                {
-                    current = null;
-                }
-            }
-
-            public override string ToString()
-            {
-                return string.Format("[{0}]", current);
-            }
-        }
-
-        private void Require(int count)
-        {
-            int needed = count - lookAhead.Count;
-            if (needed > 0)
-            {
-                ReadAhead(needed);
-            }
-        }
-
-        public ITokenEnum BeginPrefixScan()
-        {
-            preview.PushRef();
-            return preview;
-        }
-
-        public void EndPrefixScan()
-        {
-            preview.PopRef();
-        }
-
-        public Token Peek()
-        {
-            Require(1);
-
-            return lookAhead[0].Name;
-        }
-
-        public SimpleToken Pop()
-        {
-            Require(2);
-
-            var t = lookAhead.RemoveFront();
-
-            return t;
-        }
-
-        private void ReadAhead(int needed)
-        {
-            while (needed-- > 0)
-            {
-                var t = ParseOne();
-
-                lookAhead.AddBack(t);
-            }
-        }
-
-        private SimpleToken ParseOne()
-        {
-            if (seenEnd)
-                return new SimpleToken(Token.END, reader.GetFileContext(), "");
-
-            int ich = reader.Peek();
-            while (true)
-            {
-                if (ich < 0) return new SimpleToken(Token.END, reader.GetFileContext(), "");
-
-                switch (ich)
-                {
-                    case ' ':
-                    case '\t':
-                    case '\r':
-                    case '\n':
-                        reader.Drop(1);
-
-                        ich = reader.Peek();
-                        break;
-                    case '#':
-                        // comment, skip until \r or \n
-                        // COMMENT : '#' ( options {greedy=false;} : . )* ('\n' | '\r') {$channel=Hidden;}
-                        do
-                        {
-                            reader.Drop(1);
-
-                            ich = reader.Peek();
-                        }
-                        while (ich > 0 && ich != '\n' && ich != '\r');
-                        break;
-                    default:
-                        goto blah;
-                }
-            }
-
-            blah:
-            switch (ich)
-            {
-                case '{': return new SimpleToken(Token.LBRACE, reader.GetFileContext(), reader.Read(1));
-                case '}': return new SimpleToken(Token.RBRACE, reader.GetFileContext(), reader.Read(1));
-                case ',': return new SimpleToken(Token.COMMA, reader.GetFileContext(), reader.Read(1));
-                case ':': return new SimpleToken(Token.COLON, reader.GetFileContext(), reader.Read(1));
-                case '=': return new SimpleToken(Token.EQUALS, reader.GetFileContext(), reader.Read(1));
-            }
-
-            if (char.IsLetter((char)ich) || ich == '_')
-            {
-                // IDENT : ('a'..'z'|'A'..'Z'|'_'|'-') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
-                int number = 1;
-                while (true)
-                {
-                    ich = reader.Peek(number);
-                    if (ich < 0)
-                        break;
-
-                    if (char.IsLetter((char)ich) || char.IsLetterOrDigit((char)ich) || ich == '_')
-                    {
-                        number++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                var id = new SimpleToken(Token.IDENT, reader.GetFileContext(), reader.Read(number));
-
-                if (string.Compare(id.Text, "nil", true) == 0) return new SimpleToken(Token.NIL, id.Context, id.Text);
-                if (string.Compare(id.Text, "null", true) == 0) return new SimpleToken(Token.NULL, id.Context, id.Text);
-                if (string.Compare(id.Text, "true", true) == 0) return new SimpleToken(Token.TRUE, id.Context, id.Text);
-                if (string.Compare(id.Text, "false", true) == 0) return new SimpleToken(Token.FALSE, id.Context, id.Text);
-
-                return id;
-            }
-
-            if (ich == '\'')
-            {
-                //CHAR : '\'' ( ESC_SEQ | ~('\''|'\\') ) '\''
-                int number = 1;
-
-                ich = reader.Peek(number);
-
-                if (reader.Peek(number) == '\\')
-                {
-                    number = count_escape_seq(number);
-                }
-                else
-                {
-                    if (ich == '\r')
-                    {
-                        throw new LexerException(this, string.Format("Expected '\\r', found {0}", (char)ich));
-                    }
-                    number++;
-                }
-
-                ich = reader.Peek(number);
-                if (ich != '\'')
-                {
-                    throw new LexerException(this, string.Format("Expected '\\'', found {0}", (char)ich));
-                }
-
-                number++;
-
-                return new SimpleToken(Token.CHAR, reader.GetFileContext(), reader.Read(number));
-            }
-
-            if (ich == '"')
-            {
-                //STRING : '"' ( ESC_SEQ | ~('\\'|'"') )* '"'
-                int number = 1;
-
-                ich = reader.Peek(number);
-                while (ich != '"')
-                {
-                    if (reader.Peek(number) == '\\')
-                    {
-                        number = count_escape_seq(number);
-                    }
-                    else
-                    {
-                        if (ich == '\r')
-                        {
-                            throw new LexerException(this, string.Format("Expected '\\r', found {0}", (char)ich));
-                        }
-                        number++;
-                    }
-
-                    ich = reader.Peek(number);
-                }
-
-                if (ich != '"')
-                {
-                    throw new LexerException(this, string.Format("Expected '\"', found {0}", (char)ich));
-                }
-
-                number++;
-
-                return new SimpleToken(Token.STRING, reader.GetFileContext(), reader.Read(number));
-            }
-
-            if (char.IsDigit((char)ich) || ich == '.')
-            {
-                // numbers
-                int number = 0;
-                bool fractional = false;
-
-                if (char.IsDigit((char)ich))
-                {
-                    if (reader.Peek(0) == '0' && reader.Peek(1) == 'x')
-                    {
-                        //HEXINT : '0x' HEX_DIGIT+ 
-                        //fragment
-                        //HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
-                        //
-
-                        number = 2;
-
-                        ich = reader.Peek(number);
-                        while (char.IsNumber((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
-                        {
-                            number++;
-
-                            ich = reader.Peek(number);
-                        }
-
-                        return new SimpleToken(Token.HEXINT, reader.GetFileContext(), reader.Read(number));
-                    }
-
-                    //INTEGER : '0'..'9'+
-
-                    number = 1;
-                    ich = reader.Peek(number);
-                    while (char.IsNumber((char)ich))
-                    {
-                        number++;
-
-                        ich = reader.Peek(number);
-                    }
-                }
-
-                if (ich == '.')
-                {
-                    fractional = true;
-                    // fragment
-                    // DECIMAL : '.' ('0'..'9')+
-
-                    // skip the '.'
-                    number++;
-
-                    ich = reader.Peek(number);
-                    if (!char.IsDigit((char)ich))
-                        throw new LexerException(this, string.Format("Expected DIGIT, found {0}", (char)ich));
-
-                    while (char.IsNumber((char)ich))
-                    {
-                        number++;
-
-                        ich = reader.Peek(number);
-                    }
-                }
-
-                if (ich == 'e' || ich == 'E')
-                {
-                    fractional = true;
-                    //fragment
-                    //EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
-
-                    // letter
-                    number++;
-
-                    ich = reader.Peek(number);
-                    if (ich == '+' || ich == '-')
-                    {
-                        number++;
-
-                        ich = reader.Peek(number);
-                    }
-
-                    if (!char.IsDigit((char)ich))
-                        throw new LexerException(this, string.Format("Expected DIGIT, found {0}", (char)ich));
-
-                    while (char.IsNumber((char)ich))
-                    {
-                        number++;
-
-                        ich = reader.Peek(number);
-                    }
-                }
-
-                if (fractional)
-                    return new SimpleToken(Token.DOUBLE, reader.GetFileContext(), reader.Read(number));
-
-                return new SimpleToken(Token.INTEGER, reader.GetFileContext(), reader.Read(number));
-            }
-
-            throw new LexerException(this, string.Format("Unexpected character: {0}", reader.Peek()));
-        }
-
-        private int count_escape_seq(int number)
-        {
-            int ich = reader.Peek(number);
-            if (ich != '\\')
-                throw new LexerException(this, "Internal Error");
-
-            number++;
-
-            //fragment
-            //ESC_SEQ : '\\' ('b'|'t'|'n'|'f'|'r'|'\"'|'\''|'\\')
-
-            ich = reader.Peek(number);
-            switch (ich)
-            {
-                case 'b':
-                case 'f':
-                case 'n':
-                case 'r':
-                case 't':
-                case '"':
-                case '\'':
-                case '\\':
-                    return ++number;
-            }
-
-            //fragment
-            //UNICODE_ESC :'\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
-
-            if (ich == 'x' || ich == 'u')
-            {
-                number++;
-
-                if (char.IsNumber((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
-                {
-                    number++;
-
-                    if (char.IsNumber((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
-                    {
-                        number++;
-
-                        if (char.IsNumber((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
-                        {
-                            number++;
-
-                            if (char.IsNumber((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
-                            {
-                                number++;
-                            }
-                        }
-                    }
-                }
-                return number;
-            }
-
-            throw new LexerException(this, string.Format("Unknown escape sequence \\{0}", ich));
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{{Lexer ahead={0}, reader={1}}}", string.Join(", ", lookAhead), reader);
-        }
-
-        public ParseContext GetFileContext()
-        {
-            Require(1);
-            return lookAhead[0].Context;
-        }
-    }
-
 }

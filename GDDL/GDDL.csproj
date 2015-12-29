@@ -48,9 +48,12 @@
   <ItemGroup>
     <Compile Include="Deque\Deque.cs" />
     <Compile Include="Deque\Utility.cs" />
+    <Compile Include="Lexer.cs" />
     <Compile Include="LexerException.cs" />
+    <Compile Include="ParseContext.cs" />
     <Compile Include="ParserException.cs" />
     <Compile Include="Parser.cs" />
+    <Compile Include="Reader.cs" />
     <Compile Include="ReaderException.cs" />
     <Compile Include="Structure\Backreference.cs" />
     <Compile Include="Structure\Element.cs" />
@@ -58,6 +61,7 @@
     <Compile Include="Structure\Set.cs" />
     <Compile Include="StringGenerationContext.cs" />
     <Compile Include="Structure\Value.cs" />
+    <Compile Include="Token.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

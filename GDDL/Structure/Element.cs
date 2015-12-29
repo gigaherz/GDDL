@@ -69,8 +69,6 @@ namespace GDDL.Structure
             return ToStringInternal(ctx);
         }
 
-
-
         // Factory methods
         public static Set Set(params Element[] initial)
         {
@@ -124,7 +122,7 @@ namespace GDDL.Structure
 
         public static Value StringValue(string text)
         {
-            if (text[0] == '"')
+            if (text[0] == '"' || text[0] == '\'')
                 return new Value(Value.UnescapeString(text));
 
             return new Value(text);

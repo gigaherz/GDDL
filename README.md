@@ -14,6 +14,8 @@ RootSetName = typeNameHere {
 
     # Basic elements
 
+    null, nil,
+    false, true,
     12345,
     0x12345,
     123.45,
@@ -22,7 +24,8 @@ RootSetName = typeNameHere {
     .23e45,
     12.34e-5,
     "This is a string literal",
-    "Testing \t\b\r\n escape\x20codes\x1234",
+    "Testing \t\f\b\r\n escape\x20codes\x1234",
+    'Strings can also be single-quoted.',
 
     { 1,2,3,4,5 } # the comma is optional after a closing brace
 
@@ -40,8 +43,7 @@ RootSetName = typeNameHere {
     
     replace_this_with = RootSetName:namedNumber,
 
-    # The comma in the previous element is optional but allowed.
-  }
+    # The comma in the last element is optional but allowed.
 }
 ```
 
@@ -58,7 +60,8 @@ Literals:
 * Decimal: ```[0-9]*.[0-9]+```
 * Scientific(1): ```[0-9]*.[0-9]+e[+-]?[0-9]+```
 * Scientific(2): ```[0-9]+e[+-]?[0-9]+```
-* String: ```\"([^"\\]|(\\[tbrn])|(\\x[0-9a-fA-F]{1,4}))*\"```
+* String(1): ```\"([^"\\]|(\\[tbrn])|(\\x[0-9a-fA-F]{1,4}))*\"```
+* String(2): ```\'([^'\\]|(\\[tbrn])|(\\x[0-9a-fA-F]{1,4}))*\'```
 
 Pseudo-BNF rules:
 

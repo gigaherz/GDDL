@@ -52,7 +52,7 @@ namespace GDDL.Structure
         {
             var sb = new StringBuilder();
 
-            bool q = false;
+            char q = (char)0;
             bool b = false;
             bool u = false;
 
@@ -61,7 +61,7 @@ namespace GDDL.Structure
 
             foreach (var c in p)
             {
-                if (q)
+                if (q != 0)
                 {
                     if (u)
                     {
@@ -97,8 +97,14 @@ namespace GDDL.Structure
                             case '"':
                                 sb.Append('"');
                                 break;
+                            case '\'':
+                                sb.Append('\'');
+                                break;
                             case '\\':
                                 sb.Append('\\');
+                                break;
+                            case '0':
+                                sb.Append('\0');
                                 break;
                             case 'b':
                                 sb.Append('\b');
@@ -126,12 +132,10 @@ namespace GDDL.Structure
                     }
                     else
                     {
+                        if(c == q)
+                            return sb.ToString();
                         switch (c)
                         {
-                            case '"':
-                                //q = false;
-                                //break;
-                                return sb.ToString();
                             case '\\':
                                 b = true;
                                 break;
@@ -146,7 +150,10 @@ namespace GDDL.Structure
                     switch (c)
                     {
                         case '"':
-                            q = true;
+                            q = '"';
+                            break;
+                        case '\'':
+                            q = '\'';
                             break;
                         default:
                             sb.Append(c);
@@ -209,7 +216,7 @@ namespace GDDL.Structure
         {
             if (Data == null)
             {
-                return "nil";
+                return "null";
             }
             if (Data is bool)
             {
@@ -229,6 +236,8 @@ namespace GDDL.Structure
 
         public static explicit operator long(Value v)
         {
+            if (v.Data is bool)
+                return v.Boolean ? 1 : 0;
             if (v.Data is double)
                 return (long)v.Float;
             if (v.Data is long)
@@ -238,6 +247,8 @@ namespace GDDL.Structure
 
         public static explicit operator double(Value v)
         {
+            if (v.Data is bool)
+                return v.Boolean ? 1 : 0;
             if (v.Data is double)
                 return v.Float;
             if (v.Data is long)
@@ -247,6 +258,8 @@ namespace GDDL.Structure
 
         public static explicit operator int(Value v)
         {
+            if (v.Data is bool)
+                return v.Boolean ? 1 : 0;
             if (v.Data is double)
                 return (int)v.Float;
             if (v.Data is long)
@@ -256,6 +269,8 @@ namespace GDDL.Structure
 
         public static explicit operator float(Value v)
         {
+            if (v.Data is bool)
+                return v.Boolean ? 1 : 0;
             if (v.Data is double)
                 return (float)v.Float;
             if (v.Data is long)
@@ -263,8 +278,23 @@ namespace GDDL.Structure
             throw new InvalidCastException();
         }
 
+        public static explicit operator bool(Value v)
+        {
+            if (v.Data is bool)
+                return v.Boolean;
+            if (v.Data is double)
+                return v.Float != 0;
+            if (v.Data is long)
+                return v.Integer != 0;
+            throw new InvalidCastException();
+        }
+
         public static explicit operator string(Value v)
         {
+            if (v.Data is string)
+            {
+                return v.String;
+            }
             return v.ToStringInternal();
         }
     }

@@ -1,0 +1,16 @@
+#import GDDL-Schema
+
+Scene = schema {
+
+    Root = typed_set {
+        set_type = "scene",
+        
+        children = list {
+            { Scene:Transform, min=1, max=1 }
+        }
+    }
+    
+    Transform = element {
+    
+    }
+}
