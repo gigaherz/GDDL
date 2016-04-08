@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using GDDL.Config;
 
 namespace GDDL.Structure
@@ -16,7 +16,7 @@ namespace GDDL.Structure
             return new Set(initial);
         }
 
-        public static Set Set(Collection<Element> initial)
+        public static Set Set(IEnumerable<Element> initial)
         {
             return new Set(initial);
         }
@@ -67,6 +67,10 @@ namespace GDDL.Structure
             return (Set)this;
         }
 
+        // Set LINQ helpers
+        public IList<Element> AsList() { return (Set)this; }
+        public IDictionary<string, Element> AsDictionary() { return (Set)this; }
+
         public bool IsValue()
         {
             return this is Value;
@@ -111,6 +115,12 @@ namespace GDDL.Structure
         {
             if (HasName())
                 other.Name = Name;
+        }
+
+        public static Element NamedElement(string name, Element element)
+        {
+            element.Name = name;
+            return element;
         }
     }
 }

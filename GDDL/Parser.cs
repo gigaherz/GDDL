@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -6,7 +7,7 @@ using GDDL.Structure;
 
 namespace GDDL
 {
-    public class Parser : IContextProvider
+    public class Parser : IContextProvider, IDisposable
     {
         int prefixPos = -1;
         readonly Stack<int> prefixStack = new Stack<int>();
@@ -252,7 +253,7 @@ namespace GDDL
                 throw new ParserException(this, "Internal error");
             var s = Set();
 
-            s.Name = type;
+            s.TypeName = type;
 
             return s;
         }
@@ -299,6 +300,11 @@ namespace GDDL
         public ParsingContext GetParsingContext()
         {
             return Lexer.GetParsingContext();
+        }
+
+        public void Dispose()
+        {
+            Lexer.Dispose();
         }
     }
 }

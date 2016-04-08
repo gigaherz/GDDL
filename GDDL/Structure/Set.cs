@@ -7,7 +7,7 @@ using GDDL.Config;
 
 namespace GDDL.Structure
 {
-    public class Set : Element, IList<Element>, IDictionary<String, Element>
+    public class Set : Element, IList<Element>, IDictionary<string, Element>
     {
         private readonly List<Element> contents = new List<Element>();
         private readonly Dictionary<string, Element> names = new Dictionary<string, Element>();
@@ -52,10 +52,14 @@ namespace GDDL.Structure
                     names.Add(value.Name, value);
             }
         }
-
-
+        
         public Set()
         {
+        }
+
+        public Set(string typeName)
+        {
+            TypeName = typeName;
         }
 
         public Set(IEnumerable<Element> init)

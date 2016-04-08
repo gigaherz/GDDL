@@ -5,7 +5,7 @@ using GDDL.Util;
 
 namespace GDDL
 {
-    public class Lexer : IContextProvider
+    public class Lexer : IContextProvider, IDisposable
     {
         readonly QueueList<Token> lookAhead = new QueueList<Token>();
 
@@ -327,6 +327,11 @@ namespace GDDL
         public override string ToString()
         {
             return $"{{Lexer ahead={string.Join(", ", lookAhead)}, reader={reader}}}";
+        }
+
+        public void Dispose()
+        {
+            reader.Dispose();
         }
 
         public static bool IsValidIdentifier(string ident)

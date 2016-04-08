@@ -34,6 +34,32 @@ namespace GDDL.Structure
             }
         }
 
+        public long Integer
+        {
+            get
+            {
+                return (long)Data;
+            }
+
+            set
+            {
+                Data = value;
+            }
+        }
+
+        public double Double
+        {
+            get
+            {
+                return (double)Data;
+            }
+
+            set
+            {
+                Data = value;
+            }
+        }
+
         internal Value()
         {
             Data = null;

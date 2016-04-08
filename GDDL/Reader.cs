@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text;
 using GDDL.Exceptions;
@@ -5,7 +6,7 @@ using GDDL.Util;
 
 namespace GDDL
 {
-    public class Reader : IContextProvider
+    public class Reader : IContextProvider, IDisposable
     {
         private readonly QueueList<int> unreadBuffer = new QueueList<int>();
 
@@ -117,6 +118,11 @@ namespace GDDL
                 b.Append((char)ch);
             }
             return $"{{Reader ahead={b}}}";
+        }
+
+        public void Dispose()
+        {
+            dataSource.Dispose();
         }
 
         public ParsingContext GetParsingContext()
