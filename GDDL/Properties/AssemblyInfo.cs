@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("GDDL")]
 [assembly: AssemblyDescription("General-purpose Data Description Language")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("gigaherz")]
 [assembly: AssemblyProduct("GDDL")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCopyright("Copyright © 2016 David Quintana")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

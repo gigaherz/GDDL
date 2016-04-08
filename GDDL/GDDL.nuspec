@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://raw.githubusercontent.com/gigaherz/GDDL/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/gigaherz/GDDL</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>First release.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>data description language configuration</tags>
+  </metadata>
+</package>
