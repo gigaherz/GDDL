@@ -6,6 +6,13 @@ GDDL is a library for accessing data files described in the GDDL syntax.
 The source code is licensed under the 3-clause BSD license.
 See [LICENSE.txt](/LICENSE.txt) for details.
 
+How to Use
+--------------------
+
+In Visual Studio, find GDDL on the NuGet Package Manager for the project you want to use GDDL in, and add it.
+
+Use the `Parser.FromFile` function to initialize a parser, and then call `Parse` on the parser object to obtain the high-level representation of the data.
+
 A complete example
 --------------------
 
