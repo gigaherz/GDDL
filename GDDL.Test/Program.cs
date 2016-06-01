@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using GDDL.Config;
 
 namespace GDDL.Test
@@ -12,6 +11,8 @@ namespace GDDL.Test
             var parsedData = p.Parse();
             var text = parsedData.ToString(new StringGenerationContext(StringGenerationOptions.Nice));
             //File.WriteAllText("Output.txt", text);
+
+            Console.OutputEncoding = System.Text.Encoding.Unicode;
             Console.Write(text);
         }
     }

@@ -15,14 +15,60 @@ RootSetName = typeNameHere {
     "Testing \t\f\b\r\n escape\x20codes\u1234",
     'Strings can also be single-quoted.',
 
-    { 1,2,3,4,5 } # the comma is optional after a closing brace
+    # Sets
+    {},
+    { null },
+    { false },
+    { 12345 },
+    { 0x12345 },
+    { 123.45 },
+    { 123e+45 },
+    { .23 },
+    { .23e45 },
+    { 12.34e-5 },
+    { "This is a string literal" },
+    { "Testing \t\f\b\r\n escape\x20codes\u1234" },
+    { 'Strings can also be single-quoted.' },
+
+    # The comma is optional after a closing brace
+    { 1,2,3,4,5 }
+
+    # Special cases
+    {},
+    {{}},
+    {{}, {}},
+    {{} {}},
+
+    # Typed Sets
+    typeName { null },
+    typeName { false },
+    typeName { 12345 },
+    typeName { 0x12345 },
+    typeName { 123.45 },
+    typeName { 123e+45 },
+    typeName { .23 },
+    typeName { .23e45 },
+    typeName { 12.34e-5 },
+    typeName { "This is a string literal" },
+    typeName { "Testing \t\f\b\r\n escape\x20codes\u1234" },
+    typeName { 'Strings can also be single-quoted.' },
+
+    typeName { }
+    typeName { {} }
+    { typeName { } }
 
     # Named elements
-
-    namedNumber = 12345,
-    namedString = "12345",
-
-    # Named sets
+    nullValue = null,
+    booleanValue = false,
+    integer = 12345,
+    hex = 0x12345,
+    decimal = 123.45,
+    scientificNoDecimal = 123e+45,
+    decimalNoIntegral = .23,
+    scientificNoIntegral = .23e45,
+    scientific = 12.34e-5,
+    stringLiteral = "This is a string literal",
+    singleQuoted = 'Strings can also be single-quoted.',
 
     "named set" = { "a", { 1 }, 0x345 },
     namedTypedSet = set_with_a_type { "\u0001" }
