@@ -10,54 +10,26 @@ namespace GDDL.Structure
 
         public string String
         {
-            get
-            {
-                return (string)Data;
-            }
-
-            set
-            {
-                Data = value;
-            }
+            get => (string)Data;
+            set => Data = value;
         }
 
         public bool Boolean
         {
-            get
-            {
-                return (bool)Data;
-            }
-
-            set
-            {
-                Data = value;
-            }
+            get => (bool)Data;
+            set => Data = value;
         }
 
         public long Integer
         {
-            get
-            {
-                return (long)Data;
-            }
-
-            set
-            {
-                Data = value;
-            }
+            get => (long)Data;
+            set => Data = value;
         }
 
         public double Double
         {
-            get
-            {
-                return (double)Data;
-            }
-
-            set
-            {
-                Data = value;
-            }
+            get => (double)Data;
+            set => Data = value;
         }
 
         internal Value()

@@ -59,12 +59,12 @@ namespace GDDL
         private Token ParseOne()
         {
             if (seenEnd)
-                return new Token(Tokens.END, reader, "");
+                return new Token(Tokens.End, reader, "");
 
             int ich = reader.Peek();
             while (true)
             {
-                if (ich < 0) return new Token(Tokens.END, reader, "");
+                if (ich < 0) return new Token(Tokens.End, reader, "");
 
                 switch (ich)
                 {
@@ -94,11 +94,11 @@ namespace GDDL
             blah:
             switch (ich)
             {
-                case '{': return new Token(Tokens.LBRACE, reader, reader.Read(1));
-                case '}': return new Token(Tokens.RBRACE, reader, reader.Read(1));
-                case ',': return new Token(Tokens.COMMA, reader, reader.Read(1));
-                case ':': return new Token(Tokens.COLON, reader, reader.Read(1));
-                case '=': return new Token(Tokens.EQUALS, reader, reader.Read(1));
+                case '{': return new Token(Tokens.LBrace, reader, reader.Read(1));
+                case '}': return new Token(Tokens.RBrace, reader, reader.Read(1));
+                case ',': return new Token(Tokens.Comma, reader, reader.Read(1));
+                case ':': return new Token(Tokens.Colon, reader, reader.Read(1));
+                case '=': return new Token(Tokens.EqualSign, reader, reader.Read(1));
             }
 
             if (char.IsLetter((char)ich) || ich == '_')
@@ -120,12 +120,12 @@ namespace GDDL
                     }
                 }
 
-                var id = new Token(Tokens.IDENT, reader, reader.Read(number));
+                var id = new Token(Tokens.Ident, reader, reader.Read(number));
 
-                if (string.Compare(id.Text, "nil", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.NIL, id, id.Text);
-                if (string.Compare(id.Text, "null", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.NULL, id, id.Text);
-                if (string.Compare(id.Text, "true", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.TRUE, id, id.Text);
-                if (string.Compare(id.Text, "false", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.FALSE, id, id.Text);
+                if (string.Compare(id.Text, "nil", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.Nil, id, id.Text);
+                if (string.Compare(id.Text, "null", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.Null, id, id.Text);
+                if (string.Compare(id.Text, "true", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.True, id, id.Text);
+                if (string.Compare(id.Text, "false", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.False, id, id.Text);
 
                 return id;
             }
@@ -161,7 +161,7 @@ namespace GDDL
 
                 number++;
 
-                return new Token(Tokens.STRING, reader, reader.Read(number));
+                return new Token(Tokens.String, reader, reader.Read(number));
             }
 
             if (char.IsDigit((char)ich) || ich == '.')
@@ -184,7 +184,7 @@ namespace GDDL
                             ich = reader.Peek(number);
                         }
 
-                        return new Token(Tokens.HEXINT, reader, reader.Read(number));
+                        return new Token(Tokens.HexInt, reader, reader.Read(number));
                     }
 
                     number = 1;
@@ -206,7 +206,7 @@ namespace GDDL
 
                     ich = reader.Peek(number);
                     if (!char.IsDigit((char)ich))
-                        throw new LexerException(this, $"Expected DIGIT, found {(char) ich}");
+                        throw new LexerException(this, $"Expected DIGIT, found {(char)ich}");
 
                     while (char.IsDigit((char)ich))
                     {
@@ -232,7 +232,7 @@ namespace GDDL
                     }
 
                     if (!char.IsDigit((char)ich))
-                        throw new LexerException(this, $"Expected DIGIT, found {(char) ich}");
+                        throw new LexerException(this, $"Expected DIGIT, found {(char)ich}");
 
                     while (char.IsDigit((char)ich))
                     {
@@ -243,9 +243,9 @@ namespace GDDL
                 }
 
                 if (fractional)
-                    return new Token(Tokens.DOUBLE, reader, reader.Read(number));
+                    return new Token(Tokens.Double, reader, reader.Read(number));
 
-                return new Token(Tokens.INTEGER, reader, reader.Read(number));
+                return new Token(Tokens.Integer, reader, reader.Read(number));
             }
 
             throw new LexerException(this, $"Unexpected character: {reader.Peek()}");
@@ -264,7 +264,7 @@ namespace GDDL
                 case 10: return "'\\n'";
                 case 13: return "'\\r'";
                 default:
-                    return char.IsControl((char)ich) ? $"'\\u{ich:X4}'" : $"'{(char) ich}'";
+                    return char.IsControl((char)ich) ? $"'\\u{ich:X4}'" : $"'{(char)ich}'";
             }
         }
 
@@ -522,7 +522,7 @@ namespace GDDL
                         sb.Append('\\');
                         break;
                     default:
-                        sb.Append(c > 0xFF ? $"u{(int) c:X4}" : $"u{(int) c:X2}");
+                        sb.Append(c > 0xFF ? $"u{(int)c:X4}" : $"u{(int)c:X2}");
                         break;
                 }
             }

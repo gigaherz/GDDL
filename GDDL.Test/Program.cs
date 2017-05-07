@@ -14,6 +14,7 @@ namespace GDDL.Test
 
             Console.OutputEncoding = System.Text.Encoding.Unicode;
             Console.Write(text);
+            Console.Out.Flush();
         }
     }
 }

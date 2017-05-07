@@ -3,9 +3,9 @@ namespace GDDL
 {
     public class Token : IContextProvider
     {
-        public Tokens Name;
-        public string Text;
-        public ParsingContext Context;
+        public readonly Tokens Name;
+        public readonly string Text;
+        public readonly ParsingContext Context;
 
         public Token(Tokens name, IContextProvider context, string text)
         {

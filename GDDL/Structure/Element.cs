@@ -48,7 +48,7 @@ namespace GDDL.Structure
 
         public static Value StringValue(string s)
         {
-            return new Value(s);
+            return new Value(s ?? "");
         }
 
         // Actual instance methods
@@ -117,10 +117,10 @@ namespace GDDL.Structure
                 other.Name = Name;
         }
 
-        public static Element NamedElement(string name, Element element)
+        public Element WithName(string name)
         {
-            element.Name = name;
-            return element;
+            this.Name = name;
+            return this;
         }
     }
 }

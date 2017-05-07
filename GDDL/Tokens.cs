@@ -3,21 +3,20 @@ namespace GDDL
 {
     public enum Tokens
     {
-        NIL,
-        NULL,
-        TRUE,
-        FALSE,
-        COMMA,
-        HEXINT,
-        INTEGER,
-        DOUBLE,
-        STRING,
-        EQUALS,
-        COLON,
-        LBRACE,
-        RBRACE,
-        IDENT,
-        END,
-        CHAR,
+        Nil,
+        Null,
+        True,
+        False,
+        Comma,
+        HexInt,
+        Integer,
+        Double,
+        String,
+        EqualSign,
+        Colon,
+        LBrace,
+        RBrace,
+        Ident,
+        End
     }
 }

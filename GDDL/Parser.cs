@@ -88,8 +88,8 @@ namespace GDDL
         private bool prefix_basicElement()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.NIL, Tokens.NULL, Tokens.TRUE, Tokens.FALSE,
-                Tokens.HEXINT, Tokens.INTEGER, Tokens.DOUBLE, Tokens.STRING);
+            var r = HasAny(Tokens.Nil, Tokens.Null, Tokens.True, Tokens.False,
+                Tokens.HexInt, Tokens.Integer, Tokens.Double, Tokens.String);
             EndPrefixScan();
 
             return r || prefix_backreference() || prefix_set() || prefix_typedSet();
@@ -98,7 +98,7 @@ namespace GDDL
         private bool prefix_namedElement()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.IDENT, Tokens.STRING) && HasAny(Tokens.EQUALS);
+            var r = HasAny(Tokens.Ident, Tokens.String) && HasAny(Tokens.EqualSign);
             EndPrefixScan();
             return r;
         }
@@ -106,7 +106,7 @@ namespace GDDL
         private bool prefix_backreference()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.COLON) && HasAny(Tokens.IDENT);
+            var r = HasAny(Tokens.Colon) && HasAny(Tokens.Ident);
             EndPrefixScan();
 
             return r || prefix_identifier();
@@ -115,7 +115,7 @@ namespace GDDL
         private bool prefix_set()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.LBRACE);
+            var r = HasAny(Tokens.LBrace);
             EndPrefixScan();
             return r;
         }
@@ -123,7 +123,7 @@ namespace GDDL
         private bool prefix_typedSet()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.IDENT) && HasAny(Tokens.LBRACE);
+            var r = HasAny(Tokens.Ident) && HasAny(Tokens.LBrace);
             EndPrefixScan();
             return r;
         }
@@ -131,7 +131,7 @@ namespace GDDL
         private bool prefix_identifier()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.IDENT);
+            var r = HasAny(Tokens.Ident);
             EndPrefixScan();
             return r;
         }
@@ -139,7 +139,7 @@ namespace GDDL
         private Element Root()
         {
             var e = Element();
-            PopExpected(Tokens.END);
+            PopExpected(Tokens.End);
             return e;
         }
 
@@ -153,15 +153,15 @@ namespace GDDL
 
         private Element BasicElement()
         {
-            if (Lexer.Peek() == Tokens.NIL) return NullValue(PopExpected(Tokens.NIL));
-            if (Lexer.Peek() == Tokens.NULL) return NullValue(PopExpected(Tokens.NULL));
-            if (Lexer.Peek() == Tokens.TRUE) return BooleanValue(PopExpected(Tokens.TRUE));
-            if (Lexer.Peek() == Tokens.FALSE) return BooleanValue(PopExpected(Tokens.FALSE));
-            if (Lexer.Peek() == Tokens.INTEGER) return IntValue(PopExpected(Tokens.INTEGER));
-            if (Lexer.Peek() == Tokens.HEXINT) return IntValue(PopExpected(Tokens.HEXINT), 16);
-            if (Lexer.Peek() == Tokens.INTEGER) return IntValue(PopExpected(Tokens.INTEGER));
-            if (Lexer.Peek() == Tokens.DOUBLE) return FloatValue(PopExpected(Tokens.DOUBLE));
-            if (Lexer.Peek() == Tokens.STRING) return StringValue(PopExpected(Tokens.STRING));
+            if (Lexer.Peek() == Tokens.Nil) return NullValue(PopExpected(Tokens.Nil));
+            if (Lexer.Peek() == Tokens.Null) return NullValue(PopExpected(Tokens.Null));
+            if (Lexer.Peek() == Tokens.True) return BooleanValue(PopExpected(Tokens.True));
+            if (Lexer.Peek() == Tokens.False) return BooleanValue(PopExpected(Tokens.False));
+            if (Lexer.Peek() == Tokens.Integer) return IntValue(PopExpected(Tokens.Integer));
+            if (Lexer.Peek() == Tokens.HexInt) return IntValue(PopExpected(Tokens.HexInt), 16);
+            if (Lexer.Peek() == Tokens.Integer) return IntValue(PopExpected(Tokens.Integer));
+            if (Lexer.Peek() == Tokens.Double) return FloatValue(PopExpected(Tokens.Double));
+            if (Lexer.Peek() == Tokens.String) return StringValue(PopExpected(Tokens.String));
             if (prefix_set()) return Set();
             if (prefix_typedSet()) return TypedSet();
             if (prefix_backreference()) return Backreference();
@@ -171,14 +171,14 @@ namespace GDDL
 
         private Element NamedElement()
         {
-            var name = PopExpected(Tokens.IDENT, Tokens.STRING);
+            var name = PopExpected(Tokens.Ident, Tokens.String);
 
-            var n = name.Name == Tokens.IDENT ? name.Text : Lexer.UnescapeString(name);
+            var n = name.Name == Tokens.Ident ? name.Text : Lexer.UnescapeString(name);
 
-            PopExpected(Tokens.EQUALS);
+            PopExpected(Tokens.EqualSign);
 
             if (!prefix_basicElement())
-                throw new ParserException(this, $"Expected a basic element after EQUALS, found {Lexer.Peek()} instead");
+                throw new ParserException(this, $"Expected a basic element after EqualSign, found {Lexer.Peek()} instead");
 
             var b = BasicElement();
 
@@ -191,9 +191,9 @@ namespace GDDL
         {
             var rooted = false;
 
-            if (Lexer.Peek() == Tokens.COLON)
+            if (Lexer.Peek() == Tokens.Colon)
             {
-                PopExpected(Tokens.COLON);
+                PopExpected(Tokens.Colon);
                 rooted = true;
             }
             if (!prefix_identifier())
@@ -202,9 +202,9 @@ namespace GDDL
             var name = Identifier();
             var b = Structure.Element.Backreference(rooted, name);
 
-            while (Lexer.Peek() == Tokens.COLON)
+            while (Lexer.Peek() == Tokens.Colon)
             {
-                PopExpected(Tokens.COLON);
+                PopExpected(Tokens.Colon);
 
                 name = Identifier();
 
@@ -216,11 +216,11 @@ namespace GDDL
 
         private Set Set()
         {
-            PopExpected(Tokens.LBRACE);
+            PopExpected(Tokens.LBrace);
 
             var s = Structure.Element.Set();
 
-            while (Lexer.Peek() != Tokens.RBRACE)
+            while (Lexer.Peek() != Tokens.RBrace)
             {
                 finishedWithRbrace = false;
 
@@ -229,16 +229,16 @@ namespace GDDL
 
                 s.Add(Element());
 
-                if (Lexer.Peek() != Tokens.RBRACE)
+                if (Lexer.Peek() != Tokens.RBrace)
                 {
-                    if (!finishedWithRbrace || (Lexer.Peek() == Tokens.COMMA))
+                    if (!finishedWithRbrace || (Lexer.Peek() == Tokens.Comma))
                     {
-                        PopExpected(Tokens.COMMA);
+                        PopExpected(Tokens.Comma);
                     }
                 }
             }
 
-            PopExpected(Tokens.RBRACE);
+            PopExpected(Tokens.RBrace);
 
             finishedWithRbrace = true;
 
@@ -260,7 +260,7 @@ namespace GDDL
 
         private string Identifier()
         {
-            if (Lexer.Peek() == Tokens.IDENT) return PopExpected(Tokens.IDENT).Text;
+            if (Lexer.Peek() == Tokens.Ident) return PopExpected(Tokens.Ident).Text;
 
             throw new ParserException(this, "Internal error");
         }
@@ -272,7 +272,7 @@ namespace GDDL
 
         public static Value BooleanValue(Token token)
         {
-            return Structure.Element.BooleanValue(token.Name == Tokens.TRUE);
+            return Structure.Element.BooleanValue(token.Name == Tokens.True);
         }
 
         public static Value IntValue(Token token)

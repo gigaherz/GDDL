@@ -24,7 +24,7 @@ namespace GDDL
             dataSource = new StreamReader(source);
         }
 
-        void Require(int number)
+        private void Require(int number)
         {
             int needed = number - unreadBuffer.Count;
             if (needed > 0)
@@ -92,7 +92,7 @@ namespace GDDL
         public string Read(int count)
         {
             Require(count);
-            StringBuilder b = new StringBuilder();
+            var b = new StringBuilder();
             while (count-- > 0)
             {
                 int ch = Next();

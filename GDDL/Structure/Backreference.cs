@@ -38,33 +38,9 @@ namespace GDDL.Structure
             NamePart.AddRange(names);
         }
 
-        protected override string ToStringInternal(StringGenerationContext ctx)
-        {
-            var ss = new StringBuilder();
-            var count = 0;
-            foreach (var it in NamePart)
-            {
-                if (count++ > 0)
-                    ss.Append(':');
-                ss.Append(it);
-            }
-
-            if (IsResolved)
-            {
-                ss.Append('=');
-                if (ResolvedValue== null)
-                    ss.Append("NULL");
-                else
-                    ss.Append(ResolvedValue);
-            }
-
-            return ss.ToString();
-        }
-
-
         public override Element Copy()
         {
-            Backreference b = new Backreference();
+            var b = new Backreference();
             CopyTo(b);
             return b;
         }
@@ -131,7 +107,6 @@ namespace GDDL.Structure
             return resolvedValue != null;
         }
 
-
         public override Element Simplify()
         {
             if (!resolved || resolvedValue == null)
@@ -140,6 +115,29 @@ namespace GDDL.Structure
             var copy = resolvedValue.Copy();
             copy.Name = Name;
             return copy;
+        }
+
+        protected override string ToStringInternal(StringGenerationContext ctx)
+        {
+            var ss = new StringBuilder();
+            var count = 0;
+            foreach (var it in NamePart)
+            {
+                if (count++ > 0)
+                    ss.Append(':');
+                ss.Append(it);
+            }
+
+            if (IsResolved)
+            {
+                ss.Append('=');
+                if (ResolvedValue == null)
+                    ss.Append("NULL");
+                else
+                    ss.Append(ResolvedValue);
+            }
+
+            return ss.ToString();
         }
     }
 }

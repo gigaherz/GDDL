@@ -11,15 +11,12 @@ namespace GDDL.Structure
     {
         private readonly List<Element> contents = new List<Element>();
         private readonly Dictionary<string, Element> names = new Dictionary<string, Element>();
+
         private string typeName;
 
         public string TypeName
         {
-            get
-            {
-                return typeName;
-            }
-
+            get => typeName;
             set
             {
                 if (!Lexer.IsValidIdentifier(value))
@@ -34,14 +31,13 @@ namespace GDDL.Structure
 
         public Element this[string name]
         {
-            get { return names[name]; }
-            set { throw new InvalidOperationException(); }
+            get => names[name];
+            set => throw new InvalidOperationException();
         }
 
         public Element this[int index]
         {
-            get { return contents[index]; }
-
+            get => contents[index];
             set
             {
                 var old = contents[index];
@@ -52,7 +48,7 @@ namespace GDDL.Structure
                     names.Add(value.Name, value);
             }
         }
-        
+
         public Set()
         {
         }
@@ -93,7 +89,7 @@ namespace GDDL.Structure
 
         public void AddRange(IEnumerable<Element> c)
         {
-            foreach (Element e in c)
+            foreach (var e in c)
             {
                 Add(e);
             }
@@ -149,17 +145,18 @@ namespace GDDL.Structure
         protected override string ToStringInternal(StringGenerationContext ctx)
         {
             bool addBraces = ctx.IndentLevel > 0;
-            int tabsToGen = ctx.IndentLevel - 1;
+            int tabsToGen = ctx.IndentLevel - (addBraces ? 0 : 1);
 
-            string tabs1 = "";
+            var tabs0 = new StringBuilder();
             for (int i = 0; i < tabsToGen; i++)
             {
-                tabs1 += "  ";
+                tabs0.Append("  ");
             }
+            var tabs1 = tabs0.ToString();
+            if (addBraces) tabs0.Append("  ");
+            var tabs2 = tabs0.ToString();
 
-            string tabs2 = addBraces ? "  " + tabs1 : tabs1;
-
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
 
             bool nice = ctx.Options == StringGenerationOptions.Nice;
             bool simple = IsSimple() && contents.Count <= 10;
@@ -186,7 +183,7 @@ namespace GDDL.Structure
             }
 
             bool first = true;
-            foreach (Element e in contents)
+            foreach (var e in contents)
             {
                 if (!first)
                 {
