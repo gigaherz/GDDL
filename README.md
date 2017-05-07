@@ -132,11 +132,11 @@ Potential future improvements (some crazier than others)
 ------------------------------
 
 1. Allow references by type, index within the parent set, and/or range selectors.
-  * Tentative syntax: Root:[3]:typename1[*]:typename2[2..3]
+   * Tentative syntax: Root:[3]:typename1[*]:typename2[2..3]
 
 1. Allow more fine-grained typing.
-  * Tentative syntax: 1234ui64 --> unsigned integer of 64bits.
+   * Tentative syntax: 1234ui64 --> unsigned integer of 64bits.
 
 1. Templating support: element substitution engine.
-  * Basically turns the system into effectively a lambda-calculus engine!
-  * Syntax to be determined.
+   * Basically turns the system into effectively a lambda-calculus engine!
+   * Syntax to be determined.
