@@ -11,7 +11,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes>First release.</releaseNotes>
-    <copyright>Copyright 2017 David Quintana</copyright>
+    <copyright>Copyright 2020 David Quintana</copyright>
     <tags>data description language configuration</tags>
   </metadata>
 </package>
