@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29920.165
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GDDL", "GDDL\GDDL.csproj", "{9B3E6F96-D5CC-4284-A5FC-2D43485855F2}"
 EndProject
@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{D3F4
 		Samples\Test.txt = Samples\Test.txt
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GDDL.Core", "GDDL.Core\GDDL.Core.csproj", "{7E4E56B6-F385-4BCF-AF8C-02AA9BA5B768}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,11 +35,18 @@ Global
 		{9DD360AB-54A0-4403-825D-8D71B11D17EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DD360AB-54A0-4403-825D-8D71B11D17EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DD360AB-54A0-4403-825D-8D71B11D17EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E4E56B6-F385-4BCF-AF8C-02AA9BA5B768}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E4E56B6-F385-4BCF-AF8C-02AA9BA5B768}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E4E56B6-F385-4BCF-AF8C-02AA9BA5B768}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E4E56B6-F385-4BCF-AF8C-02AA9BA5B768}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D3F4A2B5-D0C9-44C2-98A9-0DDE1D83E6FE} = {44E54DB1-DA49-42A0-A185-5E43B6D52820}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C29E85DB-A044-4E58-89E4-B5E4BDFFBB49}
 	EndGlobalSection
 EndGlobal

@@ -282,8 +282,16 @@ namespace GDDL
 
         public static Value IntValue(Token token, int _base)
         {
+            var s = token.Text;
+            var p = 2;
+            var sign = 1;
+            if (s.StartsWith("-"))
+            {
+                p++;
+                sign = -1;
+            }
             return
-                Structure.Element.IntValue(long.Parse(token.Text.Substring(2), NumberStyles.HexNumber,
+                Structure.Element.IntValue(sign * long.Parse(s.Substring(p), NumberStyles.HexNumber,
                     CultureInfo.InvariantCulture));
         }
 

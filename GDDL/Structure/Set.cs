@@ -80,6 +80,13 @@ namespace GDDL.Structure
                 names.Add(e.Name, e);
         }
 
+        public void Put(string name, Element e)
+        {
+            e = e.WithName(name);
+            contents.Add(e);
+            names.Add(e.Name, e);
+        }
+
         public void Insert(int before, Element e)
         {
             contents.Insert(before, e);

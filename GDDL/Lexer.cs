@@ -164,17 +164,24 @@ namespace GDDL
                 return new Token(Tokens.String, reader, reader.Read(number));
             }
 
-            if (char.IsDigit((char)ich) || ich == '.')
+            if (char.IsDigit((char)ich) || ich == '-' || ich == '.')
             {
                 // numbers
                 int number = 0;
                 bool fractional = false;
 
+                if (ich == '-')
+                {
+                    number++;
+
+                    ich = reader.Peek(number);
+                }
+
                 if (char.IsDigit((char)ich))
                 {
-                    if (reader.Peek(0) == '0' && reader.Peek(1) == 'x')
+                    if (reader.Peek(number) == '0' && reader.Peek(number+1) == 'x')
                     {
-                        number = 2;
+                        number += 2;
 
                         ich = reader.Peek(number);
                         while (char.IsDigit((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
