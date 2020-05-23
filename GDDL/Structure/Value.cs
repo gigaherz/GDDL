@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Text;
 using GDDL.Config;
 
 namespace GDDL.Structure
@@ -78,22 +79,24 @@ namespace GDDL.Structure
             b.Data = Data;
         }
 
-        protected override string ToStringInternal(StringGenerationContext ctx)
+        protected override void ToStringImpl(StringBuilder builder, StringGenerationContext ctx)
         {
             if (Data == null)
             {
-                return "null";
+                builder.Append("null");
             }
-            if (Data is bool)
+            else if (Data is bool)
             {
-                return Boolean ? "true" : "false";
+                builder.Append(Boolean ? "true" : "false");
             }
-            if (Data is string)
+            else if (Data is string)
             {
-                return Lexer.EscapeString(String);
+                builder.Append(Lexer.EscapeString(String));
             }
-            return string.Format(CultureInfo.InvariantCulture, "{0}", Data);
+            else
+            {
+                builder.Append(string.Format(CultureInfo.InvariantCulture, "{0}", Data));
+            }
         }
-
     }
 }

@@ -5,7 +5,7 @@ using GDDL.Config;
 
 namespace GDDL.Structure
 {
-    public class Backreference : Element
+    public class Reference : Element
     {
         protected readonly List<string> NamePart = new List<string>();
 
@@ -17,12 +17,12 @@ namespace GDDL.Structure
         public override bool IsResolved => resolved;
         public override Element ResolvedValue => resolvedValue;
 
-        internal Backreference(params string[] parts)
+        internal Reference(params string[] parts)
         {
             NamePart.AddRange(parts);
         }
 
-        internal Backreference(bool rooted, params string[] parts)
+        internal Reference(bool rooted, params string[] parts)
         {
             Rooted = rooted;
             NamePart.AddRange(parts);
@@ -40,7 +40,7 @@ namespace GDDL.Structure
 
         public override Element Copy()
         {
-            var b = new Backreference();
+            var b = new Reference();
             CopyTo(b);
             return b;
         }
@@ -48,9 +48,9 @@ namespace GDDL.Structure
         protected override void CopyTo(Element other)
         {
             base.CopyTo(other);
-            if (!(other is Backreference))
+            if (!(other is Reference))
                 throw new ArgumentException("CopyTo for invalid type", nameof(other));
-            var b = (Backreference)other;
+            var b = (Reference)other;
             b.AddRange(NamePart);
             if (resolved)
             {
@@ -83,7 +83,7 @@ namespace GDDL.Structure
             {
                 string part = NamePart[0];
 
-                var s = elm as Set;
+                var s = elm as Collection;
 
                 if (s == null)
                     continue;
@@ -117,27 +117,24 @@ namespace GDDL.Structure
             return copy;
         }
 
-        protected override string ToStringInternal(StringGenerationContext ctx)
+        protected override void ToStringImpl(StringBuilder builder, StringGenerationContext ctx)
         {
-            var ss = new StringBuilder();
-            var count = 0;
+            int count = 0;
             foreach (var it in NamePart)
             {
                 if (count++ > 0)
-                    ss.Append(':');
-                ss.Append(it);
+                    builder.Append(':');
+                builder.Append(it);
             }
 
             if (IsResolved)
             {
-                ss.Append('=');
+                builder.Append('=');
                 if (ResolvedValue == null)
-                    ss.Append("NULL");
+                    builder.Append("NULL");
                 else
-                    ss.Append(ResolvedValue);
+                    builder.Append(ResolvedValue);
             }
-
-            return ss.ToString();
         }
     }
 }

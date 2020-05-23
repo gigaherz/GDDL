@@ -7,7 +7,7 @@ using GDDL.Config;
 
 namespace GDDL.Structure
 {
-    public class Set : Element, IList<Element>, IDictionary<string, Element>
+    public class Collection : Element, IList<Element>, IDictionary<string, Element>
     {
         private readonly List<Element> contents = new List<Element>();
         private readonly Dictionary<string, Element> names = new Dictionary<string, Element>();
@@ -32,7 +32,7 @@ namespace GDDL.Structure
         public Element this[string name]
         {
             get => names[name];
-            set => throw new InvalidOperationException();
+            set => throw new InvalidOperationException("Cannot put elements by name.");
         }
 
         public Element this[int index]
@@ -49,16 +49,16 @@ namespace GDDL.Structure
             }
         }
 
-        public Set()
+        public Collection()
         {
         }
 
-        public Set(string typeName)
+        public Collection(string typeName)
         {
             TypeName = typeName;
         }
 
-        public Set(IEnumerable<Element> init)
+        public Collection(IEnumerable<Element> init)
         {
             contents.AddRange(init);
         }
@@ -146,86 +146,133 @@ namespace GDDL.Structure
 
         public bool IsSimple()
         {
-            return !contents.Any(a => a is Set || a.HasName());
+            return !contents.Any(a => a is Collection || a.HasName());
         }
 
-        protected override string ToStringInternal(StringGenerationContext ctx)
+        protected override void ToStringImpl(StringBuilder builder, StringGenerationContext ctx)
         {
-            bool addBraces = ctx.IndentLevel > 0;
-            int tabsToGen = ctx.IndentLevel - (addBraces ? 0 : 1);
+            ctx.PushIndent();
 
-            var tabs0 = new StringBuilder();
-            for (int i = 0; i < tabsToGen; i++)
-            {
-                tabs0.Append("  ");
-            }
-            var tabs1 = tabs0.ToString();
-            if (addBraces) tabs0.Append("  ");
-            var tabs2 = tabs0.ToString();
-
-            var builder = new StringBuilder();
-
-            bool nice = ctx.Options == StringGenerationOptions.Nice;
-            bool simple = IsSimple() && contents.Count <= 10;
-
-            int verbosity = 0;
-            if (nice && simple) verbosity = 1;
-            else if (nice) verbosity = 2;
-
-            ctx.IndentLevel++;
+            bool oneElementPerLine = !IsSimple() || contents.Count > ctx.Options.oneElementPerLineThreshold;
 
             if (HasTypeName())
             {
-                builder.Append(TypeName);
-                builder.Append(" ");
+                builder.Append(typeName);
+                if (ctx.Options.lineBreaksBeforeOpeningBrace == 0)
+                    builder.Append(" ");
             }
+            bool addBraces = ctx.IndentLevel > 0 || HasTypeName();
             if (addBraces)
             {
-                switch (verbosity)
+                if (oneElementPerLine && ctx.Options.lineBreaksBeforeOpeningBrace > 0)
                 {
-                    case 0: builder.Append("{"); break;
-                    case 1: builder.Append("{ "); break;
-                    case 2: builder.Append("{\n"); break;
+                    for (int i = 0; i < ctx.Options.lineBreaksBeforeOpeningBrace; i++)
+                    {
+                        builder.Append("\n");
+                    }
+                    ctx.AppendIndent(builder);
                 }
+                else if (ctx.Options.spacesBeforeOpeningBrace > 0)
+                {
+                    for (int i = 0; i < ctx.Options.spacesBeforeOpeningBrace; i++)
+                    {
+                        builder.Append(" ");
+                    }
+                }
+                builder.Append("{");
+                if (oneElementPerLine && ctx.Options.lineBreaksAfterOpeningBrace > 0)
+                {
+                    for (int i = 0; i < ctx.Options.lineBreaksAfterOpeningBrace; i++)
+                    {
+                        builder.Append("\n");
+                    }
+                }
+                else if (ctx.Options.spacesAfterOpeningBrace > 0)
+                {
+                    for (int i = 0; i < ctx.Options.spacesAfterOpeningBrace; i++)
+                    {
+                        builder.Append(" ");
+                    }
+                }
+                ctx.PushIndent();
+                ctx.IncIndent();
             }
 
             bool first = true;
             foreach (var e in contents)
             {
-                if (!first)
-                {
-                    switch (verbosity)
-                    {
-                        case 0: builder.Append(","); break;
-                        case 1: builder.Append(", "); break;
-                        case 2: builder.Append(",\n"); break;
-                    }
-                }
-                if (verbosity == 2) builder.Append(tabs2);
+                ctx.PushIndent();
 
-                builder.Append(e.ToString(ctx));
+                if (first && (!oneElementPerLine || ctx.Options.lineBreaksAfterOpeningBrace == 0))
+                {
+                    ctx.SetIndent(0);
+                }
+                else if (!first)
+                {
+                    builder.Append(",");
+                    if (oneElementPerLine)
+                    {
+                        builder.Append("\n");
+                    }
+                    else if (ctx.Options.spacesBetweenElements > 0)
+                    {
+                        for (int i = 0; i < ctx.Options.spacesBetweenElements; i++)
+                        {
+                            builder.Append(" ");
+                        }
+                    }
+
+                    if (!oneElementPerLine)
+                        ctx.SetIndent(0);
+                }
+
+                e.ToStringWithName(builder, ctx);
 
                 first = false;
+                ctx.PopIndent();
             }
 
             if (addBraces)
             {
-                switch (verbosity)
+                ctx.PopIndent();
+                if (oneElementPerLine && ctx.Options.lineBreaksBeforeClosingBrace > 0)
                 {
-                    case 0: builder.Append("}"); break;
-                    case 1: builder.Append(" }"); break;
-                    case 2: builder.Append("\n"); builder.Append(tabs1); builder.Append("}"); break;
+                    for (int i = 0; i < ctx.Options.lineBreaksBeforeClosingBrace; i++)
+                    {
+                        builder.Append("\n");
+                    }
+                    ctx.AppendIndent(builder);
+                }
+                else if (ctx.Options.spacesBeforeClosingBrace > 0)
+                {
+                    for (int i = 0; i < ctx.Options.spacesBeforeClosingBrace; i++)
+                    {
+                        builder.Append(" ");
+                    }
+                }
+                builder.Append("}");
+                if (oneElementPerLine && ctx.Options.lineBreaksAfterClosingBrace > 0)
+                {
+                    for (int i = 0; i < ctx.Options.lineBreaksAfterClosingBrace; i++)
+                    {
+                        builder.Append("\n");
+                    }
+                }
+                else if (ctx.Options.spacesAfterClosingBrace > 0)
+                {
+                    for (int i = 0; i < ctx.Options.spacesAfterClosingBrace; i++)
+                    {
+                        builder.Append(" ");
+                    }
                 }
             }
 
-            ctx.IndentLevel--;
-
-            return builder.ToString();
+            ctx.PopIndent();
         }
 
         public override Element Copy()
         {
-            var b = new Set();
+            var b = new Collection();
             CopyTo(b);
             return b;
         }
@@ -233,9 +280,9 @@ namespace GDDL.Structure
         protected override void CopyTo(Element other)
         {
             base.CopyTo(other);
-            if (!(other is Set))
+            if (!(other is Collection))
                 throw new ArgumentException("CopyTo for invalid type", nameof(other));
-            Set b = (Set)other;
+            Collection b = (Collection)other;
             foreach (var e in contents) b.Add(e.Copy());
         }
 
@@ -263,9 +310,9 @@ namespace GDDL.Structure
             return contents.Where(t => t.HasName() && t.Name == elementName);
         }
 
-        public IEnumerable<Set> ByType(string type)
+        public IEnumerable<Collection> ByType(string type)
         {
-            return contents.OfType<Set>().Where(e => e.TypeName == type);
+            return contents.OfType<Collection>().Where(e => e.TypeName == type);
         }
 
         public IEnumerator<Element> GetEnumerator()

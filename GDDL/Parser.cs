@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using GDDL.Exceptions;
 using GDDL.Structure;
 
 namespace GDDL
 {
-    public class Parser : IContextProvider, IDisposable
+    public sealed class Parser : IContextProvider, IDisposable
     {
         int prefixPos = -1;
         readonly Stack<int> prefixStack = new Stack<int>();
@@ -22,7 +23,12 @@ namespace GDDL
 
         public static Parser FromFile(string filename)
         {
-            return new Parser(new Lexer(new Reader(filename)));
+            return new Parser(new Lexer(new Reader(new StreamReader(filename), filename)));
+        }
+
+        public static Parser FromString(string text)
+        {
+            return new Parser(new Lexer(new Reader(new StringReader(text), "UNKNOWN")));
         }
 
 
@@ -187,7 +193,7 @@ namespace GDDL
             return b;
         }
 
-        private Backreference Backreference()
+        private Reference Backreference()
         {
             var rooted = false;
 
@@ -214,7 +220,7 @@ namespace GDDL
             return b;
         }
 
-        private Set Set()
+        private Collection Set()
         {
             PopExpected(Tokens.LBrace);
 
@@ -245,7 +251,7 @@ namespace GDDL
             return s;
         }
 
-        private Set TypedSet()
+        private Collection TypedSet()
         {
             var type = Identifier();
 

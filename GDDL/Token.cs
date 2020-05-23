@@ -3,12 +3,14 @@ namespace GDDL
 {
     public class Token : IContextProvider
     {
+        public readonly string Comment;
         public readonly Tokens Name;
         public readonly string Text;
         public readonly ParsingContext Context;
 
-        public Token(Tokens name, IContextProvider context, string text)
+        public Token(string comment, Tokens name, IContextProvider context, string text)
         {
+            Comment = comment;
             Name = name;
             Text = text;
             Context = context.GetParsingContext();

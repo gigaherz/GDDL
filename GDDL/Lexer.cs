@@ -5,7 +5,7 @@ using GDDL.Util;
 
 namespace GDDL
 {
-    public class Lexer : IContextProvider, IDisposable
+    public sealed class Lexer : IContextProvider, IDisposable
     {
         readonly QueueList<Token> lookAhead = new QueueList<Token>();
 
@@ -59,46 +59,75 @@ namespace GDDL
         private Token ParseOne()
         {
             if (seenEnd)
-                return new Token(Tokens.End, reader, "");
+                return new Token("", Tokens.End, reader, "");
 
+            StringBuilder commentLines = null;
             int ich = reader.Peek();
+
             while (true)
             {
-                if (ich < 0) return new Token(Tokens.End, reader, "");
+                if (ich < 0) return new Token("", Tokens.End, reader, "");
 
                 switch (ich)
                 {
                     case ' ':
                     case '\t':
+                        reader.Skip(1);
+                        ich = reader.Peek();
+                        break;
                     case '\r':
                     case '\n':
-                        reader.Skip(1);
-
+                        if (commentLines != null)
+                        {
+                            commentLines.Append(reader.Read(1));
+                        }
+                        else
+                        {
+                            reader.Skip(1);
+                        }
                         ich = reader.Peek();
                         break;
                     case '#':
-                        // comment, Skip until \r or \n
-                        do
+                    {
+                        // comment
+                        if (commentLines == null)
                         {
-                            reader.Skip(1);
-
-                            ich = reader.Peek();
+                            commentLines = new StringBuilder();
                         }
-                        while (ich > 0 && ich != '\n' && ich != '\r');
+
+                        reader.Skip(1);
+                        ich = reader.Peek();
+
+                        int number = 0;
+                        while (ich > 0 && ich != '\n' && ich != '\r')
+                        {
+                            number++;
+                            ich = reader.Peek(number);
+                        }
+
+                        if (number > 0)
+                        {
+                            commentLines.Append(reader.Read(number));
+                        }
+                        ich = reader.Peek();
+
                         break;
+                    }
                     default:
                         goto blah;
                 }
             }
 
-            blah:
+        blah:
+            string comment = commentLines != null ? commentLines.ToString() : "";
+
             switch (ich)
             {
-                case '{': return new Token(Tokens.LBrace, reader, reader.Read(1));
-                case '}': return new Token(Tokens.RBrace, reader, reader.Read(1));
-                case ',': return new Token(Tokens.Comma, reader, reader.Read(1));
-                case ':': return new Token(Tokens.Colon, reader, reader.Read(1));
-                case '=': return new Token(Tokens.EqualSign, reader, reader.Read(1));
+                case '{': return new Token(comment, Tokens.LBrace, reader, reader.Read(1));
+                case '}': return new Token(comment, Tokens.RBrace, reader, reader.Read(1));
+                case ',': return new Token(comment, Tokens.Comma, reader, reader.Read(1));
+                case ':': return new Token(comment, Tokens.Colon, reader, reader.Read(1));
+                case '=': return new Token(comment, Tokens.EqualSign, reader, reader.Read(1));
             }
 
             if (char.IsLetter((char)ich) || ich == '_')
@@ -120,12 +149,12 @@ namespace GDDL
                     }
                 }
 
-                var id = new Token(Tokens.Ident, reader, reader.Read(number));
+                var id = new Token(comment, Tokens.Ident, reader, reader.Read(number));
 
-                if (string.Compare(id.Text, "nil", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.Nil, id, id.Text);
-                if (string.Compare(id.Text, "null", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.Null, id, id.Text);
-                if (string.Compare(id.Text, "true", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.True, id, id.Text);
-                if (string.Compare(id.Text, "false", StringComparison.OrdinalIgnoreCase) == 0) return new Token(Tokens.False, id, id.Text);
+                if (id.Text.CompareOrdinalIgnoreCase("nil") == 0) return new Token(comment, Tokens.Nil, id, id.Text);
+                if (id.Text.CompareOrdinalIgnoreCase("null") == 0) return new Token(comment, Tokens.Null, id, id.Text);
+                if (id.Text.CompareOrdinalIgnoreCase("true") == 0) return new Token(comment, Tokens.True, id, id.Text);
+                if (id.Text.CompareOrdinalIgnoreCase("false") == 0) return new Token(comment, Tokens.False, id, id.Text);
 
                 return id;
             }
@@ -161,7 +190,7 @@ namespace GDDL
 
                 number++;
 
-                return new Token(Tokens.String, reader, reader.Read(number));
+                return new Token(comment, Tokens.String, reader, reader.Read(number));
             }
 
             if (char.IsDigit((char)ich) || ich == '-' || ich == '.')
@@ -179,7 +208,7 @@ namespace GDDL
 
                 if (char.IsDigit((char)ich))
                 {
-                    if (reader.Peek(number) == '0' && reader.Peek(number+1) == 'x')
+                    if (reader.Peek(number) == '0' && reader.Peek(number + 1) == 'x')
                     {
                         number += 2;
 
@@ -191,7 +220,7 @@ namespace GDDL
                             ich = reader.Peek(number);
                         }
 
-                        return new Token(Tokens.HexInt, reader, reader.Read(number));
+                        return new Token(comment, Tokens.HexInt, reader, reader.Read(number));
                     }
 
                     number = 1;
@@ -250,9 +279,9 @@ namespace GDDL
                 }
 
                 if (fractional)
-                    return new Token(Tokens.Double, reader, reader.Read(number));
+                    return new Token(comment, Tokens.Double, reader, reader.Read(number));
 
-                return new Token(Tokens.Integer, reader, reader.Read(number));
+                return new Token(comment, Tokens.Integer, reader, reader.Read(number));
             }
 
             throw new LexerException(this, $"Unexpected character: {reader.Peek()}");
@@ -334,11 +363,6 @@ namespace GDDL
         public override string ToString()
         {
             return $"{{Lexer ahead={string.Join(", ", lookAhead)}, reader={reader}}}";
-        }
-
-        public void Dispose()
-        {
-            reader.Dispose();
         }
 
         public static bool IsValidIdentifier(string ident)
@@ -503,7 +527,6 @@ namespace GDDL
                     continue;
                 }
 
-
                 sb.Append('\\');
                 switch (c)
                 {
@@ -543,6 +566,11 @@ namespace GDDL
             if (lookAhead.Count > 0)
                 return lookAhead[0].Context;
             return reader.GetParsingContext();
+        }
+
+        public void Dispose()
+        {
+            reader.Dispose();
         }
     }
 }

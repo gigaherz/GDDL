@@ -21,9 +21,7 @@ namespace GDDL.Util
                 if (index >= Count)
                     throw new ArgumentOutOfRangeException(nameof(index));
 
-                var result = buffer[ToBufferIndex(index)];
-
-                return result;
+                return buffer[ToBufferIndex(index)];
             }
         }
 
@@ -42,24 +40,9 @@ namespace GDDL.Util
             GrowTo(capacity);
         }
 
-        // Ooooh... I just got how this works! Clever!
-        // It's causing all the bits to spread downward
-        // until all the bits below the most-significant 1
-        // are also 1, then adds 1 to fill the power of two.
-        private static int UpperPower(int x)
-        {
-            x--;
-            x |= x >> 1;
-            x |= x >> 2;
-            x |= x >> 4;
-            x |= x >> 8;
-            x |= x >> 16;
-            return x + 1;
-        }
-
         private void GrowTo(int value)
         {
-            value = UpperPower(value);
+            value = Utility.UpperPower(value);
             if (null != buffer && value == buffer.Length)
                 return;
 

@@ -1,29 +1,32 @@
 using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using GDDL.Config;
 
 namespace GDDL.Structure
 {
     public abstract class Element
     {
+        public string Comment { get; internal set; }
         public string Name { get; internal set; }
 
         public virtual bool IsResolved => true;
         public virtual Element ResolvedValue => this;
 
         // Factory methods
-        public static Set Set(params Element[] initial)
+        public static Collection Set(params Element[] initial)
         {
-            return new Set(initial);
+            return new Collection(initial);
         }
 
-        public static Set Set(IEnumerable<Element> initial)
+        public static Collection Set(IEnumerable<Element> initial)
         {
-            return new Set(initial);
+            return new Collection(initial);
         }
 
-        public static Backreference Backreference(bool rooted, params string[] parts)
+        public static Reference Backreference(bool rooted, params string[] parts)
         {
-            return new Backreference(rooted, parts);
+            return new Reference(rooted, parts);
         }
 
         public static Value NullValue()
@@ -57,19 +60,24 @@ namespace GDDL.Structure
             return !string.IsNullOrEmpty(Name);
         }
 
-        public bool IsSet()
+        public bool HasComment() 
         {
-            return this is Set;
+            return !string.IsNullOrEmpty(Comment); 
         }
 
-        public Set AsSet()
+        public bool IsSet()
         {
-            return (Set)this;
+            return this is Collection;
+        }
+
+        public Collection AsSet()
+        {
+            return (Collection)this;
         }
 
         // Set LINQ helpers
-        public IList<Element> AsList() { return (Set)this; }
-        public IDictionary<string, Element> AsDictionary() { return (Set)this; }
+        public IList<Element> AsList() { return (Collection)this; }
+        public IDictionary<string, Element> AsDictionary() { return (Collection)this; }
 
         public bool IsValue()
         {
@@ -90,7 +98,7 @@ namespace GDDL.Structure
         {
         }
 
-        protected abstract string ToStringInternal(StringGenerationContext ctx);
+        protected abstract void ToStringImpl(StringBuilder builder, StringGenerationContext ctx);
 
         public sealed override string ToString()
         {
@@ -99,15 +107,36 @@ namespace GDDL.Structure
 
         public string ToString(StringGenerationContext ctx)
         {
+            var builder = new StringBuilder();
+            ToStringWithName(builder, ctx);
+            return builder.ToString();
+        }
+
+        private static Regex CommentLineSplitter = new Regex("(?:(?:\n)|(?:\r\n))");
+
+        internal void ToStringWithName(StringBuilder builder, StringGenerationContext ctx)
+        {
+            if (HasComment() && ctx.Options.writeComments)
+            {
+                foreach (var s in Comment.Split())
+                {
+                    ctx.AppendIndent(builder);
+                    builder.Append("#");
+                    builder.Append(s);
+                    builder.Append("\n");
+                }
+            }
+            ctx.AppendIndent(builder);
             if (HasName())
             {
                 string sname = Name;
                 if (!Lexer.IsValidIdentifier(sname))
                     sname = Lexer.EscapeString(sname);
-                return $"{sname} = {ToStringInternal(ctx)}";
+                builder.Append(sname);
+                builder.Append(" = ");
             }
 
-            return ToStringInternal(ctx);
+            ToStringImpl(builder, ctx);
         }
 
         public abstract Element Copy();

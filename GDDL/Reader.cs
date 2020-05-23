@@ -6,11 +6,11 @@ using GDDL.Util;
 
 namespace GDDL
 {
-    public class Reader : IContextProvider, IDisposable
+    public sealed class Reader : IContextProvider, IDisposable
     {
         private readonly QueueList<int> unreadBuffer = new QueueList<int>();
 
-        private readonly StreamReader dataSource;
+        private readonly TextReader dataSource;
         private readonly string sourceName;
 
         private bool endQueued;
@@ -18,10 +18,10 @@ namespace GDDL
         private int column = 1;
         private int lastEol;
 
-        public Reader(string source)
+        public Reader(TextReader source, string sourceName)
         {
-            sourceName = source;
-            dataSource = new StreamReader(source);
+            this.sourceName = sourceName;
+            this.dataSource = source;
         }
 
         private void Require(int number)
@@ -68,22 +68,20 @@ namespace GDDL
             column++;
             if (ch == '\n')
             {
+                column = 1;
                 if (lastEol != '\r')
-                {
-                    column = 1;
                     line++;
-                }
                 lastEol = ch;
             }
             else if (ch == '\r')
             {
+                column = 1;
+                line++;
                 lastEol = ch;
             }
             else if (lastEol > 0)
             {
                 lastEol = 0;
-                column = 1;
-                line++;
             }
 
             return ch;
