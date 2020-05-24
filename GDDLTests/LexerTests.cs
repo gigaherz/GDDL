@@ -7,10 +7,10 @@ using System.IO;
 
 namespace GDDL.Tests
 {
-    [TestClass()]
+    [TestClass]
     public class LexerTests
     {
-        [TestMethod()]
+        [TestMethod]
         public void lexesIntegers()
         {
             Assert.AreEqual(tokenInt("1"), lexSingle("1"));
@@ -19,7 +19,7 @@ namespace GDDL.Tests
             Assert.AreEqual(tokenHexInt("-0x1"), lexSingle("-0x1"));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void lexesFloats()
         {
             Assert.AreEqual(tokenFloat("1.0"), lexSingle("1.0"));
@@ -41,7 +41,7 @@ namespace GDDL.Tests
             Assert.AreEqual(tokenFloat("-.1e1"), lexSingle("-.1e1"));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void lexesStrings()
         {
             Assert.AreEqual(tokenString("\"a\""), lexSingle("\"a\""));
@@ -60,7 +60,7 @@ namespace GDDL.Tests
             Assert.AreEqual(tokenString("'\\uF00F'"), lexSingle("'\\uF00F'"));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void lexesKeywords()
         {
             Assert.AreEqual(tokenBooleanTrue(), lexSingle("true"));
@@ -69,7 +69,7 @@ namespace GDDL.Tests
             Assert.AreEqual(tokenNil(), lexSingle("nil"));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void lexesSymbols()
         {
             Assert.AreEqual(tokenLBrace(), lexSingle("{"));
@@ -79,7 +79,7 @@ namespace GDDL.Tests
             Assert.AreEqual(tokenEquals(), lexSingle("="));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void keepsComments()
         {
             Token expected = token(TokenType.LBrace, "{", new ParsingContext("TEST", 1, 1), "this is a comment\n");
@@ -87,7 +87,7 @@ namespace GDDL.Tests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void keepsMultipleCommentLines()
         {
             Token expected = token(TokenType.LBrace, "{", new ParsingContext("TEST", 1, 1), "this\nis\na\ncomment\n");
@@ -95,7 +95,7 @@ namespace GDDL.Tests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ignoresWhitespace()
         {
             Assert.AreEqual(tokenLBrace(), lexSingle(" \t\n{ \t\n"));

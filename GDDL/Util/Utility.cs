@@ -25,5 +25,13 @@ namespace GDDL.Util
         {
             return string.Compare(a, b, StringComparison.OrdinalIgnoreCase);
         }
+
+        public static T RequireNotNull<T>(this T obj)
+            where T: class
+        {
+            if (obj is null)
+                throw new NullReferenceException();
+            return (T)obj;
+        }
     }
 }

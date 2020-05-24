@@ -7,12 +7,12 @@ using System.IO;
 
 namespace GDDL.Tests
 {
-    [TestClass()]
+    [TestClass]
     public class ReaderTests
     {
         public const string SOURCE_NAME = "TEST";
 
-    [TestMethod()]
+        [TestMethod]
         public void parsingContextEqualsWorks()
         {
             ParsingContext @base = new ParsingContext("A", 2, 3);
@@ -26,7 +26,7 @@ namespace GDDL.Tests
             Assert.AreNotEqual(@base, differentColumn);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void readsOneCharacter()
         {
             String testString = "a";
@@ -34,7 +34,7 @@ namespace GDDL.Tests
             Assert.AreEqual(testString, reader.Read(testString.Length));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void readsMultipleCharacters()
         {
             String testString = "qwerty";
@@ -42,14 +42,14 @@ namespace GDDL.Tests
             Assert.AreEqual(testString, reader.Read(testString.Length));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void readsOnlyAsMuchAsRequested()
         {
             Reader reader = new Reader(new StringReader("qwerty"), SOURCE_NAME);
             Assert.AreEqual("qwe", reader.Read(3));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void peekWorks()
         {
             Reader reader = new Reader(new StringReader("abc"), SOURCE_NAME);
@@ -68,7 +68,7 @@ namespace GDDL.Tests
             Assert.AreEqual("b", reader.Read(1));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void peeksAfterRead()
         {
             Reader reader = new Reader(new StringReader("zxcvbnm"), SOURCE_NAME);
@@ -76,14 +76,14 @@ namespace GDDL.Tests
             Assert.AreEqual('v', reader.Peek());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void peeksEndOfFile()
         {
             Reader reader = new Reader(new StringReader(""), SOURCE_NAME);
             Assert.AreEqual(-1, reader.Peek());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void keepsTrackOfLocation()
         {
             Reader reader = new Reader(new StringReader("qwerty\nuiop\rasdf\r\n1234"), SOURCE_NAME);

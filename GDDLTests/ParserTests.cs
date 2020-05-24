@@ -7,11 +7,11 @@ using GDDL.Structure;
 
 namespace GDDL.Tests
 {
-    [TestClass()]
+    [TestClass]
     public class ParserTests
     {
 
-        [TestMethod()]
+        [TestMethod]
         public void mockLexerWorks()
         {
             ITokenProvider provider = lexerBuilder()
@@ -46,7 +46,7 @@ namespace GDDL.Tests
             Assert.AreEqual(new Token(TokenType.End, "", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesNullAsValue()
         {
             ITokenProvider provider = lexerBuilder().addInt().Build();
@@ -54,7 +54,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Value.Of(1), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesIntegerAsValue()
         {
             ITokenProvider provider = lexerBuilder().addInt().Build();
@@ -62,7 +62,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Value.Of(1), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesHexIntegerAsValue()
         {
             ITokenProvider provider = lexerBuilder().addHexInt().Build();
@@ -70,7 +70,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Value.Of(1), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesDoubleAsValue()
         {
             var provider = lexerBuilder().addFloat().Build();
@@ -78,7 +78,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Value.Of(1.0), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesStringAsValue()
         {
             var provider = lexerBuilder().addString().Build();
@@ -86,7 +86,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Value.Of("1"), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesBooleanTrueAsValue()
         {
             var provider = lexerBuilder().addBooleanTrue().Build();
@@ -94,7 +94,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Value.Of(true), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesBooleanFalseAsValue()
         {
             var provider = lexerBuilder().addBooleanFalse().Build();
@@ -102,7 +102,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Value.Of(false), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesBracesAsCollection()
         {
             var provider = lexerBuilder().addLBrace().addRBrace().Build();
@@ -110,7 +110,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Collection.Empty(), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesTypedCollection()
         {
             var provider = lexerBuilder().addIdentifier("test").addLBrace().addRBrace().Build();
@@ -118,7 +118,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Collection.Empty().WithTypeName("test"), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesValueInsideCollection()
         {
             var provider = lexerBuilder().addLBrace().addInt().addRBrace().Build();
@@ -126,7 +126,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Collection.Of(Value.Of(1)), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesMultipleValuesInsideCollection()
         {
             var provider = lexerBuilder().addLBrace().addInt().addComma().addInt().addRBrace().Build();
@@ -134,7 +134,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Collection.Of(Value.Of(1), Value.Of(1)), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesNestedCollection()
         {
             var provider = lexerBuilder().addLBrace().addLBrace().addRBrace().addRBrace().Build();
@@ -144,7 +144,7 @@ namespace GDDL.Tests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void commaIsOptionalAfterNestedCollection()
         {
             var provider = lexerBuilder().addLBrace().addLBrace().addRBrace().addInt().addRBrace().Build();
@@ -154,7 +154,7 @@ namespace GDDL.Tests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void acceptsTrailingCommaInCollection()
         {
             ITokenProvider provider = lexerBuilder().addLBrace().addInt().addComma().addRBrace().Build();
@@ -162,7 +162,7 @@ namespace GDDL.Tests
             Assert.AreEqual(Collection.Of(Value.Of(1)), parser.Parse(false));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesNamedValueInsideCollection()
         {
             var provider = lexerBuilder().addLBrace().addString("\"a\"").addEquals().addInt().addRBrace().Build();
@@ -172,7 +172,7 @@ namespace GDDL.Tests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesNamedTypedNestedCollection()
         {
             var provider = lexerBuilder().addLBrace().addString("\"n\"").addEquals().addIdentifier("a").addLBrace().addRBrace().addRBrace().Build();
@@ -182,7 +182,7 @@ namespace GDDL.Tests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesBackreference()
         {
             var provider = lexerBuilder().addLBrace().addIdentifier("a").addColon().addIdentifier("b").addRBrace().Build();
@@ -192,7 +192,7 @@ namespace GDDL.Tests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void parsesRootedBackreference()
         {
             var provider = lexerBuilder().addLBrace().addColon().addIdentifier("a").addColon().addIdentifier("b").addRBrace().Build();

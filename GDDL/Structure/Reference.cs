@@ -48,6 +48,11 @@ namespace GDDL.Structure
 
         public override Element Copy()
         {
+            return CopyReference();
+        }
+
+        public Reference CopyReference()
+        {
             var b = new Reference(Rooted);
             CopyTo(b);
             return b;
@@ -89,7 +94,7 @@ namespace GDDL.Structure
 
             for (int i = parentRoot ? 1 : 0; i < NamePart.Count; i++)
             {
-                string part = NamePart[0];
+                string part = NamePart[i];
 
                 var s = elm as Collection;
 

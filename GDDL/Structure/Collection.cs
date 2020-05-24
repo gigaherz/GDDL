@@ -294,6 +294,11 @@ namespace GDDL.Structure
 
         public override Element Copy()
         {
+            return CopyCollection();
+        }
+
+        public Collection CopyCollection()
+        {
             var b = new Collection();
             CopyTo(b);
             return b;

@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using GDDL.Config;
+using GDDL.Util;
 
 namespace GDDL.Structure
 {
@@ -34,63 +35,70 @@ namespace GDDL.Structure
         }
 
         // Implementation
-        public object Data { get; private set; }
+        private object data;
+
+        public bool IsNull => data == null;
 
         public string String
         {
-            get => (string)Data;
-            set => Data = value;
+            get => (string)Utility.RequireNotNull(data);
+            set => data = Utility.RequireNotNull(value);
         }
 
         public bool Boolean
         {
-            get => (bool)Data;
-            set => Data = value;
+            get => (bool)data;
+            set => data = value;
         }
 
         public long Integer
         {
-            get => (long)Data;
-            set => Data = value;
+            get => (long)data;
+            set => data = value;
         }
 
         public double Double
         {
-            get => (double)Data;
-            set => Data = value;
+            get => (double)data;
+            set => data = value;
         }
 
         internal Value()
         {
-            Data = null;
+            data = null;
         }
 
         internal Value(bool valueData)
         {
-            Data = valueData;
+            data = valueData;
         }
 
         internal Value(string valueData)
         {
-            Data = valueData;
+            data = valueData;
         }
 
         internal Value(long valueData)
         {
-            Data = valueData;
+            data = valueData;
         }
 
         internal Value(double valueData)
         {
-            Data = valueData;
+            data = valueData;
         }
 
-        public bool IsNull()
+        public void SetNull()
         {
-            return Data == null;
+            data = null;
         }
 
         public override Element Copy()
+        {
+            return CopyValue();
+        }
+
+        public Value CopyValue()
         {
             var b = new Value();
             CopyTo(b);
@@ -103,26 +111,26 @@ namespace GDDL.Structure
             if (!(other is Value))
                 throw new ArgumentException("CopyTo for invalid type");
             var b = (Value)other;
-            b.Data = Data;
+            b.data = data;
         }
 
         protected override void ToStringImpl(StringBuilder builder, StringGenerationContext ctx)
         {
-            if (Data == null)
+            if (data == null)
             {
                 builder.Append("null");
             }
-            else if (Data is bool)
+            else if (data is bool)
             {
                 builder.Append(Boolean ? "true" : "false");
             }
-            else if (Data is string)
+            else if (data is string)
             {
                 builder.Append(Lexer.EscapeString(String));
             }
             else
             {
-                builder.Append(string.Format(CultureInfo.InvariantCulture, "{0}", Data));
+                builder.Append(string.Format(CultureInfo.InvariantCulture, "{0}", data));
             }
         }
 
@@ -143,12 +151,12 @@ namespace GDDL.Structure
         protected bool EqualsImpl(Value other)
         {
             if (!base.EqualsImpl(other)) return false;
-            return Equals(Data, other.Data);
+            return Equals(data, other.data);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(base.GetHashCode(), Data);
+            return HashCode.Combine(base.GetHashCode(), data);
         }
     }
 }
