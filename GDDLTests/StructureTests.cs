@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace GDDLTests
+namespace GDDL.Tests
 {
     [TestClass()]
     public class StructureTests
