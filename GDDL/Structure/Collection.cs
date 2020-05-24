@@ -7,8 +7,24 @@ using GDDL.Config;
 
 namespace GDDL.Structure
 {
-    public class Collection : Element, IList<Element>, IDictionary<string, Element>
+    public class Collection : Element, IList<Element>, IDictionary<string, Element>, IEquatable<Collection>
     {
+        // Factory Methods
+        public static Collection Empty()
+        {
+            return new Collection();
+        }
+        public static Collection Of(params Element[] initial)
+        {
+            return new Collection(initial);
+        }
+
+        public static Collection CopyOf(IEnumerable<Element> initial)
+        {
+            return new Collection(initial);
+        }
+
+        // Implementation
         private readonly List<Element> contents = new List<Element>();
         private readonly Dictionary<string, Element> names = new Dictionary<string, Element>();
 
@@ -49,23 +65,29 @@ namespace GDDL.Structure
             }
         }
 
-        public Collection()
+        private Collection()
         {
         }
 
-        public Collection(string typeName)
+        private Collection(string typeName)
         {
             TypeName = typeName;
         }
 
-        public Collection(IEnumerable<Element> init)
+        private Collection(IEnumerable<Element> init)
         {
-            contents.AddRange(init);
+            AddRange(init);
         }
 
         public bool HasTypeName()
         {
             return TypeName != null;
+        }
+
+        public Collection WithTypeName(string typeName)
+        {
+            TypeName = typeName;
+            return this;
         }
 
         public bool IsEmpty()
@@ -372,6 +394,35 @@ namespace GDDL.Structure
         ICollection<Element> IDictionary<string, Element>.Values
         {
             get { throw new NotImplementedException(); }
+        }
+        #endregion
+
+        #region Equality
+        public override bool Equals(object obj)
+        {
+            if (obj == this) return true;
+            if (obj == null || GetType() != obj.GetType()) return false;
+            return obj is Collection other ? EqualsImpl(other) : false;
+        }
+
+        public bool Equals(Collection other)
+        {
+            if (other == this) return true;
+            if (other == null) return false;
+            return EqualsImpl(other);
+        }
+
+        protected bool EqualsImpl(Collection other)
+        {
+            if (!base.EqualsImpl(other)) return false;
+            return Enumerable.SequenceEqual(contents, other.contents) &&
+                Enumerable.SequenceEqual(names, other.names) &&
+                Equals(typeName, other.typeName);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base.GetHashCode(), contents, names, typeName);
         }
         #endregion
     }

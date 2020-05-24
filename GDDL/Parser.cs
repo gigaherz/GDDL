@@ -10,17 +10,7 @@ namespace GDDL
 {
     public sealed class Parser : IContextProvider, IDisposable
     {
-        int prefixPos = -1;
-        readonly Stack<int> prefixStack = new Stack<int>();
-        private bool finishedWithRbrace;
-
-        public Lexer Lexer { get; }
-
-        Parser(Lexer lexer)
-        {
-            Lexer = lexer;
-        }
-
+        // Factory Methods
         public static Parser FromFile(string filename)
         {
             return new Parser(new Lexer(new Reader(new StreamReader(filename), filename)));
@@ -31,6 +21,17 @@ namespace GDDL
             return new Parser(new Lexer(new Reader(new StringReader(text), "UNKNOWN")));
         }
 
+        // Implementation
+        int prefixPos = -1;
+        readonly Stack<int> prefixStack = new Stack<int>();
+        private bool finishedWithRbrace;
+
+        public ITokenProvider Lex { get; }
+
+        public Parser(ITokenProvider lexer)
+        {
+            Lex = lexer;
+        }
 
         public Element Parse()
         {
@@ -50,11 +51,11 @@ namespace GDDL
             return ret;
         }
 
-        private Token PopExpected(params Tokens[] expected)
+        private Token PopExpected(params TokenType[] expected)
         {
-            Tokens current = Lexer.Peek();
+            TokenType current = Lex.Peek();
             if (expected.Any(t => current == t))
-                return Lexer.Pop();
+                return Lex.Pop();
 
             if (expected.Length != 1)
                 throw new ParserException(this, $"Unexpected token {current}. Expected one of: {string.Join(", ", expected)}.");
@@ -67,9 +68,9 @@ namespace GDDL
             prefixStack.Push(prefixPos);
         }
 
-        public Tokens NextPrefix()
+        public TokenType NextPrefix()
         {
-            return Lexer.Peek(++prefixPos);
+            return Lex.Peek(++prefixPos);
         }
 
         public void EndPrefixScan()
@@ -77,7 +78,7 @@ namespace GDDL
             prefixPos = prefixStack.Pop();
         }
 
-        private bool HasAny(params Tokens[] tokens)
+        private bool HasAny(params TokenType[] tokens)
         {
             var prefix = NextPrefix();
             return tokens.Any(t => prefix == t);
@@ -91,8 +92,8 @@ namespace GDDL
         private bool prefix_basicElement()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.Nil, Tokens.Null, Tokens.True, Tokens.False,
-                Tokens.HexInt, Tokens.Integer, Tokens.Double, Tokens.String);
+            var r = HasAny(TokenType.Nil, TokenType.Null, TokenType.True, TokenType.False,
+                TokenType.HexInt, TokenType.Integer, TokenType.Double, TokenType.String);
             EndPrefixScan();
 
             return r || prefix_backreference() || prefix_set() || prefix_typedSet();
@@ -101,7 +102,7 @@ namespace GDDL
         private bool prefix_namedElement()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.Ident, Tokens.String) && HasAny(Tokens.EqualSign);
+            var r = HasAny(TokenType.Ident, TokenType.String) && HasAny(TokenType.EqualSign);
             EndPrefixScan();
             return r;
         }
@@ -109,7 +110,7 @@ namespace GDDL
         private bool prefix_backreference()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.Colon) && HasAny(Tokens.Ident);
+            var r = HasAny(TokenType.Colon) && HasAny(TokenType.Ident);
             EndPrefixScan();
 
             return r || prefix_identifier();
@@ -118,7 +119,7 @@ namespace GDDL
         private bool prefix_set()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.LBrace);
+            var r = HasAny(TokenType.LBrace);
             EndPrefixScan();
             return r;
         }
@@ -126,7 +127,7 @@ namespace GDDL
         private bool prefix_typedSet()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.Ident) && HasAny(Tokens.LBrace);
+            var r = HasAny(TokenType.Ident) && HasAny(TokenType.LBrace);
             EndPrefixScan();
             return r;
         }
@@ -134,7 +135,7 @@ namespace GDDL
         private bool prefix_identifier()
         {
             BeginPrefixScan();
-            var r = HasAny(Tokens.Ident);
+            var r = HasAny(TokenType.Ident);
             EndPrefixScan();
             return r;
         }
@@ -142,7 +143,7 @@ namespace GDDL
         private Element Root()
         {
             var e = Element();
-            PopExpected(Tokens.End);
+            PopExpected(TokenType.End);
             return e;
         }
 
@@ -156,15 +157,15 @@ namespace GDDL
 
         private Element BasicElement()
         {
-            if (Lexer.Peek() == Tokens.Nil) return NullValue(PopExpected(Tokens.Nil));
-            if (Lexer.Peek() == Tokens.Null) return NullValue(PopExpected(Tokens.Null));
-            if (Lexer.Peek() == Tokens.True) return BooleanValue(PopExpected(Tokens.True));
-            if (Lexer.Peek() == Tokens.False) return BooleanValue(PopExpected(Tokens.False));
-            if (Lexer.Peek() == Tokens.Integer) return IntValue(PopExpected(Tokens.Integer));
-            if (Lexer.Peek() == Tokens.HexInt) return IntValue(PopExpected(Tokens.HexInt), 16);
-            if (Lexer.Peek() == Tokens.Integer) return IntValue(PopExpected(Tokens.Integer));
-            if (Lexer.Peek() == Tokens.Double) return FloatValue(PopExpected(Tokens.Double));
-            if (Lexer.Peek() == Tokens.String) return StringValue(PopExpected(Tokens.String));
+            if (Lex.Peek() == TokenType.Nil) return NullValue(PopExpected(TokenType.Nil));
+            if (Lex.Peek() == TokenType.Null) return NullValue(PopExpected(TokenType.Null));
+            if (Lex.Peek() == TokenType.True) return BooleanValue(PopExpected(TokenType.True));
+            if (Lex.Peek() == TokenType.False) return BooleanValue(PopExpected(TokenType.False));
+            if (Lex.Peek() == TokenType.Integer) return IntValue(PopExpected(TokenType.Integer));
+            if (Lex.Peek() == TokenType.HexInt) return IntValue(PopExpected(TokenType.HexInt), 16);
+            if (Lex.Peek() == TokenType.Integer) return IntValue(PopExpected(TokenType.Integer));
+            if (Lex.Peek() == TokenType.Double) return FloatValue(PopExpected(TokenType.Double));
+            if (Lex.Peek() == TokenType.String) return StringValue(PopExpected(TokenType.String));
             if (prefix_set()) return Set();
             if (prefix_typedSet()) return TypedSet();
             if (prefix_backreference()) return Backreference();
@@ -174,14 +175,14 @@ namespace GDDL
 
         private Element NamedElement()
         {
-            var name = PopExpected(Tokens.Ident, Tokens.String);
+            var name = PopExpected(TokenType.Ident, TokenType.String);
 
-            var n = name.Name == Tokens.Ident ? name.Text : Lexer.UnescapeString(name);
+            var n = name.Type == TokenType.Ident ? name.Text : Lexer.UnescapeString(name);
 
-            PopExpected(Tokens.EqualSign);
+            PopExpected(TokenType.EqualSign);
 
             if (!prefix_basicElement())
-                throw new ParserException(this, $"Expected a basic element after EqualSign, found {Lexer.Peek()} instead");
+                throw new ParserException(this, $"Expected a basic element after EqualSign, found {Lex.Peek()} instead");
 
             var b = BasicElement();
             b.Comment = name.Comment;
@@ -195,21 +196,21 @@ namespace GDDL
         {
             var rooted = false;
 
-            if (Lexer.Peek() == Tokens.Colon)
+            if (Lex.Peek() == TokenType.Colon)
             {
-                PopExpected(Tokens.Colon);
+                PopExpected(TokenType.Colon);
                 rooted = true;
             }
             if (!prefix_identifier())
-                throw new ParserException(this, $"Expected identifier, found {Lexer.Peek()} instead");
+                throw new ParserException(this, $"Expected identifier, found {Lex.Peek()} instead");
 
             var name = Identifier();
-            var b = Structure.Element.Backreference(rooted, name.Text);
+            var b = rooted ? Reference.Absolute(name.Text) : Reference.Relative(name.Text);
             b.Comment = name.Comment;
 
-            while (Lexer.Peek() == Tokens.Colon)
+            while (Lex.Peek() == TokenType.Colon)
             {
-                PopExpected(Tokens.Colon);
+                PopExpected(TokenType.Colon);
 
                 name = Identifier();
 
@@ -221,30 +222,30 @@ namespace GDDL
 
         private Collection Set()
         {
-            var openBrace = PopExpected(Tokens.LBrace);
+            var openBrace = PopExpected(TokenType.LBrace);
 
-            var s = Structure.Element.Set();
+            var s = Collection.Empty();
             s.Comment = openBrace.Comment;
 
-            while (Lexer.Peek() != Tokens.RBrace)
+            while (Lex.Peek() != TokenType.RBrace)
             {
                 finishedWithRbrace = false;
 
                 if (!prefix_element())
-                    throw new ParserException(this, $"Expected element after LBRACE, found {Lexer.Peek()} instead");
+                    throw new ParserException(this, $"Expected element after LBRACE, found {Lex.Peek()} instead");
 
                 s.Add(Element());
 
-                if (Lexer.Peek() != Tokens.RBrace)
+                if (Lex.Peek() != TokenType.RBrace)
                 {
-                    if (!finishedWithRbrace || (Lexer.Peek() == Tokens.Comma))
+                    if (!finishedWithRbrace || (Lex.Peek() == TokenType.Comma))
                     {
-                        PopExpected(Tokens.Comma);
+                        PopExpected(TokenType.Comma);
                     }
                 }
             }
 
-            PopExpected(Tokens.RBrace);
+            PopExpected(TokenType.RBrace);
 
             finishedWithRbrace = true;
 
@@ -268,28 +269,28 @@ namespace GDDL
 
         private Token Identifier()
         {
-            if (Lexer.Peek() == Tokens.Ident) return PopExpected(Tokens.Ident);
+            if (Lex.Peek() == TokenType.Ident) return PopExpected(TokenType.Ident);
 
             throw new ParserException(this, "Internal error");
         }
 
         public static Value NullValue(Token token)
         {
-            Value v = Structure.Element.NullValue();
+            Value v = Value.Null();
             v.Comment = token.Comment;
             return v;
         }
 
         public static Value BooleanValue(Token token)
         {
-            Value v = Structure.Element.BooleanValue(token.Name == Tokens.True);
+            Value v = Value.Of(token.Type == TokenType.True);
             v.Comment = token.Comment;
             return v;
         }
 
         public static Value IntValue(Token token)
         {
-            Value v = Structure.Element.IntValue(long.Parse(token.Text, CultureInfo.InvariantCulture));
+            Value v = Value.Of(long.Parse(token.Text, CultureInfo.InvariantCulture));
             v.Comment = token.Comment;
             return v;
         }
@@ -304,7 +305,7 @@ namespace GDDL
                 p++;
                 sign = -1;
             }
-            Value v = Structure.Element.IntValue(sign * long.Parse(s.Substring(p), 
+            Value v = Value.Of(sign * long.Parse(s.Substring(p), 
                 NumberStyles.HexNumber, CultureInfo.InvariantCulture));
             v.Comment = token.Comment;
             return v;
@@ -312,26 +313,26 @@ namespace GDDL
 
         public static Value FloatValue(Token token)
         {
-            Value v = Structure.Element.FloatValue(double.Parse(token.Text, CultureInfo.InvariantCulture));
+            Value v = Value.Of(double.Parse(token.Text, CultureInfo.InvariantCulture));
             v.Comment = token.Comment;
             return v;
         }
 
         public static Value StringValue(Token token)
         {
-            Value v = Structure.Element.StringValue(Lexer.UnescapeString(token));
+            Value v = Value.Of(Lexer.UnescapeString(token));
             v.Comment = token.Comment;
             return v;
         }
 
         public ParsingContext GetParsingContext()
         {
-            return Lexer.GetParsingContext();
+            return Lex.GetParsingContext();
         }
 
         public void Dispose()
         {
-            Lexer.Dispose();
+            Lex.Dispose();
         }
     }
 }

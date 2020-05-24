@@ -1,12 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using GDDL.Config;
 
 namespace GDDL.Structure
 {
-    public class Reference : Element
+    public class Reference : Element, IEquatable<Reference>
     {
+        // Factory Methods
+        public static Reference Absolute(params string[] parts)
+        {
+            return new Reference(true, parts);
+        }
+
+        public static Reference Relative(params string[] parts)
+        {
+            return new Reference(false, parts);
+        }
+
+        // Implementation
         protected readonly List<string> NamePart = new List<string>();
 
         private bool resolved;
@@ -17,12 +30,7 @@ namespace GDDL.Structure
         public override bool IsResolved => resolved;
         public override Element ResolvedValue => resolvedValue;
 
-        internal Reference(params string[] parts)
-        {
-            NamePart.AddRange(parts);
-        }
-
-        internal Reference(bool rooted, params string[] parts)
+        private Reference(bool rooted, params string[] parts)
         {
             Rooted = rooted;
             NamePart.AddRange(parts);
@@ -40,7 +48,7 @@ namespace GDDL.Structure
 
         public override Element Copy()
         {
-            var b = new Reference();
+            var b = new Reference(Rooted);
             CopyTo(b);
             return b;
         }
@@ -135,6 +143,34 @@ namespace GDDL.Structure
                 else
                     builder.Append(ResolvedValue);
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == this) return true;
+            if (obj == null || GetType() != obj.GetType()) return false;
+            return obj is Reference other ? EqualsImpl(other) : false;
+        }
+
+        public bool Equals(Reference other)
+        {
+            if (other == this) return true;
+            if (other == null) return false;
+            return EqualsImpl(other);
+        }
+
+        protected bool EqualsImpl(Reference other)
+        {
+            if (!base.EqualsImpl(other)) return false;
+            return IsResolved == other.IsResolved &&
+                Rooted == other.Rooted &&
+                Enumerable.SequenceEqual(NamePart, other.NamePart) &&
+                Equals(ResolvedValue, other.ResolvedValue);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base.GetHashCode(), NamePart, IsResolved, ResolvedValue, Rooted);
         }
     }
 }

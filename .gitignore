@@ -1,7 +1,7 @@
 /GDDL/bin
 /GDDL/obj
-/GDDL.Test/bin
-/GDDL.Test/obj
+/GDDLTests/bin
+/GDDLTests/obj
 /GDDL.Demo/bin
 /GDDL.Demo/obj
 /.idea

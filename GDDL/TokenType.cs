@@ -1,7 +1,7 @@
 
 namespace GDDL
 {
-    public enum Tokens
+    public enum TokenType
     {
         Nil,
         Null,

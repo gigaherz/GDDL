@@ -5,8 +5,35 @@ using GDDL.Config;
 
 namespace GDDL.Structure
 {
-    public class Value : Element
+    public class Value : Element, IEquatable<Value>
     {
+        // Factory Methods
+        public static Value Null()
+        {
+            return new Value();
+        }
+
+        public static Value Of(bool value)
+        {
+            return new Value(value);
+        }
+
+        public static Value Of(long num)
+        {
+            return new Value(num);
+        }
+
+        public static Value Of(double num)
+        {
+            return new Value(num);
+        }
+
+        public static Value Of(string s)
+        {
+            return new Value(s ?? "");
+        }
+
+        // Implementation
         public object Data { get; private set; }
 
         public string String
@@ -97,6 +124,31 @@ namespace GDDL.Structure
             {
                 builder.Append(string.Format(CultureInfo.InvariantCulture, "{0}", Data));
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == this) return true;
+            if (obj == null || GetType() != obj.GetType()) return false;
+            return obj is Value other ? EqualsImpl(other) : false;
+        }
+
+        public bool Equals(Value other)
+        {
+            if (other == this) return true;
+            if (other == null) return false;
+            return EqualsImpl(other);
+        }
+
+        protected bool EqualsImpl(Value other)
+        {
+            if (!base.EqualsImpl(other)) return false;
+            return Equals(Data, other.Data);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base.GetHashCode(), Data);
         }
     }
 }

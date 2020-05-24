@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -12,47 +13,6 @@ namespace GDDL.Structure
 
         public virtual bool IsResolved => true;
         public virtual Element ResolvedValue => this;
-
-        // Factory methods
-        public static Collection Set(params Element[] initial)
-        {
-            return new Collection(initial);
-        }
-
-        public static Collection Set(IEnumerable<Element> initial)
-        {
-            return new Collection(initial);
-        }
-
-        public static Reference Backreference(bool rooted, params string[] parts)
-        {
-            return new Reference(rooted, parts);
-        }
-
-        public static Value NullValue()
-        {
-            return new Value();
-        }
-
-        public static Value BooleanValue(bool value)
-        {
-            return new Value(value);
-        }
-
-        public static Value IntValue(long num)
-        {
-            return new Value(num);
-        }
-
-        public static Value FloatValue(double num)
-        {
-            return new Value(num);
-        }
-
-        public static Value StringValue(string s)
-        {
-            return new Value(s ?? "");
-        }
 
         // Actual instance methods
         public bool HasName()
@@ -150,6 +110,24 @@ namespace GDDL.Structure
         {
             this.Name = name;
             return this;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == this) return true;
+            if (obj == null || GetType() != obj.GetType()) return false;
+            return obj is Element e ? EqualsImpl(e) : false;
+        }
+
+        protected bool EqualsImpl(Element other)
+        {
+            return ((string.IsNullOrEmpty(Comment) && string.IsNullOrEmpty(other.Comment)) || Equals(Comment, other.Comment)) &&
+                    Equals(Name, other.Name);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Comment, Name);
         }
     }
 }
