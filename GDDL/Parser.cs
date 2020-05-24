@@ -53,14 +53,11 @@ namespace GDDL
         private Token PopExpected(params Tokens[] expected)
         {
             Tokens current = Lexer.Peek();
-            if (expected.Any(expectedToken => current == expectedToken))
-            {
+            if (expected.Any(t => current == t))
                 return Lexer.Pop();
-            }
 
             if (expected.Length != 1)
-                throw new ParserException(this,
-                    $"Unexpected token {current}. Expected one of: {string.Join(", ", expected)}.");
+                throw new ParserException(this, $"Unexpected token {current}. Expected one of: {string.Join(", ", expected)}.");
 
             throw new ParserException(this, $"Unexpected token {current}. Expected: {expected[0]}.");
         }
@@ -187,6 +184,7 @@ namespace GDDL
                 throw new ParserException(this, $"Expected a basic element after EqualSign, found {Lexer.Peek()} instead");
 
             var b = BasicElement();
+            b.Comment = name.Comment;
 
             b.Name = n;
 
@@ -206,7 +204,8 @@ namespace GDDL
                 throw new ParserException(this, $"Expected identifier, found {Lexer.Peek()} instead");
 
             var name = Identifier();
-            var b = Structure.Element.Backreference(rooted, name);
+            var b = Structure.Element.Backreference(rooted, name.Text);
+            b.Comment = name.Comment;
 
             while (Lexer.Peek() == Tokens.Colon)
             {
@@ -214,7 +213,7 @@ namespace GDDL
 
                 name = Identifier();
 
-                b.Add(name);
+                b.Add(name.Text);
             }
 
             return b;
@@ -222,9 +221,10 @@ namespace GDDL
 
         private Collection Set()
         {
-            PopExpected(Tokens.LBrace);
+            var openBrace = PopExpected(Tokens.LBrace);
 
             var s = Structure.Element.Set();
+            s.Comment = openBrace.Comment;
 
             while (Lexer.Peek() != Tokens.RBrace)
             {
@@ -259,31 +259,39 @@ namespace GDDL
                 throw new ParserException(this, "Internal error");
             var s = Set();
 
-            s.TypeName = type;
+            s.Comment = type.Comment;
+
+            s.TypeName = type.Text;
 
             return s;
         }
 
-        private string Identifier()
+        private Token Identifier()
         {
-            if (Lexer.Peek() == Tokens.Ident) return PopExpected(Tokens.Ident).Text;
+            if (Lexer.Peek() == Tokens.Ident) return PopExpected(Tokens.Ident);
 
             throw new ParserException(this, "Internal error");
         }
 
         public static Value NullValue(Token token)
         {
-            return Structure.Element.NullValue();
+            Value v = Structure.Element.NullValue();
+            v.Comment = token.Comment;
+            return v;
         }
 
         public static Value BooleanValue(Token token)
         {
-            return Structure.Element.BooleanValue(token.Name == Tokens.True);
+            Value v = Structure.Element.BooleanValue(token.Name == Tokens.True);
+            v.Comment = token.Comment;
+            return v;
         }
 
         public static Value IntValue(Token token)
         {
-            return Structure.Element.IntValue(long.Parse(token.Text, CultureInfo.InvariantCulture));
+            Value v = Structure.Element.IntValue(long.Parse(token.Text, CultureInfo.InvariantCulture));
+            v.Comment = token.Comment;
+            return v;
         }
 
         public static Value IntValue(Token token, int _base)
@@ -296,19 +304,24 @@ namespace GDDL
                 p++;
                 sign = -1;
             }
-            return
-                Structure.Element.IntValue(sign * long.Parse(s.Substring(p), NumberStyles.HexNumber,
-                    CultureInfo.InvariantCulture));
+            Value v = Structure.Element.IntValue(sign * long.Parse(s.Substring(p), 
+                NumberStyles.HexNumber, CultureInfo.InvariantCulture));
+            v.Comment = token.Comment;
+            return v;
         }
 
         public static Value FloatValue(Token token)
         {
-            return Structure.Element.FloatValue(double.Parse(token.Text, CultureInfo.InvariantCulture));
+            Value v = Structure.Element.FloatValue(double.Parse(token.Text, CultureInfo.InvariantCulture));
+            v.Comment = token.Comment;
+            return v;
         }
 
         public static Value StringValue(Token token)
         {
-            return Structure.Element.StringValue(Lexer.UnescapeString(token));
+            Value v = Structure.Element.StringValue(Lexer.UnescapeString(token));
+            v.Comment = token.Comment;
+            return v;
         }
 
         public ParsingContext GetParsingContext()
