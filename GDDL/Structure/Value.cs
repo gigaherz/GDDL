@@ -1,7 +1,4 @@
 using System;
-using System.Globalization;
-using System.Text;
-using GDDL.Config;
 using GDDL.Util;
 
 namespace GDDL.Structure
@@ -38,6 +35,10 @@ namespace GDDL.Structure
         private object data;
 
         public bool IsNull => data == null;
+        public bool IsBoolean => data is bool;
+        public bool IsInteger => data is long;
+        public bool IsDouble => data is double;
+        public bool IsString => data is string;
 
         public string String
         {
@@ -112,26 +113,6 @@ namespace GDDL.Structure
                 throw new ArgumentException("CopyTo for invalid type");
             var b = (Value)other;
             b.data = data;
-        }
-
-        protected override void ToStringImpl(StringBuilder builder, StringGenerationContext ctx)
-        {
-            if (data == null)
-            {
-                builder.Append("null");
-            }
-            else if (data is bool)
-            {
-                builder.Append(Boolean ? "true" : "false");
-            }
-            else if (data is string)
-            {
-                builder.Append(Lexer.EscapeString(String));
-            }
-            else
-            {
-                builder.Append(string.Format(CultureInfo.InvariantCulture, "{0}", data));
-            }
         }
 
         public override bool Equals(object obj)

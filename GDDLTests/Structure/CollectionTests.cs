@@ -11,21 +11,21 @@ namespace GDDL.Tests.Structure
     public class CollectionTests
     {
         [TestMethod]
-        public void emptyCollectionContainsNoItems()
+        public void EmptyCollectionContainsNoItems()
         {
             Collection collection = Collection.Empty();
             Assert.AreEqual(0, collection.Count);
         }
 
         [TestMethod]
-        public void collectionOfAddsElements()
+        public void CollectionOfAddsElements()
         {
             Collection collection = Collection.Of(Value.Of(1));
             Assert.AreEqual(1, collection.Count);
         }
 
         [TestMethod]
-        public void collectionOfAddsNames()
+        public void CollectionOfAddsNames()
         {
             var named = Value.Of(true).WithName("test");
             Collection collection = Collection.Of(named);
@@ -35,7 +35,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void collectionAddAddsElements()
+        public void CollectionAddAddsElements()
         {
             Collection collection = Collection.Empty();
             Assert.AreEqual(0, collection.Count);
@@ -44,7 +44,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void collectionAddAddsNames()
+        public void CollectionAddAddsNames()
         {
             var named = Value.Of(1).WithName("test");
             Collection collection = Collection.Empty();
@@ -56,7 +56,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void collectionAddAllAddsElements()
+        public void CollectionAddAllAddsElements()
         {
             Collection collection = Collection.Empty();
             Assert.AreEqual(0, collection.Count);
@@ -65,7 +65,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void collectionGetReturnsElements()
+        public void CollectionGetReturnsElements()
         {
             Value second = Value.Of(2);
             Collection collection = Collection.Of(Value.Of(1), second, Value.Of(3));
@@ -73,7 +73,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void collectionInsertInsertsElements()
+        public void CollectionInsertInsertsElements()
         {
             Value second = Value.Of(2);
             Value third = Value.Of(3);

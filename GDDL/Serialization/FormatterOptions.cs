@@ -1,11 +1,12 @@
-namespace GDDL.Config
+﻿namespace GDDL.Serialization
 {
-    public class StringGenerationOptions
+    public class FormatterOptions
     {
-        public static readonly StringGenerationOptions Compact = new StringGenerationOptions(); // Default
-        public static readonly StringGenerationOptions Nice = new StringGenerationOptions();
+        public static readonly FormatterOptions Compact = new FormatterOptions(); // Default
+        public static readonly FormatterOptions Nice = new FormatterOptions();
 
-        static StringGenerationOptions() {
+        static FormatterOptions()
+        {
             Nice.writeComments = true;
             Nice.lineBreaksAfterOpeningBrace = 1;
             Nice.lineBreaksBeforeClosingBrace = 1;
@@ -20,7 +21,7 @@ namespace GDDL.Config
             Nice.spacesPerIndent = 4;
         }
 
-        // Sets
+        // Collections
         public int lineBreaksBeforeOpeningBrace = 0;
         public int lineBreaksAfterOpeningBrace = 0;
         public int lineBreaksBeforeClosingBrace = 0;
@@ -31,25 +32,23 @@ namespace GDDL.Config
         public int spacesAfterClosingBrace = 0;
         public int oneElementPerLineThreshold = int.MaxValue;
         public int spacesBetweenElements = 1;
+        public bool omitCommaAfterClosingBrace = false;
 
         // Values
         public int lineBreaksAfterValues = 0;
-
-        // Naming
-        public bool alwaysQuoteNames = false;
-        public int lineBreaksAfterName = 0;
-
-        // Typing
-        public bool alwaysQuoteTypes = false;
-        public int lineBreaksAfterType = 0;
+        public DoubleFormattingStyle floatFormattingStyle = DoubleFormattingStyle.Auto;
+        public bool alwaysShowNumberSign = false;
+        public bool alwaysShowExponentSign = false;
+        public int autoScientificNotationUpper = 5;
+        public int autoScientificNotationLower = -2;
+        public int floatSignificantFigures = 15;
 
         // Indentation
         public bool indentUsingTabs = false;
         public int spacesPerIndent = 2;
-        public int indentSetContents = 0;
-        public int indentExtraLines = 0;
 
         // Comments
         public bool writeComments = false;
+
     }
 }

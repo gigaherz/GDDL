@@ -1,13 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using GDDL.Config;
+using GDDL.Util;
 
 namespace GDDL.Structure
 {
-    public class Collection : Element, IList<Element>, IDictionary<string, Element>, IEquatable<Collection>
+    public class Collection : Element, IList<Element>, IEquatable<Collection>
     {
         // Factory Methods
         public static Collection Empty()
@@ -26,10 +26,11 @@ namespace GDDL.Structure
 
         // Implementation
         private readonly List<Element> contents = new List<Element>();
-        private readonly Dictionary<string, Element> names = new Dictionary<string, Element>();
+        private readonly MultiMap<string, Element> names = new MultiMap<string, Element>();
 
         private string typeName;
 
+        public bool HasTypeName => !string.IsNullOrEmpty(typeName);
         public string TypeName
         {
             get => typeName;
@@ -45,10 +46,12 @@ namespace GDDL.Structure
 
         public bool IsReadOnly => false;
 
-        public Element this[string name]
+        public bool IsEmpty => contents.Count == 0;
+        public bool IsSimple => !contents.Any(a => a is Collection || a.HasName);
+
+        public Optional<Element> this[string name]
         {
-            get => names[name];
-            set => throw new InvalidOperationException("Cannot put elements by name.");
+            get => TryGetValue(name, out var e) ? Optional.Of(e) : Optional.Empty<Element>();
         }
 
         public Element this[int index]
@@ -57,10 +60,10 @@ namespace GDDL.Structure
             set
             {
                 var old = contents[index];
-                if (old.HasName())
-                    names.Remove(old.Name);
+                if (old.HasName)
+                    names.Remove(old.Name, old);
                 contents[index] = value;
-                if (value.HasName())
+                if (value.HasName)
                     names.Add(value.Name, value);
             }
         }
@@ -79,26 +82,16 @@ namespace GDDL.Structure
             AddRange(init);
         }
 
-        public bool HasTypeName()
-        {
-            return TypeName != null;
-        }
-
         public Collection WithTypeName(string typeName)
         {
             TypeName = typeName;
             return this;
         }
 
-        public bool IsEmpty()
-        {
-            return contents.Count == 0;
-        }
-
         public void Add(Element e)
         {
             contents.Add(e);
-            if (e.HasName())
+            if (e.HasName)
                 names.Add(e.Name, e);
         }
 
@@ -112,7 +105,7 @@ namespace GDDL.Structure
         public void Insert(int before, Element e)
         {
             contents.Insert(before, e);
-            if (e.HasName())
+            if (e.HasName)
                 names.Add(e.Name, e);
         }
 
@@ -127,8 +120,8 @@ namespace GDDL.Structure
         public bool Remove(Element e)
         {
             bool r = contents.Remove(e);
-            if (e.HasName())
-                names.Remove(e.Name);
+            if (e.HasName)
+                names.Remove(e.Name, e);
             return r;
         }
 
@@ -136,8 +129,8 @@ namespace GDDL.Structure
         {
             var e = contents[index];
             contents.RemoveAt(index);
-            if (e.HasName())
-                names.Remove(e.Name);
+            if (e.HasName)
+                names.Remove(e.Name, e);
         }
 
         public int IndexOf(Element o)
@@ -145,151 +138,10 @@ namespace GDDL.Structure
             return contents.IndexOf(o);
         }
 
-        void ICollection<KeyValuePair<string, Element>>.Add(KeyValuePair<string, Element> item)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Clear()
         {
             contents.Clear();
             names.Clear();
-        }
-
-        bool ICollection<KeyValuePair<string, Element>>.Contains(KeyValuePair<string, Element> item)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ICollection<KeyValuePair<string, Element>>.CopyTo(KeyValuePair<string, Element>[] array, int arrayIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool IsSimple()
-        {
-            return !contents.Any(a => a is Collection || a.HasName());
-        }
-
-        protected override void ToStringImpl(StringBuilder builder, StringGenerationContext ctx)
-        {
-            ctx.PushIndent();
-
-            bool oneElementPerLine = !IsSimple() || contents.Count > ctx.Options.oneElementPerLineThreshold;
-
-            if (HasTypeName())
-            {
-                builder.Append(typeName);
-                if (ctx.Options.lineBreaksBeforeOpeningBrace == 0)
-                    builder.Append(" ");
-            }
-            bool addBraces = ctx.IndentLevel > 0 || HasTypeName();
-            if (addBraces)
-            {
-                if (oneElementPerLine && ctx.Options.lineBreaksBeforeOpeningBrace > 0)
-                {
-                    for (int i = 0; i < ctx.Options.lineBreaksBeforeOpeningBrace; i++)
-                    {
-                        builder.Append("\n");
-                    }
-                    ctx.AppendIndent(builder);
-                }
-                else if (ctx.Options.spacesBeforeOpeningBrace > 0)
-                {
-                    for (int i = 0; i < ctx.Options.spacesBeforeOpeningBrace; i++)
-                    {
-                        builder.Append(" ");
-                    }
-                }
-                builder.Append("{");
-                if (oneElementPerLine && ctx.Options.lineBreaksAfterOpeningBrace > 0)
-                {
-                    for (int i = 0; i < ctx.Options.lineBreaksAfterOpeningBrace; i++)
-                    {
-                        builder.Append("\n");
-                    }
-                }
-                else if (ctx.Options.spacesAfterOpeningBrace > 0)
-                {
-                    for (int i = 0; i < ctx.Options.spacesAfterOpeningBrace; i++)
-                    {
-                        builder.Append(" ");
-                    }
-                }
-                ctx.PushIndent();
-                ctx.IncIndent();
-            }
-
-            bool first = true;
-            foreach (var e in contents)
-            {
-                ctx.PushIndent();
-
-                if (first && (!oneElementPerLine || ctx.Options.lineBreaksAfterOpeningBrace == 0))
-                {
-                    ctx.SetIndent(0);
-                }
-                else if (!first)
-                {
-                    builder.Append(",");
-                    if (oneElementPerLine)
-                    {
-                        builder.Append("\n");
-                    }
-                    else if (ctx.Options.spacesBetweenElements > 0)
-                    {
-                        for (int i = 0; i < ctx.Options.spacesBetweenElements; i++)
-                        {
-                            builder.Append(" ");
-                        }
-                    }
-
-                    if (!oneElementPerLine)
-                        ctx.SetIndent(0);
-                }
-
-                e.ToStringWithName(builder, ctx);
-
-                first = false;
-                ctx.PopIndent();
-            }
-
-            if (addBraces)
-            {
-                ctx.PopIndent();
-                if (oneElementPerLine && ctx.Options.lineBreaksBeforeClosingBrace > 0)
-                {
-                    for (int i = 0; i < ctx.Options.lineBreaksBeforeClosingBrace; i++)
-                    {
-                        builder.Append("\n");
-                    }
-                    ctx.AppendIndent(builder);
-                }
-                else if (ctx.Options.spacesBeforeClosingBrace > 0)
-                {
-                    for (int i = 0; i < ctx.Options.spacesBeforeClosingBrace; i++)
-                    {
-                        builder.Append(" ");
-                    }
-                }
-                builder.Append("}");
-                if (oneElementPerLine && ctx.Options.lineBreaksAfterClosingBrace > 0)
-                {
-                    for (int i = 0; i < ctx.Options.lineBreaksAfterClosingBrace; i++)
-                    {
-                        builder.Append("\n");
-                    }
-                }
-                else if (ctx.Options.spacesAfterClosingBrace > 0)
-                {
-                    for (int i = 0; i < ctx.Options.spacesAfterClosingBrace; i++)
-                    {
-                        builder.Append(" ");
-                    }
-                }
-            }
-
-            ctx.PopIndent();
         }
 
         public override Element Copy()
@@ -334,12 +186,27 @@ namespace GDDL.Structure
 
         public IEnumerable<Element> ByName(string elementName)
         {
-            return contents.Where(t => t.HasName() && t.Name == elementName);
+            return contents.Where(t => t.HasName && t.Name == elementName);
         }
 
         public IEnumerable<Collection> ByType(string type)
         {
             return contents.OfType<Collection>().Where(e => e.TypeName == type);
+        }
+
+        internal bool TryGetValue(string key, [MaybeNullWhen(false)] out Element result)
+        {
+            var n = names[key];
+            if (n.Count > 0)
+            {
+                result = n.First();
+                return true;
+            }
+            else
+            {
+                result = null;
+                return false;
+            }
         }
 
         public IEnumerator<Element> GetEnumerator()
@@ -362,45 +229,19 @@ namespace GDDL.Structure
             contents.CopyTo(array, arrayIndex);
         }
 
-        public bool TryGetValue(string key, out Element value)
-        {
-            return names.TryGetValue(key, out value);
-        }
-
         public bool ContainsKey(string key)
         {
-            return names.ContainsKey(key);
+            return names[key].Count > 0;
         }
 
-        public bool Remove(string key)
+        public bool RemoveAll(string key)
         {
-            Element value;
-            return TryGetValue(key, out value) && Remove(value);
+            var items = names[key];
+            if (items.Count == 0)
+                return false;
+            items.Clear();
+            return true;
         }
-
-        #region IDictionary explicit
-        IEnumerator<KeyValuePair<string, Element>> IEnumerable<KeyValuePair<string, Element>>.GetEnumerator()
-        {
-            return names.GetEnumerator();
-        }
-
-        bool ICollection<KeyValuePair<string, Element>>.Remove(KeyValuePair<string, Element> item)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IDictionary<string, Element>.Add(string key, Element value)
-        {
-            throw new NotImplementedException();
-        }
-
-        ICollection<string> IDictionary<string, Element>.Keys => names.Keys;
-
-        ICollection<Element> IDictionary<string, Element>.Values
-        {
-            get { throw new NotImplementedException(); }
-        }
-        #endregion
 
         #region Equality
         public override bool Equals(object obj)

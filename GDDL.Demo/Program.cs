@@ -1,5 +1,5 @@
-﻿using System;
-using GDDL.Config;
+﻿using GDDL.Serialization;
+using System;
 
 namespace GDDL.Test
 {
@@ -9,7 +9,7 @@ namespace GDDL.Test
         {
             var p = Parser.FromFile("..\\..\\..\\..\\Samples\\Test.txt");
             var parsedData = p.Parse();
-            var text = parsedData.ToString(new StringGenerationContext(StringGenerationOptions.Nice));
+            var text = Formatter.FormatNice(parsedData);
             //File.WriteAllText("Output.txt", text);
 
             Console.OutputEncoding = System.Text.Encoding.Unicode;

@@ -10,7 +10,7 @@ namespace GDDL.Tests.Structure
     public class ValueTests
     {
         [TestMethod]
-        public void equalsAndHashcodeWork()
+        public void EqualsAndHashcodeWork()
         {
             Value vNull = Value.Null();
             Value vSame1 = Value.Of(1);
@@ -27,7 +27,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void nullValueWorks()
+        public void NullValueWorks()
         {
             Value v = Value.Null();
             Assert.IsTrue(v.IsNull);
@@ -38,7 +38,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void ofBooleanTrueWorks()
+        public void OfBooleanTrueWorks()
         {
             Value v = Value.Of(true);
             Assert.IsFalse(v.IsNull);
@@ -49,7 +49,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void ofBooleanFalseWorks()
+        public void OfBooleanFalseWorks()
         {
             Value v = Value.Of(false);
             Assert.IsFalse(v.IsNull);
@@ -60,7 +60,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void ofLongWorks()
+        public void OfLongWorks()
         {
             Value v = Value.Of(1);
             Assert.IsFalse(v.IsNull);
@@ -71,7 +71,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void ofDoubleWorks()
+        public void OfDoubleWorks()
         {
             Value v = Value.Of(1.0);
             Assert.IsFalse(v.IsNull);
@@ -82,7 +82,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void ofStringWorks()
+        public void OfStringWorks()
         {
             Value v = Value.Of("1");
             Assert.IsFalse(v.IsNull);
@@ -93,14 +93,14 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void copyOfNullWorks()
+        public void CopyOfNullWorks()
         {
             Value v = Value.Null().CopyValue();
             Assert.IsTrue(v.IsNull);
         }
 
         [TestMethod]
-        public void copyOfBooleanTrueWorks()
+        public void CopyOfBooleanTrueWorks()
         {
             Value v = Value.Of(true).CopyValue();
             Assert.IsFalse(v.IsNull);
@@ -108,7 +108,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void copyOfBooleanFalseWorks()
+        public void CopyOfBooleanFalseWorks()
         {
             Value v = Value.Of(false).CopyValue();
             Assert.IsFalse(v.IsNull);
@@ -116,7 +116,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void copyOfLongWorks()
+        public void CopyOfLongWorks()
         {
             Value v = Value.Of(1).CopyValue();
             Assert.IsFalse(v.IsNull);
@@ -124,7 +124,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void copyOfDoubleWorks()
+        public void CopyOfDoubleWorks()
         {
             Value v = Value.Of(1.0).CopyValue();
             Assert.IsFalse(v.IsNull);
@@ -132,7 +132,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void copyOfStringWorks()
+        public void CopyOfStringWorks()
         {
             Value v = (Value)Value.Of("1").Copy();
             Assert.IsFalse(v.IsNull);
@@ -140,7 +140,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void setNullWorks()
+        public void SetNullWorks()
         {
             Value v = Value.Of(1);
             Assert.IsFalse(v.IsNull);
@@ -149,7 +149,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void setBooleanWorks()
+        public void SetBooleanWorks()
         {
             Value v = Value.Null();
             Assert.IsTrue(v.IsNull);
@@ -159,7 +159,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void setLongWorks()
+        public void SetLongWorks()
         {
             Value v = Value.Null();
             Assert.IsTrue(v.IsNull);
@@ -169,7 +169,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void setDoubleWorks()
+        public void SetDoubleWorks()
         {
             Value v = Value.Null();
             Assert.IsTrue(v.IsNull);
@@ -179,7 +179,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void setStringWorks()
+        public void SetStringWorks()
         {
             Value v = Value.Null();
             Assert.IsTrue(v.IsNull);

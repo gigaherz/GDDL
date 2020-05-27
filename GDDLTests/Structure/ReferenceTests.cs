@@ -10,7 +10,7 @@ namespace GDDL.Tests.Structure
     public class ReferenceTests
     {
         [TestMethod]
-        public void referenceResolvesToElement()
+        public void ReferenceResolvesToElement()
         {
             Collection root = Collection.Of(Value.Of("child"));
             Reference r = Reference.Absolute();
@@ -19,7 +19,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void absoluteReferenceResolvesToRoot()
+        public void AbsoluteReferenceResolvesToRoot()
         {
             Collection parent = Collection.Of(Value.Of("parent"));
             Collection root = Collection.Of(Value.Of("root"), parent);
@@ -29,7 +29,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void relativeReferenceResolvesToParent()
+        public void RelativeReferenceResolvesToParent()
         {
             Collection parent = Collection.Of(Value.Of("parent"));
             Collection root = Collection.Of(Value.Of("root"), parent);
@@ -39,7 +39,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void absoluteChildReferenceResolvesToChild()
+        public void AbsoluteChildReferenceResolvesToChild()
         {
             var relativeChild = Value.Of("Relative child").WithName("child");
             var absoluteChild = Value.Of("Absolute child").WithName("child");
@@ -51,7 +51,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void relativeChildReferenceResolvesToChild()
+        public void RelativeChildReferenceResolvesToChild()
         {
             var relativeChild = Value.Of("Relative child").WithName("child");
             var absoluteChild = Value.Of("Absolute child").WithName("child");
@@ -63,7 +63,7 @@ namespace GDDL.Tests.Structure
         }
 
         [TestMethod]
-        public void nestedChildReferenceResolvesToChild()
+        public void NestedChildReferenceResolvesToChild()
         {
             var relativeChild = Value.Of("the child").WithName("child");
             var parent = Collection.Of(Value.Of("the parent"), relativeChild).WithName("parent");

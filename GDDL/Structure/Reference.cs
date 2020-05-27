@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using GDDL.Config;
 
 namespace GDDL.Structure
 {
@@ -20,7 +18,7 @@ namespace GDDL.Structure
         }
 
         // Implementation
-        protected readonly List<string> NamePart = new List<string>();
+        protected readonly List<string> nameParts = new List<string>();
 
         private bool resolved;
         private Element resolvedValue;
@@ -30,20 +28,22 @@ namespace GDDL.Structure
         public override bool IsResolved => resolved;
         public override Element ResolvedValue => resolvedValue;
 
+        public IList<string> NameParts => nameParts.AsReadOnly();
+
         private Reference(bool rooted, params string[] parts)
         {
             Rooted = rooted;
-            NamePart.AddRange(parts);
+            nameParts.AddRange(parts);
         }
 
         public void Add(string name)
         {
-            NamePart.Add(name);
+            nameParts.Add(name);
         }
 
         public void AddRange(IEnumerable<string> names)
         {
-            NamePart.AddRange(names);
+            nameParts.AddRange(names);
         }
 
         public override Element Copy()
@@ -64,7 +64,7 @@ namespace GDDL.Structure
             if (!(other is Reference))
                 throw new ArgumentException("CopyTo for invalid type", nameof(other));
             var b = (Reference)other;
-            b.AddRange(NamePart);
+            b.AddRange(nameParts);
             if (resolved)
             {
                 b.resolved = true;
@@ -90,11 +90,11 @@ namespace GDDL.Structure
         {
             var elm = relative ? parent : root;
 
-            bool parentRoot = parent.HasName() && NamePart[0] == parent.Name;
+            bool parentRoot = parent.HasName && nameParts[0] == parent.Name;
 
-            for (int i = parentRoot ? 1 : 0; i < NamePart.Count; i++)
+            for (int i = parentRoot ? 1 : 0; i < nameParts.Count; i++)
             {
-                string part = NamePart[i];
+                string part = nameParts[i];
 
                 var s = elm as Collection;
 
@@ -130,26 +130,6 @@ namespace GDDL.Structure
             return copy;
         }
 
-        protected override void ToStringImpl(StringBuilder builder, StringGenerationContext ctx)
-        {
-            int count = 0;
-            foreach (var it in NamePart)
-            {
-                if (count++ > 0)
-                    builder.Append(':');
-                builder.Append(it);
-            }
-
-            if (IsResolved)
-            {
-                builder.Append('=');
-                if (ResolvedValue == null)
-                    builder.Append("NULL");
-                else
-                    builder.Append(ResolvedValue);
-            }
-        }
-
         public override bool Equals(object obj)
         {
             if (obj == this) return true;
@@ -169,13 +149,13 @@ namespace GDDL.Structure
             if (!base.EqualsImpl(other)) return false;
             return IsResolved == other.IsResolved &&
                 Rooted == other.Rooted &&
-                Enumerable.SequenceEqual(NamePart, other.NamePart) &&
+                Enumerable.SequenceEqual(nameParts, other.nameParts) &&
                 Equals(ResolvedValue, other.ResolvedValue);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(base.GetHashCode(), NamePart, IsResolved, ResolvedValue, Rooted);
+            return HashCode.Combine(base.GetHashCode(), nameParts, IsResolved, ResolvedValue, Rooted);
         }
     }
 }
