@@ -36,6 +36,7 @@ namespace GDDL.Structure
         }
 
         public abstract Element Copy();
+
         protected virtual void CopyTo(Element other)
         {
             if (HasName)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace GDDL.Util
@@ -19,6 +20,18 @@ namespace GDDL.Util
             x |= x >> 8;
             x |= x >> 16;
             return x + 1;
+        }
+
+        private const int NON_PRINTABLE =
+                        (1 << (int)UnicodeCategory.LineSeparator) |
+                        (1 << (int)UnicodeCategory.ParagraphSeparator) |
+                        (1 << (int)UnicodeCategory.Control) |
+                        (1 << (int)UnicodeCategory.PrivateUse) |
+                        (1 << (int)UnicodeCategory.Surrogate);
+
+        public static bool IsPrintable(char c)
+        {
+            return ((NON_PRINTABLE >> (int)char.GetUnicodeCategory(c)) & 1) == 0;
         }
 
         public static int CompareOrdinalIgnoreCase(this string a, string b)

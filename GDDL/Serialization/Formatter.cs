@@ -1,4 +1,5 @@
 ﻿using GDDL.Structure;
+using GDDL.Util;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -59,6 +60,14 @@ namespace GDDL.Serialization
             IndentLevel++;
         }
 
+        private void AppendMultiple(string s, int n)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                builder.Append(s);
+            }
+        }
+
         public void AppendIndent()
         {
             int tabsToGen = IndentLevel;
@@ -78,19 +87,11 @@ namespace GDDL.Serialization
             }
         }
 
-        private void AppendMultiple(string s, int n)
-        {
-            for (int i = 0; i < n; i++)
-            {
-                builder.Append(s);
-            }
-        }
-
         public void FormatStandalone(Element e)
         {
             FormatComment(e);
             FormatName(e);
-            formatElement(e, false);
+            FormatElement(e, false);
         }
 
         private static Regex CommentLineSplitter = new Regex("(?:(?:\n)|(?:\r\n))");
@@ -116,17 +117,17 @@ namespace GDDL.Serialization
             {
                 string sname = e.Name;
                 if (!Lexer.IsValidIdentifier(sname))
-                    sname = Lexer.EscapeString(sname);
+                    sname = EscapeString(sname);
                 builder.Append(sname);
                 builder.Append(" = ");
             }
         }
 
-        protected void formatElement(Element e, bool hasNext)
+        protected void FormatElement(Element e, bool hasNext)
         {
             if (e is Value v)
             {
-                formatValue(v);
+                FormatValue(v);
             }
             else if (e is Reference r)
             {
@@ -142,7 +143,7 @@ namespace GDDL.Serialization
             }
         }
 
-        protected void formatValue(Value v)
+        protected void FormatValue(Value v)
         {
             if (v.IsNull)
             {
@@ -162,7 +163,7 @@ namespace GDDL.Serialization
             }
             else if (v.IsString)
             {
-                builder.Append(Lexer.EscapeString(v.String));
+                builder.Append(EscapeString(v.String));
             }
             else
             {
@@ -211,15 +212,15 @@ namespace GDDL.Serialization
         {
             if (FormatSpecial(value))
                 return;
-            
+
             int exp = (int)Math.Floor(Math.Log10(Math.Abs(value)));
             double adjusted = value / Math.Pow(10, exp);
             FormatDoubleDecimal(adjusted);
             builder.Append("e");
             if (options.alwaysShowExponentSign)
-                FormatSign(value);
+                FormatSign(exp);
             else
-                FormatNegative(value);
+                FormatNegative(exp);
             FormatInteger(Math.Abs(exp));
         }
 
@@ -440,7 +441,7 @@ namespace GDDL.Serialization
                 bool hasNext1 = (i + 1) < c.Count;
                 FormatComment(e);
                 FormatName(e);
-                formatElement(e, hasNext1);
+                FormatElement(e, hasNext1);
                 if (hasNext1 && (!e.IsCollection || !options.omitCommaAfterClosingBrace)) builder.Append(",");
 
                 first = false;
@@ -474,6 +475,66 @@ namespace GDDL.Serialization
             }
 
             PopIndent();
+        }
+
+        public static string EscapeString(string p)
+        {
+            return EscapeString(p, '"');
+        }
+
+        public static string EscapeString(string p, char delimiter)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(delimiter);
+            foreach (char c in p)
+            {
+                if (IsValidStringCharacter(c, delimiter))
+                {
+                    sb.Append(c);
+                    continue;
+                }
+
+                sb.Append('\\');
+                switch (c)
+                {
+                    case '\b':
+                        sb.Append('b');
+                        break;
+                    case '\t':
+                        sb.Append('t');
+                        break;
+                    case '\n':
+                        sb.Append('n');
+                        break;
+                    case '\f':
+                        sb.Append('f');
+                        break;
+                    case '\r':
+                        sb.Append('r');
+                        break;
+                    case '\"':
+                        sb.Append('\"');
+                        break;
+                    case '\\':
+                        sb.Append('\\');
+                        break;
+                    default:
+                        if (c > 0xFF)
+                            sb.Append(string.Format("u%04x", (int)c));
+                        else
+                            sb.Append(string.Format("x%02x", (int)c));
+                        break;
+                }
+            }
+            sb.Append(delimiter);
+
+            return sb.ToString();
+        }
+
+        private static bool IsValidStringCharacter(char c, char delimiter)
+        {
+            return Utility.IsPrintable(c) && !char.IsControl(c) && c != delimiter && c != '\\';
         }
     }
 }

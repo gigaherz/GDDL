@@ -72,11 +72,6 @@ namespace GDDL.Structure
         {
         }
 
-        private Collection(string typeName)
-        {
-            TypeName = typeName;
-        }
-
         private Collection(IEnumerable<Element> init)
         {
             AddRange(init);
@@ -194,7 +189,7 @@ namespace GDDL.Structure
             return contents.OfType<Collection>().Where(e => e.TypeName == type);
         }
 
-        internal bool TryGetValue(string key, [MaybeNullWhen(false)] out Element result)
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out Element result)
         {
             var n = names[key];
             if (n.Count > 0)

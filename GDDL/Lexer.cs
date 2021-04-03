@@ -7,11 +7,11 @@ namespace GDDL
 {
     public sealed class Lexer : ITokenProvider
     {
-        readonly QueueList<Token> lookAhead = new QueueList<Token>();
+        private readonly QueueList<Token> lookAhead = new QueueList<Token>();
 
-        readonly Reader reader;
+        private readonly Reader reader;
 
-        bool seenEnd = false;
+        private bool seenEnd = false;
 
         public Lexer(Reader r)
         {
@@ -201,11 +201,21 @@ namespace GDDL
                 int number = 0;
                 bool fractional = false;
 
-                if (ich == '-')
+                if (ich == '.' && reader.Peek(number + 1) == 'N' && reader.Peek(number + 2) == 'a' && reader.Peek(number + 3) == 'N')
+                {
+                    return new Token(TokenType.Double, reader.Read(number + 4), startContext, comment);
+                }
+
+                if (ich == '-' || ich == '+')
                 {
                     number++;
 
                     ich = reader.Peek(number);
+                }
+
+                if (char.IsDigit((char)ich))
+                {
+                    return new Token(TokenType.Double, reader.Read(number + 4), startContext, comment);
                 }
 
                 if (char.IsDigit((char)ich))
@@ -508,57 +518,6 @@ namespace GDDL
             }
 
             throw new ParserException(t, "Invalid string literal");
-        }
-
-        public static string EscapeString(string p)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append('"');
-            foreach (char c in p)
-            {
-                bool printable = (c >= 32 && c < 127)
-                                 || char.IsWhiteSpace(c)
-                                 || char.IsLetter(c)
-                                 || char.IsDigit(c);
-                if (!char.IsControl(c) && printable && c != '"' && c != '\\')
-                {
-                    sb.Append(c);
-                    continue;
-                }
-
-                sb.Append('\\');
-                switch (c)
-                {
-                    case '\b':
-                        sb.Append('b');
-                        break;
-                    case '\t':
-                        sb.Append('t');
-                        break;
-                    case '\n':
-                        sb.Append('n');
-                        break;
-                    case '\f':
-                        sb.Append('f');
-                        break;
-                    case '\r':
-                        sb.Append('r');
-                        break;
-                    case '\"':
-                        sb.Append('\"');
-                        break;
-                    case '\\':
-                        sb.Append('\\');
-                        break;
-                    default:
-                        sb.Append(c > 0xFF ? $"u{(int)c:X4}" : $"u{(int)c:X2}");
-                        break;
-                }
-            }
-            sb.Append('"');
-
-            return sb.ToString();
         }
 
         public ParsingContext GetParsingContext()
