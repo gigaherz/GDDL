@@ -534,7 +534,7 @@ namespace GDDL.Serialization
 
         private static bool IsValidStringCharacter(char c, char delimiter)
         {
-            return Utility.IsPrintable(c) && !char.IsControl(c) && c != delimiter && c != '\\';
+            return Utility.IsPrintable(c) && !Utility.IsControl(c) && c != delimiter && c != '\\';
         }
     }
 }

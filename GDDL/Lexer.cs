@@ -132,7 +132,7 @@ namespace GDDL
                 case '=': return new Token(TokenType.EqualSign, reader.Read(1), startContext, comment);
             }
 
-            if (char.IsLetter((char)ich) || ich == '_')
+            if (Utility.IsLetter(ich) || ich == '_')
             {
                 int number = 1;
                 while (true)
@@ -141,7 +141,7 @@ namespace GDDL
                     if (ich < 0)
                         break;
 
-                    if (char.IsLetter((char)ich) || char.IsDigit((char)ich) || ich == '_')
+                    if (Utility.IsLetter(ich) || Utility.IsDigit(ich) || ich == '_')
                     {
                         number++;
                     }
@@ -195,7 +195,7 @@ namespace GDDL
                 return new Token(TokenType.String, reader.Read(number), startContext, comment);
             }
 
-            if (char.IsDigit((char)ich) || ich == '-' || ich == '.')
+            if (Utility.IsDigit(ich) || ich == '-' || ich == '.')
             {
                 // numbers
                 int number = 0;
@@ -213,19 +213,19 @@ namespace GDDL
                     ich = reader.Peek(number);
                 }
 
-                if (char.IsDigit((char)ich))
+                if (ich == '.' && reader.Peek(number + 1) == 'I' && reader.Peek(number + 2) == 'n' && reader.Peek(number + 3) == 'f')
                 {
                     return new Token(TokenType.Double, reader.Read(number + 4), startContext, comment);
                 }
 
-                if (char.IsDigit((char)ich))
+                if (Utility.IsDigit(ich))
                 {
                     if (reader.Peek(number) == '0' && reader.Peek(number + 1) == 'x')
                     {
                         number += 2;
 
                         ich = reader.Peek(number);
-                        while (char.IsDigit((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
+                        while (Utility.IsDigit(ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
                         {
                             number++;
 
@@ -237,7 +237,7 @@ namespace GDDL
 
                     number = 1;
                     ich = reader.Peek(number);
-                    while (char.IsDigit((char)ich))
+                    while (Utility.IsDigit(ich))
                     {
                         number++;
 
@@ -254,7 +254,7 @@ namespace GDDL
 
                     ich = reader.Peek(number);
 
-                    while (char.IsDigit((char)ich))
+                    while (Utility.IsDigit(ich))
                     {
                         number++;
 
@@ -277,10 +277,10 @@ namespace GDDL
                         ich = reader.Peek(number);
                     }
 
-                    if (!char.IsDigit((char)ich))
+                    if (!Utility.IsDigit(ich))
                         throw new LexerException(this, $"Expected DIGIT, found {(char)ich}");
 
-                    while (char.IsDigit((char)ich))
+                    while (Utility.IsDigit(ich))
                     {
                         number++;
 
@@ -310,7 +310,7 @@ namespace GDDL
                 case 10: return "'\\n'";
                 case 13: return "'\\r'";
                 default:
-                    return char.IsControl((char)ich) ? $"'\\u{ich:X4}'" : $"'{(char)ich}'";
+                    return Utility.IsControl(ich) ? $"'\\u{ich:X4}'" : $"'{(char)ich}'";
             }
         }
 
@@ -342,22 +342,22 @@ namespace GDDL
                 number++;
 
                 ich = reader.Peek(number);
-                if (char.IsDigit((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
+                if (Utility.IsDigit(ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
                 {
                     number++;
 
                     ich = reader.Peek(number);
-                    if (char.IsDigit((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
+                    if (Utility.IsDigit(ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
                     {
                         number++;
 
                         ich = reader.Peek(number);
-                        if (char.IsDigit((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
+                        if (Utility.IsDigit(ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
                         {
                             number++;
 
                             ich = reader.Peek(number);
-                            if (char.IsDigit((char)ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
+                            if (Utility.IsDigit(ich) || (ich >= 'a' && ich <= 'f') || (ich >= 'A' && ich <= 'F'))
                             {
                                 number++;
                             }
@@ -381,9 +381,9 @@ namespace GDDL
 
             foreach (char c in ident)
             {
-                if (!char.IsLetter(c) && c != '_')
+                if (!Utility.IsLetter(c) && c != '_')
                 {
-                    if (first || !char.IsDigit(c))
+                    if (first || !Utility.IsDigit(c))
                     {
                         return false;
                     }
@@ -419,7 +419,7 @@ namespace GDDL
                             sb.Append((char)escapeAcc);
                             inHexEscape = false;
                         }
-                        else if (char.IsDigit(c))
+                        else if (Utility.IsDigit(c))
                         {
                             escapeAcc = (escapeAcc << 4) + (c - '0');
                         }

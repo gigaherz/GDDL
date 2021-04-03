@@ -34,6 +34,21 @@ namespace GDDL.Util
             return ((NON_PRINTABLE >> (int)char.GetUnicodeCategory(c)) & 1) == 0;
         }
 
+        public static bool IsLetter(int c)
+        {
+            return char.IsLetter((char)c);
+        }
+
+        public static bool IsDigit(int c)
+        {
+            return char.IsDigit((char)c);
+        }
+
+        public static bool IsControl(int c)
+        {
+            return char.IsControl((char)c);
+        }
+
         public static int CompareOrdinalIgnoreCase(this string a, string b)
         {
             return string.Compare(a, b, StringComparison.OrdinalIgnoreCase);
