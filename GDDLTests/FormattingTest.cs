@@ -21,6 +21,20 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
+        public void TestIntegersCompact()
+        {
+            Assert.AreEqual("0", FormatOneCompact(Value.Of(0)));
+            Assert.AreEqual("1", FormatOneCompact(Value.Of(1)));
+            Assert.AreEqual("10", FormatOneCompact(Value.Of(10)));
+            Assert.AreEqual("100", FormatOneCompact(Value.Of(100)));
+            Assert.AreEqual("9223372036854775807", FormatOneCompact(Value.Of(long.MaxValue)));
+            Assert.AreEqual("-1", FormatOneCompact(Value.Of(-1)));
+            Assert.AreEqual("-10", FormatOneCompact(Value.Of(-10)));
+            Assert.AreEqual("-100", FormatOneCompact(Value.Of(-100)));
+            Assert.AreEqual("-9223372036854775808", FormatOneCompact(Value.Of(long.MinValue)));
+        }
+
+        [TestMethod]
         public void TestFloatsCompact()
         {
             Assert.AreEqual("1.0", FormatOneCompact(Value.Of(1.0)));
@@ -32,6 +46,9 @@ namespace GDDL.Tests
             Assert.AreEqual("3.0e-50", FormatOneCompact(Value.Of(3e-50)));
             Assert.AreEqual("1.999999999999999e15", FormatOneCompact(Value.Of(1999999999999999.0)));
             Assert.AreEqual("2.0e32", FormatOneCompact(Value.Of(199999999999999999999999999999999.0)));
+            Assert.AreEqual(".NaN", FormatOneCompact(Value.Of(float.NaN)));
+            Assert.AreEqual(".Inf", FormatOneCompact(Value.Of(float.PositiveInfinity)));
+            Assert.AreEqual("-.Inf", FormatOneCompact(Value.Of(float.NegativeInfinity)));
         }
 
         [TestMethod]
@@ -40,9 +57,9 @@ namespace GDDL.Tests
             Assert.AreEqual("\"1\"", FormatOneCompact(Value.Of("1")));
         }
 
-        public static String FormatOneCompact(Element e)
+        public static string FormatOneCompact(Element e)
         {
-            StringBuilder b = new StringBuilder();
+            var b = new StringBuilder();
             new Formatter(b, FormatterOptions.Compact).FormatStandalone(e);
             return b.ToString();
         }

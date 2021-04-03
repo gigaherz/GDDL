@@ -1,4 +1,4 @@
-RootSetName = typeNameHere {
+﻿RootSetName = typeNameHere {
 
     # Basic elements
 
@@ -72,6 +72,7 @@ RootSetName = typeNameHere {
     scientific = 12.34e-5,
     stringLiteral = "This is a string literal",
     singleQuoted = 'Strings can also be single-quoted.',
+    "-∞" = -.Inf,
 
     "named set" = { "a", { 1 }, 0x345 },
     namedTypedSet = set_with_a_type { "\u0001" }
