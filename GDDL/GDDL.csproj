@@ -17,6 +17,7 @@
     <PackageTags>data description language configuration</PackageTags>
     <Copyright>Copyright 2021 David Quintana</Copyright>
     <Description>General-purpose Data Description Language</Description>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

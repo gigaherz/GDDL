@@ -53,7 +53,7 @@ namespace GDDL.Structure
         {
             if (obj == this) return true;
             if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is Element e ? EqualsImpl(e) : false;
+            return obj is Element e && EqualsImpl(e);
         }
 
         protected bool EqualsImpl(Element other)

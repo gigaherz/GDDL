@@ -22,11 +22,11 @@ namespace GDDL.Util
             return x + 1;
         }
 
-        public static bool IsValidIdentifier(string ident)
+        public static bool IsValidIdentifier(string text)
         {
             bool first = true;
 
-            foreach (char c in ident)
+            foreach (char c in text)
             {
                 if (!Utility.IsLetter(c) && c != '_')
                 {
@@ -86,9 +86,9 @@ namespace GDDL.Util
                         break;
                     default:
                         if (c > 0xFF)
-                            sb.Append(string.Format("u%04x", (int)c));
+                            sb.Append($"u{(int)c:X4}");
                         else
-                            sb.Append(string.Format("x%02x", (int)c));
+                            sb.Append($"x{(int)c:X2}");
                         break;
                 }
             }
@@ -99,7 +99,7 @@ namespace GDDL.Util
 
         private static bool IsValidStringCharacter(char c, char delimiter)
         {
-            return Utility.IsPrintable(c) && !Utility.IsControl(c) && c != delimiter && c != '\\';
+            return IsPrintable(c) && !IsControl(c) && c != delimiter && c != '\\';
         }
 
         public static string UnescapeString(string text)
@@ -196,14 +196,13 @@ namespace GDDL.Util
                     {
                         if (c == startQuote)
                             return sb.ToString();
-                        switch (c)
+                        if (c == '\\')
                         {
-                            case '\\':
-                                inEscape = true;
-                                break;
-                            default:
-                                sb.Append(c);
-                                break;
+                            inEscape = true;
+                        }
+                        else
+                        {
+                            sb.Append(c);
                         }
                     }
                 }

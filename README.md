@@ -126,7 +126,7 @@ to provide a predetermined collection of rules for verification purposes.
 
 A collection also has the ability to look up typed elements by their type name, and return the subset.
 
-Finally, the syntax allows for referencing other elements in the hiererchy,
+Finally, the syntax allows for referencing other elements in the hierarchy,
 effectively allowing the file to describe a graph instead of just a tree.
 
 In the current version, references work solely on names, and can not reference elements by their type.

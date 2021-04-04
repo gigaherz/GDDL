@@ -50,9 +50,9 @@ namespace GDDL.Serialization
             IndentLevel = IndentLevels.Pop();
         }
 
-        public void SetIndent(int newIndent)
+        public void ClearIndent()
         {
-            IndentLevel = newIndent;
+            IndentLevel = 0;
         }
 
         public void IncIndent()
@@ -60,11 +60,11 @@ namespace GDDL.Serialization
             IndentLevel++;
         }
 
-        private void AppendMultiple(string s, int n)
+        private void AppendMultiple(char c, int n)
         {
             for (int i = 0; i < n; i++)
             {
-                builder.Append(s);
+                builder.Append(c);
             }
         }
 
@@ -75,14 +75,11 @@ namespace GDDL.Serialization
             {
                 if (options.indentUsingTabs)
                 {
-                    builder.Append("\t");
+                    builder.Append('\t');
                 }
                 else
                 {
-                    for (int j = 0; j < options.spacesPerIndent; j++)
-                    {
-                        builder.Append(" ");
-                    }
+                    AppendMultiple(' ', options.spacesPerIndent);
                 }
             }
         }
@@ -94,20 +91,19 @@ namespace GDDL.Serialization
             FormatElement(e, false);
         }
 
-        private static Regex CommentLineSplitter = new Regex("(?:(?:\n)|(?:\r\n))");
+        private static readonly Regex CommentLineSplitter = new Regex("(?:(?:\n)|(?:\r\n))");
 
         protected void FormatComment(Element e)
         {
             if (e.HasComment && options.writeComments)
             {
-                for (int i = 0; i < options.blankLinesBeforeComment; i++)
-                    builder.Append("\n");
+                AppendMultiple('\n', options.blankLinesBeforeComment);
                 foreach (var s in CommentLineSplitter.Split(e.Comment))
                 {
                     AppendIndent();
-                    builder.Append("#");
+                    builder.Append('#');
                     builder.Append(s);
-                    builder.Append("\n");
+                    builder.Append('\n');
                 }
             }
         }
@@ -218,7 +214,7 @@ namespace GDDL.Serialization
             int exp = (int)Math.Floor(Math.Log10(Math.Abs(value)));
             double adjusted = value / Math.Pow(10, exp);
             FormatDoubleDecimal(adjusted);
-            builder.Append("e");
+            builder.Append('e');
             if (options.alwaysShowExponentSign)
                 FormatSign(exp);
             else
@@ -241,7 +237,7 @@ namespace GDDL.Serialization
 
             int intDigits = FormatIntegral(integral, temp);
 
-            builder.Append(".");
+            builder.Append('.');
 
             FormatFractional(fractional, intDigits, temp);
         }
@@ -292,7 +288,7 @@ namespace GDDL.Serialization
             return nonTrailingDigits;
         }
 
-        private int RoundDigits(List<int> temp, double value)
+        private static int RoundDigits(List<int> temp, double value)
         {
             int l = temp.Count - 1;
             int r = value >= 0.5 ? 1 : 0;
@@ -349,7 +345,7 @@ namespace GDDL.Serialization
         private void FormatNegative(double value)
         {
             long l = BitConverter.DoubleToInt64Bits(value);
-            if (l < 0) builder.Append("-");
+            if (l < 0) builder.Append('-');
         }
 
         private void FormatSign(double value)
@@ -388,28 +384,28 @@ namespace GDDL.Serialization
             {
                 builder.Append(c.TypeName);
                 if (options.lineBreaksBeforeOpeningBrace == 0)
-                    builder.Append(" ");
+                    builder.Append(' ');
             }
             bool addBraces = IndentLevel > 0 || c.HasTypeName;
             if (addBraces)
             {
                 if (oneElementPerLine && options.lineBreaksBeforeOpeningBrace > 0)
                 {
-                    AppendMultiple("\n", options.lineBreaksBeforeOpeningBrace);
+                    AppendMultiple('\n', options.lineBreaksBeforeOpeningBrace);
                     AppendIndent();
                 }
                 else if (options.spacesBeforeOpeningBrace > 0)
                 {
-                    AppendMultiple(" ", options.spacesBeforeOpeningBrace);
+                    AppendMultiple(' ', options.spacesBeforeOpeningBrace);
                 }
-                builder.Append("{");
+                builder.Append('{');
                 if (oneElementPerLine && options.lineBreaksAfterOpeningBrace > 0)
                 {
-                    AppendMultiple("\n", options.lineBreaksAfterOpeningBrace);
+                    AppendMultiple('\n', options.lineBreaksAfterOpeningBrace);
                 }
                 else if (options.spacesAfterOpeningBrace > 0)
                 {
-                    AppendMultiple(" ", options.spacesAfterOpeningBrace);
+                    AppendMultiple(' ', options.spacesAfterOpeningBrace);
                 }
                 PushIndent();
                 IncIndent();
@@ -423,28 +419,28 @@ namespace GDDL.Serialization
 
                 if (first && (!oneElementPerLine || options.lineBreaksAfterOpeningBrace == 0))
                 {
-                    SetIndent(0);
+                    ClearIndent();
                 }
                 else if (!first)
                 {
                     if (oneElementPerLine)
                     {
-                        builder.Append("\n");
+                        builder.Append('\n');
                     }
                     else if (options.spacesBetweenElements > 0)
                     {
-                        AppendMultiple(" ", options.spacesBetweenElements);
+                        AppendMultiple(' ', options.spacesBetweenElements);
                     }
 
                     if (!oneElementPerLine)
-                        SetIndent(0);
+                        ClearIndent();
                 }
 
                 bool hasNext1 = (i + 1) < c.Count;
                 FormatComment(e);
                 FormatName(e);
                 FormatElement(e, hasNext1);
-                if (hasNext1 && (!e.IsCollection || !options.omitCommaAfterClosingBrace)) builder.Append(",");
+                if (hasNext1 && (!e.IsCollection || !options.omitCommaAfterClosingBrace)) builder.Append(',');
 
                 first = false;
                 PopIndent();
@@ -455,23 +451,23 @@ namespace GDDL.Serialization
                 PopIndent();
                 if (oneElementPerLine && options.lineBreaksBeforeClosingBrace > 0)
                 {
-                    AppendMultiple("\n", options.lineBreaksBeforeClosingBrace);
+                    AppendMultiple('\n', options.lineBreaksBeforeClosingBrace);
                     AppendIndent();
                 }
                 else if (options.spacesBeforeClosingBrace > 0)
                 {
-                    AppendMultiple(" ", options.spacesBeforeClosingBrace);
+                    AppendMultiple(' ', options.spacesBeforeClosingBrace);
                 }
-                builder.Append("}");
+                builder.Append('}');
                 if (!hasNext0 || options.omitCommaAfterClosingBrace)
                 {
                     if (oneElementPerLine && options.lineBreaksAfterClosingBrace > 0)
                     {
-                        AppendMultiple("\n", options.lineBreaksAfterClosingBrace);
+                        AppendMultiple('\n', options.lineBreaksAfterClosingBrace);
                     }
                     else if (options.spacesAfterClosingBrace > 0)
                     {
-                        AppendMultiple(" ", options.spacesAfterClosingBrace);
+                        AppendMultiple(' ', options.spacesAfterClosingBrace);
                     }
                 }
             }

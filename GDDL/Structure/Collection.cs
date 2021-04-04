@@ -243,7 +243,7 @@ namespace GDDL.Structure
         {
             if (obj == this) return true;
             if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is Collection other ? EqualsImpl(other) : false;
+            return obj is Collection other && EqualsImpl(other);
         }
 
         public bool Equals(Collection other)

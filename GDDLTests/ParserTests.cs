@@ -12,24 +12,24 @@ namespace GDDL.Tests
     {
 
         [TestMethod]
-        public void mockLexerWorks()
+        public void MockLexerWorks()
         {
-            ITokenProvider provider = lexerBuilder()
-                    .addInt()
-                    .addNInt()
-                    .addFloat()
-                    .addNFloat()
-                    .addNaN()
-                    .addInf()
-                    .addNInf()
-                    .addHexInt()
-                    .addString()
-                    .addBooleanTrue()
-                    .addBooleanFalse()
-                    .addLBrace()
-                    .addRBrace()
-                    .addEquals()
-                    .addColon()
+            ITokenProvider provider = LexerBuilder()
+                    .AddInt()
+                    .AddNInt()
+                    .AddFloat()
+                    .AddNFloat()
+                    .AddNaN()
+                    .AddInf()
+                    .AddNInf()
+                    .AddHexInt()
+                    .AddString()
+                    .AddBooleanTrue()
+                    .AddBooleanFalse()
+                    .AddLBrace()
+                    .AddRBrace()
+                    .AddEquals()
+                    .AddColon()
                     .Build();
 
             Assert.AreEqual(new Token(TokenType.Integer, "1", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
@@ -57,137 +57,137 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
-        public void parsesNullAsValue()
+        public void ParsesNullAsValue()
         {
-            ITokenProvider provider = lexerBuilder().addInt().Build();
+            ITokenProvider provider = LexerBuilder().AddInt().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(1), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesIntegerAsValue()
+        public void ParsesIntegerAsValue()
         {
-            ITokenProvider provider = lexerBuilder().addInt().Build();
+            ITokenProvider provider = LexerBuilder().AddInt().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(1), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesNegativeIntegerAsValue()
+        public void ParsesNegativeIntegerAsValue()
         {
-            ITokenProvider provider = lexerBuilder().addNInt().Build();
+            ITokenProvider provider = LexerBuilder().AddNInt().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(-1), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesHexIntegerAsValue()
+        public void ParsesHexIntegerAsValue()
         {
-            ITokenProvider provider = lexerBuilder().addHexInt().Build();
+            ITokenProvider provider = LexerBuilder().AddHexInt().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(1), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesDoubleAsValue()
+        public void ParsesDoubleAsValue()
         {
-            var provider = lexerBuilder().addFloat().Build();
+            var provider = LexerBuilder().AddFloat().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(1.0), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesNegativeDoubleAsValue()
+        public void ParsesNegativeDoubleAsValue()
         {
-            var provider = lexerBuilder().addNFloat().Build();
+            var provider = LexerBuilder().AddNFloat().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(-1.0), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesNaNAsValue()
+        public void ParsesNaNAsValue()
         {
-            var provider = lexerBuilder().addNaN().Build();
+            var provider = LexerBuilder().AddNaN().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(double.NaN), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesInfinityAsValue()
+        public void ParsesInfinityAsValue()
         {
-            var provider = lexerBuilder().addInf().Build();
+            var provider = LexerBuilder().AddInf().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(double.PositiveInfinity), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesNegativeInfinityAsValue()
+        public void ParsesNegativeInfinityAsValue()
         {
-            var provider = lexerBuilder().addNInf().Build();
+            var provider = LexerBuilder().AddNInf().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(double.NegativeInfinity), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesStringAsValue()
+        public void ParsesStringAsValue()
         {
-            var provider = lexerBuilder().addString().Build();
+            var provider = LexerBuilder().AddString().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of("1"), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesBooleanTrueAsValue()
+        public void ParsesBooleanTrueAsValue()
         {
-            var provider = lexerBuilder().addBooleanTrue().Build();
+            var provider = LexerBuilder().AddBooleanTrue().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(true), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesBooleanFalseAsValue()
+        public void ParsesBooleanFalseAsValue()
         {
-            var provider = lexerBuilder().addBooleanFalse().Build();
+            var provider = LexerBuilder().AddBooleanFalse().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(false), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesBracesAsCollection()
+        public void ParsesBracesAsCollection()
         {
-            var provider = lexerBuilder().addLBrace().addRBrace().Build();
+            var provider = LexerBuilder().AddLBrace().AddRBrace().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Collection.Empty(), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesTypedCollection()
+        public void ParsesTypedCollection()
         {
-            var provider = lexerBuilder().addIdentifier("test").addLBrace().addRBrace().Build();
+            var provider = LexerBuilder().AddIdentifier("test").AddLBrace().AddRBrace().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Collection.Empty().WithTypeName("test"), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesValueInsideCollection()
+        public void ParsesValueInsideCollection()
         {
-            var provider = lexerBuilder().addLBrace().addInt().addRBrace().Build();
+            var provider = LexerBuilder().AddLBrace().AddInt().AddRBrace().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Collection.Of(Value.Of(1)), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesMultipleValuesInsideCollection()
+        public void ParsesMultipleValuesInsideCollection()
         {
-            var provider = lexerBuilder().addLBrace().addInt().addComma().addInt().addRBrace().Build();
+            var provider = LexerBuilder().AddLBrace().AddInt().AddComma().AddInt().AddRBrace().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Collection.Of(Value.Of(1), Value.Of(1)), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesNestedCollection()
+        public void ParsesNestedCollection()
         {
-            var provider = lexerBuilder().addLBrace().addLBrace().addRBrace().addRBrace().Build();
+            var provider = LexerBuilder().AddLBrace().AddLBrace().AddRBrace().AddRBrace().Build();
             Parser parser = new Parser(provider);
             Collection expected = Collection.Of(Collection.Empty());
             Element actual = parser.Parse(false);
@@ -195,9 +195,9 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
-        public void commaIsOptionalAfterNestedCollection()
+        public void CommaIsOptionalAfterNestedCollection()
         {
-            var provider = lexerBuilder().addLBrace().addLBrace().addRBrace().addInt().addRBrace().Build();
+            var provider = LexerBuilder().AddLBrace().AddLBrace().AddRBrace().AddInt().AddRBrace().Build();
             Parser parser = new Parser(provider);
             Collection expected = Collection.Of(Collection.Empty(), Value.Of(1));
             Element actual = parser.Parse(false);
@@ -205,17 +205,17 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
-        public void acceptsTrailingCommaInCollection()
+        public void AcceptsTrailingCommaInCollection()
         {
-            ITokenProvider provider = lexerBuilder().addLBrace().addInt().addComma().addRBrace().Build();
+            ITokenProvider provider = LexerBuilder().AddLBrace().AddInt().AddComma().AddRBrace().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Collection.Of(Value.Of(1)), parser.Parse(false));
         }
 
         [TestMethod]
-        public void parsesNamedValueInsideCollection()
+        public void ParsesNamedValueInsideCollection()
         {
-            var provider = lexerBuilder().addLBrace().addString("\"a\"").addEquals().addInt().addRBrace().Build();
+            var provider = LexerBuilder().AddLBrace().AddString("\"a\"").AddEquals().AddInt().AddRBrace().Build();
             Parser parser = new Parser(provider);
             Collection expected = Collection.Of(Value.Of(1).WithName("a"));
             Element actual = parser.Parse(false);
@@ -223,9 +223,9 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
-        public void parsesNamedTypedNestedCollection()
+        public void ParsesNamedTypedNestedCollection()
         {
-            var provider = lexerBuilder().addLBrace().addString("\"n\"").addEquals().addIdentifier("a").addLBrace().addRBrace().addRBrace().Build();
+            var provider = LexerBuilder().AddLBrace().AddString("\"n\"").AddEquals().AddIdentifier("a").AddLBrace().AddRBrace().AddRBrace().Build();
             Parser parser = new Parser(provider);
             Collection expected = Collection.Of(Collection.Empty().WithTypeName("a").WithName("n"));
             Element actual = parser.Parse(false);
@@ -233,9 +233,9 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
-        public void parsesBackreference()
+        public void ParsesReference()
         {
-            var provider = lexerBuilder().addLBrace().addIdentifier("a").addColon().addIdentifier("b").addRBrace().Build();
+            var provider = LexerBuilder().AddLBrace().AddIdentifier("a").AddColon().AddIdentifier("b").AddRBrace().Build();
             Parser parser = new Parser(provider);
             Collection expected = Collection.Of(Reference.Relative("a", "b"));
             Element actual = parser.Parse(false);
@@ -243,9 +243,9 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
-        public void parsesRootedBackreference()
+        public void ParsesRootedReference()
         {
-            var provider = lexerBuilder().addLBrace().addColon().addIdentifier("a").addColon().addIdentifier("b").addRBrace().Build();
+            var provider = LexerBuilder().AddLBrace().AddColon().AddIdentifier("a").AddColon().AddIdentifier("b").AddRBrace().Build();
             Parser parser = new Parser(provider);
             Collection expected = Collection.Of(Reference.Absolute("a", "b"));
             Element actual = parser.Parse(false);
@@ -255,126 +255,126 @@ namespace GDDL.Tests
         // HARNESS BELOW
         // -------------
 
-        public static MockLexerBuilder lexerBuilder()
+        private static MockLexerBuilder LexerBuilder()
         {
             return new MockLexerBuilder();
         }
 
-        public class MockLexerBuilder
+        private class MockLexerBuilder
         {
             private readonly List<Token> builder = new List<Token>();
 
-            public MockLexerBuilder addEnd()
+            public MockLexerBuilder AddEnd()
             {
-                return add(TokenType.End, "");
+                return Add(TokenType.End, "");
             }
 
-            public MockLexerBuilder addInt()
+            public MockLexerBuilder AddInt()
             {
-                return add(TokenType.Integer, "1");
+                return Add(TokenType.Integer, "1");
             }
 
-            public MockLexerBuilder addNInt()
+            public MockLexerBuilder AddNInt()
             {
-                return add(TokenType.Integer, "-1");
+                return Add(TokenType.Integer, "-1");
             }
 
-            public MockLexerBuilder addFloat()
+            public MockLexerBuilder AddFloat()
             {
-                return add(TokenType.Double, "1.0");
+                return Add(TokenType.Double, "1.0");
             }
 
-            public MockLexerBuilder addNFloat()
+            public MockLexerBuilder AddNFloat()
             {
-                return add(TokenType.Double, "-1.0");
+                return Add(TokenType.Double, "-1.0");
             }
 
-            public MockLexerBuilder addNaN()
+            public MockLexerBuilder AddNaN()
             {
-                return add(TokenType.Double, ".NaN");
+                return Add(TokenType.Double, ".NaN");
             }
 
-            public MockLexerBuilder addInf()
+            public MockLexerBuilder AddInf()
             {
-                return add(TokenType.Double, ".Inf");
+                return Add(TokenType.Double, ".Inf");
             }
 
-            public MockLexerBuilder addNInf()
+            public MockLexerBuilder AddNInf()
             {
-                return add(TokenType.Double, "-.Inf");
+                return Add(TokenType.Double, "-.Inf");
             }
 
-            public MockLexerBuilder addHexInt()
+            public MockLexerBuilder AddHexInt()
             {
-                return add(TokenType.HexInt, "0x1");
+                return Add(TokenType.HexInt, "0x1");
             }
 
-            public MockLexerBuilder addString()
+            public MockLexerBuilder AddString()
             {
-                return add(TokenType.String, "\"1\"");
+                return Add(TokenType.String, "\"1\"");
             }
 
-            public MockLexerBuilder addString(String text)
+            public MockLexerBuilder AddString(string text)
             {
-                return add(TokenType.String, text);
+                return Add(TokenType.String, text);
             }
 
-            public MockLexerBuilder addBooleanTrue()
+            public MockLexerBuilder AddBooleanTrue()
             {
-                return add(TokenType.True, "true");
+                return Add(TokenType.True, "true");
             }
 
-            public MockLexerBuilder addBooleanFalse()
+            public MockLexerBuilder AddBooleanFalse()
             {
-                return add(TokenType.False, "false");
+                return Add(TokenType.False, "false");
             }
 
-            public MockLexerBuilder addLBrace()
+            public MockLexerBuilder AddLBrace()
             {
-                return add(TokenType.LBrace, "{");
+                return Add(TokenType.LBrace, "{");
             }
 
-            public MockLexerBuilder addRBrace()
+            public MockLexerBuilder AddRBrace()
             {
-                return add(TokenType.RBrace, "}");
+                return Add(TokenType.RBrace, "}");
             }
 
-            public MockLexerBuilder addColon()
+            public MockLexerBuilder AddColon()
             {
-                return add(TokenType.Colon, ":");
+                return Add(TokenType.Colon, ":");
             }
 
-            public MockLexerBuilder addComma()
+            public MockLexerBuilder AddComma()
             {
-                return add(TokenType.Comma, ",");
+                return Add(TokenType.Comma, ",");
             }
 
-            public MockLexerBuilder addEquals()
+            public MockLexerBuilder AddEquals()
             {
-                return add(TokenType.EqualSign, "=");
+                return Add(TokenType.EqualSign, "=");
             }
 
-            public MockLexerBuilder addIdentifier()
+            public MockLexerBuilder AddIdentifier()
             {
-                return add(TokenType.Ident, "test");
+                return Add(TokenType.Ident, "test");
             }
 
-            public MockLexerBuilder addIdentifier(String text)
+            public MockLexerBuilder AddIdentifier(string text)
             {
-                return add(TokenType.Ident, text);
+                return Add(TokenType.Ident, text);
             }
 
-            public MockLexerBuilder add(TokenType name, String text)
+            public MockLexerBuilder Add(TokenType name, string text)
             {
-                return add(name, text, new ParsingContext("TEST", 1, 1));
+                return Add(name, text, new ParsingContext("TEST", 1, 1));
             }
 
-            public MockLexerBuilder add(TokenType name, String text, ParsingContext context)
+            public MockLexerBuilder Add(TokenType name, string text, ParsingContext context)
             {
-                return add(name, text, context, "");
+                return Add(name, text, context, "");
             }
 
-            public MockLexerBuilder add(TokenType name, String text, ParsingContext context, String comment)
+            public MockLexerBuilder Add(TokenType name, string text, ParsingContext context, string comment)
             {
                 builder.Add(new Token(name, text, context, comment));
                 return this;
@@ -382,12 +382,12 @@ namespace GDDL.Tests
 
             public MockLexer Build()
             {
-                addEnd();
+                AddEnd();
                 return new MockLexer(builder.AsReadOnly());
             }
         }
 
-        public class MockLexer : ITokenProvider
+        private sealed class MockLexer : ITokenProvider
         {
             public readonly IReadOnlyList<Token> preparedTokens;
             public int index = 0;

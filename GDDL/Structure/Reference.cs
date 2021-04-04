@@ -23,7 +23,7 @@ namespace GDDL.Structure
         private bool resolved;
         private Element resolvedValue;
 
-        public bool Rooted { get; set; }
+        public bool Rooted { get; }
 
         public override bool IsResolved => resolved;
         public override Element ResolvedValue => resolvedValue;
@@ -96,13 +96,10 @@ namespace GDDL.Structure
             {
                 string part = nameParts[i];
 
-                var s = elm as Collection;
-
-                if (s == null)
+                if (!(elm is Collection s))
                     continue;
 
-                Element ne;
-                if (s.TryGetValue(part, out ne))
+                if (s.TryGetValue(part, out var ne))
                 {
                     elm = ne;
                     continue;
@@ -134,7 +131,7 @@ namespace GDDL.Structure
         {
             if (obj == this) return true;
             if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is Reference other ? EqualsImpl(other) : false;
+            return obj is Reference other && EqualsImpl(other);
         }
 
         public bool Equals(Reference other)

@@ -40,7 +40,7 @@ namespace GDDL.Util
         public static Optional<T> Empty { get; } = new Optional<T>(false, default);
 
         [MaybeNull]
-        private T _value;
+        private readonly T _value;
 
         public bool HasValue { get; }
 

@@ -119,7 +119,7 @@ namespace GDDL.Structure
         {
             if (obj == this) return true;
             if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is Value other ? EqualsImpl(other) : false;
+            return obj is Value other && EqualsImpl(other);
         }
 
         public bool Equals(Value other)

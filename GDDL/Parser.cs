@@ -24,7 +24,7 @@ namespace GDDL
         // Implementation
         int prefixPos = -1;
         readonly Stack<int> prefixStack = new Stack<int>();
-        private bool finishedWithRbrace;
+        private bool finishedWithRBrace;
 
         public ITokenProvider Lex { get; }
 
@@ -84,22 +84,22 @@ namespace GDDL
             return tokens.Any(t => prefix == t);
         }
 
-        private bool prefix_element()
+        private bool PrefixElement()
         {
-            return prefix_basicElement() || prefix_namedElement();
+            return PrefixBasicElement() || PrefixNamedElement();
         }
 
-        private bool prefix_basicElement()
+        private bool PrefixBasicElement()
         {
             BeginPrefixScan();
             var r = HasAny(TokenType.Nil, TokenType.Null, TokenType.True, TokenType.False,
                 TokenType.HexInt, TokenType.Integer, TokenType.Double, TokenType.String);
             EndPrefixScan();
 
-            return r || prefix_backreference() || prefix_set() || prefix_typedSet();
+            return r || PrefixReference() || PrefixCollection() || PrefixTypedCollection();
         }
 
-        private bool prefix_namedElement()
+        private bool PrefixNamedElement()
         {
             BeginPrefixScan();
             var r = HasAny(TokenType.Ident, TokenType.String) && HasAny(TokenType.EqualSign);
@@ -107,16 +107,16 @@ namespace GDDL
             return r;
         }
 
-        private bool prefix_backreference()
+        private bool PrefixReference()
         {
             BeginPrefixScan();
             var r = HasAny(TokenType.Colon) && HasAny(TokenType.Ident);
             EndPrefixScan();
 
-            return r || prefix_identifier();
+            return r || PrefixIdentifier();
         }
 
-        private bool prefix_set()
+        private bool PrefixCollection()
         {
             BeginPrefixScan();
             var r = HasAny(TokenType.LBrace);
@@ -124,7 +124,7 @@ namespace GDDL
             return r;
         }
 
-        private bool prefix_typedSet()
+        private bool PrefixTypedCollection()
         {
             BeginPrefixScan();
             var r = HasAny(TokenType.Ident) && HasAny(TokenType.LBrace);
@@ -132,7 +132,7 @@ namespace GDDL
             return r;
         }
 
-        private bool prefix_identifier()
+        private bool PrefixIdentifier()
         {
             BeginPrefixScan();
             var r = HasAny(TokenType.Ident);
@@ -149,8 +149,8 @@ namespace GDDL
 
         private Element Element()
         {
-            if (prefix_namedElement()) return NamedElement();
-            if (prefix_basicElement()) return BasicElement();
+            if (PrefixNamedElement()) return NamedElement();
+            if (PrefixBasicElement()) return BasicElement();
 
             throw new ParserException(this, "Internal Error");
         }
@@ -166,9 +166,9 @@ namespace GDDL
             if (Lex.Peek() == TokenType.Integer) return IntValue(PopExpected(TokenType.Integer));
             if (Lex.Peek() == TokenType.Double) return FloatValue(PopExpected(TokenType.Double));
             if (Lex.Peek() == TokenType.String) return StringValue(PopExpected(TokenType.String));
-            if (prefix_set()) return Set();
-            if (prefix_typedSet()) return TypedSet();
-            if (prefix_backreference()) return Backreference();
+            if (PrefixCollection()) return Set();
+            if (PrefixTypedCollection()) return TypedSet();
+            if (PrefixReference()) return Reference();
 
             throw new ParserException(this, "Internal Error");
         }
@@ -181,7 +181,7 @@ namespace GDDL
 
             PopExpected(TokenType.EqualSign);
 
-            if (!prefix_basicElement())
+            if (!PrefixBasicElement())
                 throw new ParserException(this, $"Expected a basic element after EqualSign, found {Lex.Peek()} instead");
 
             var b = BasicElement();
@@ -192,7 +192,7 @@ namespace GDDL
             return b;
         }
 
-        private Reference Backreference()
+        private Reference Reference()
         {
             var rooted = false;
 
@@ -201,11 +201,11 @@ namespace GDDL
                 PopExpected(TokenType.Colon);
                 rooted = true;
             }
-            if (!prefix_identifier())
+            if (!PrefixIdentifier())
                 throw new ParserException(this, $"Expected identifier, found {Lex.Peek()} instead");
 
             var name = Identifier();
-            var b = rooted ? Reference.Absolute(name.Text) : Reference.Relative(name.Text);
+            var b = rooted ? Structure.Reference.Absolute(name.Text) : Structure.Reference.Relative(name.Text);
             b.Comment = name.Comment;
 
             while (Lex.Peek() == TokenType.Colon)
@@ -229,16 +229,16 @@ namespace GDDL
 
             while (Lex.Peek() != TokenType.RBrace)
             {
-                finishedWithRbrace = false;
+                finishedWithRBrace = false;
 
-                if (!prefix_element())
+                if (!PrefixElement())
                     throw new ParserException(this, $"Expected element after LBRACE, found {Lex.Peek()} instead");
 
                 s.Add(Element());
 
                 if (Lex.Peek() != TokenType.RBrace)
                 {
-                    if (!finishedWithRbrace || (Lex.Peek() == TokenType.Comma))
+                    if (!finishedWithRBrace || (Lex.Peek() == TokenType.Comma))
                     {
                         PopExpected(TokenType.Comma);
                     }
@@ -247,7 +247,7 @@ namespace GDDL
 
             PopExpected(TokenType.RBrace);
 
-            finishedWithRbrace = true;
+            finishedWithRBrace = true;
 
             return s;
         }
@@ -256,7 +256,7 @@ namespace GDDL
         {
             var type = Identifier();
 
-            if (!prefix_set())
+            if (!PrefixCollection())
                 throw new ParserException(this, "Internal error");
             var s = Set();
             s.TypeName = type.Text;
@@ -294,8 +294,10 @@ namespace GDDL
             return v;
         }
 
-        public static Value IntValue(Token token, int _base)
+        public static Value IntValue(Token token, int @base)
         {
+            if (@base != 16)
+                throw new NotImplementedException("IntValue is only implemented for base=16");
             var s = token.Text;
             var p = 2;
             var sign = 1;
@@ -304,7 +306,7 @@ namespace GDDL
                 p++;
                 sign = -1;
             }
-            Value v = Value.Of(sign * long.Parse(s.Substring(p),
+            Value v = Value.Of(sign * long.Parse(s[p..],
                 NumberStyles.HexNumber, CultureInfo.InvariantCulture));
             v.Comment = token.Comment;
             return v;

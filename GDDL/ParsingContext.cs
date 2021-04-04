@@ -25,7 +25,7 @@ namespace GDDL
         {
             if (obj == this) return true;
             if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is ParsingContext other ? EqualsImpl(other) : false;
+            return obj is ParsingContext other && EqualsImpl(other);
         }
 
         public bool Equals(ParsingContext other)

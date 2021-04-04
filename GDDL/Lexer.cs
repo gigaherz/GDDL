@@ -61,14 +61,14 @@ namespace GDDL
             var startContext = reader.GetParsingContext();
 
             if (seenEnd)
-                return new Token(TokenType.End, "", startContext, "");
+                return MakeEndToken(startContext);
 
             StringBuilder commentLines = null;
             int ich = reader.Peek();
 
             while (true)
             {
-                if (ich < 0) return new Token(TokenType.End, "", startContext, "");
+                if (ich < 0) return MakeEndToken(startContext);
 
                 switch (ich)
                 {
@@ -297,21 +297,26 @@ namespace GDDL
             throw new LexerException(this, $"Unexpected character: {reader.Peek()}");
         }
 
+        private Token MakeEndToken(ParsingContext startContext)
+        {
+            seenEnd = true;
+            return new Token(TokenType.End, "", startContext, "");
+        }
+
         private static string DebugChar(int ich)
         {
             if (ich < 0)
                 return "EOF";
 
-            switch (ich)
+            return ich switch
             {
-                case 0: return "'\\0'";
-                case 8: return "'\\b'";
-                case 9: return "'\\t'";
-                case 10: return "'\\n'";
-                case 13: return "'\\r'";
-                default:
-                    return Utility.IsControl(ich) ? $"'\\u{ich:X4}'" : $"'{(char)ich}'";
-            }
+                0 => "'\\0'",
+                8 => "'\\b'",
+                9 => "'\\t'",
+                10 => "'\\n'",
+                13 => "'\\r'",
+                _ => Utility.IsControl(ich) ? $"'\\u{ich:X4}'" : $"'{(char)ich}'",
+            };
         }
 
         private int CountEscapeSeq(int number)

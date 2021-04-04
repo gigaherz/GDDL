@@ -11,219 +11,219 @@ namespace GDDL.Tests
     public class LexerTests
     {
         [TestMethod]
-        public void lexesIntegers()
+        public void LexesIntegers()
         {
-            Assert.AreEqual(tokenInt("1"), lexSingle("1"));
-            Assert.AreEqual(tokenInt("-1"), lexSingle("-1"));
-            Assert.AreEqual(tokenHexInt("0x1"), lexSingle("0x1"));
-            Assert.AreEqual(tokenHexInt("-0x1"), lexSingle("-0x1"));
+            Assert.AreEqual(TokenInt("1"), LexSingle("1"));
+            Assert.AreEqual(TokenInt("-1"), LexSingle("-1"));
+            Assert.AreEqual(TokenHexInt("0x1"), LexSingle("0x1"));
+            Assert.AreEqual(TokenHexInt("-0x1"), LexSingle("-0x1"));
         }
 
         [TestMethod]
-        public void lexesFloats()
+        public void LexesFloats()
         {
-            Assert.AreEqual(tokenFloat("1.0"), lexSingle("1.0"));
-            Assert.AreEqual(tokenFloat("1."), lexSingle("1."));
-            Assert.AreEqual(tokenFloat(".1"), lexSingle(".1"));
-            Assert.AreEqual(tokenFloat("1.0e1"), lexSingle("1.0e1"));
-            Assert.AreEqual(tokenFloat("1.0e+1"), lexSingle("1.0e+1"));
-            Assert.AreEqual(tokenFloat("1.0e-1"), lexSingle("1.0e-1"));
-            Assert.AreEqual(tokenFloat("1.e1"), lexSingle("1.e1"));
-            Assert.AreEqual(tokenFloat(".1e1"), lexSingle(".1e1"));
+            Assert.AreEqual(TokenFloat("1.0"), LexSingle("1.0"));
+            Assert.AreEqual(TokenFloat("1."), LexSingle("1."));
+            Assert.AreEqual(TokenFloat(".1"), LexSingle(".1"));
+            Assert.AreEqual(TokenFloat("1.0e1"), LexSingle("1.0e1"));
+            Assert.AreEqual(TokenFloat("1.0e+1"), LexSingle("1.0e+1"));
+            Assert.AreEqual(TokenFloat("1.0e-1"), LexSingle("1.0e-1"));
+            Assert.AreEqual(TokenFloat("1.e1"), LexSingle("1.e1"));
+            Assert.AreEqual(TokenFloat(".1e1"), LexSingle(".1e1"));
 
-            Assert.AreEqual(tokenFloat("-1.0"), lexSingle("-1.0"));
-            Assert.AreEqual(tokenFloat("-1."), lexSingle("-1."));
-            Assert.AreEqual(tokenFloat("-.1"), lexSingle("-.1"));
-            Assert.AreEqual(tokenFloat("-1.0e1"), lexSingle("-1.0e1"));
-            Assert.AreEqual(tokenFloat("-1.0e+1"), lexSingle("-1.0e+1"));
-            Assert.AreEqual(tokenFloat("-1.0e-1"), lexSingle("-1.0e-1"));
-            Assert.AreEqual(tokenFloat("-1.e1"), lexSingle("-1.e1"));
-            Assert.AreEqual(tokenFloat("-.1e1"), lexSingle("-.1e1"));
+            Assert.AreEqual(TokenFloat("-1.0"), LexSingle("-1.0"));
+            Assert.AreEqual(TokenFloat("-1."), LexSingle("-1."));
+            Assert.AreEqual(TokenFloat("-.1"), LexSingle("-.1"));
+            Assert.AreEqual(TokenFloat("-1.0e1"), LexSingle("-1.0e1"));
+            Assert.AreEqual(TokenFloat("-1.0e+1"), LexSingle("-1.0e+1"));
+            Assert.AreEqual(TokenFloat("-1.0e-1"), LexSingle("-1.0e-1"));
+            Assert.AreEqual(TokenFloat("-1.e1"), LexSingle("-1.e1"));
+            Assert.AreEqual(TokenFloat("-.1e1"), LexSingle("-.1e1"));
 
-            Assert.AreEqual(tokenFloat("+1.0"), lexSingle("+1.0"));
-            Assert.AreEqual(tokenFloat("+1."), lexSingle("+1."));
-            Assert.AreEqual(tokenFloat("+.1"), lexSingle("+.1"));
-            Assert.AreEqual(tokenFloat("+1.0e1"), lexSingle("+1.0e1"));
-            Assert.AreEqual(tokenFloat("+1.0e+1"), lexSingle("+1.0e+1"));
-            Assert.AreEqual(tokenFloat("+1.0e-1"), lexSingle("+1.0e-1"));
-            Assert.AreEqual(tokenFloat("+1.e1"), lexSingle("+1.e1"));
-            Assert.AreEqual(tokenFloat("+.1e1"), lexSingle("+.1e1"));
+            Assert.AreEqual(TokenFloat("+1.0"), LexSingle("+1.0"));
+            Assert.AreEqual(TokenFloat("+1."), LexSingle("+1."));
+            Assert.AreEqual(TokenFloat("+.1"), LexSingle("+.1"));
+            Assert.AreEqual(TokenFloat("+1.0e1"), LexSingle("+1.0e1"));
+            Assert.AreEqual(TokenFloat("+1.0e+1"), LexSingle("+1.0e+1"));
+            Assert.AreEqual(TokenFloat("+1.0e-1"), LexSingle("+1.0e-1"));
+            Assert.AreEqual(TokenFloat("+1.e1"), LexSingle("+1.e1"));
+            Assert.AreEqual(TokenFloat("+.1e1"), LexSingle("+.1e1"));
 
-            Assert.AreEqual(tokenFloat(".Inf"), lexSingle(".Inf"));
-            Assert.AreEqual(tokenFloat("-.Inf"), lexSingle("-.Inf"));
-            Assert.AreEqual(tokenFloat("+.Inf"), lexSingle("+.Inf"));
-            Assert.AreEqual(tokenFloat(".NaN"), lexSingle(".NaN"));
+            Assert.AreEqual(TokenFloat(".Inf"), LexSingle(".Inf"));
+            Assert.AreEqual(TokenFloat("-.Inf"), LexSingle("-.Inf"));
+            Assert.AreEqual(TokenFloat("+.Inf"), LexSingle("+.Inf"));
+            Assert.AreEqual(TokenFloat(".NaN"), LexSingle(".NaN"));
         }
 
         [TestMethod]
-        public void lexesStrings()
+        public void LexesStrings()
         {
             // Ascii text
-            Assert.AreEqual(tokenString("\"a\""), lexSingle("\"a\""));
-            Assert.AreEqual(tokenString("\"b\\\"\""), lexSingle("\"b\\\"\""));
-            Assert.AreEqual(tokenString("\"b'\""), lexSingle("\"b'\""));
-            Assert.AreEqual(tokenString("'a'"), lexSingle("'a'"));
-            Assert.AreEqual(tokenString("'b\\''"), lexSingle("'b\\''"));
-            Assert.AreEqual(tokenString("'b\"'"), lexSingle("'b\"'"));
+            Assert.AreEqual(TokenString("\"a\""), LexSingle("\"a\""));
+            Assert.AreEqual(TokenString("\"b\\\"\""), LexSingle("\"b\\\"\""));
+            Assert.AreEqual(TokenString("\"b'\""), LexSingle("\"b'\""));
+            Assert.AreEqual(TokenString("'a'"), LexSingle("'a'"));
+            Assert.AreEqual(TokenString("'b\\''"), LexSingle("'b\\''"));
+            Assert.AreEqual(TokenString("'b\"'"), LexSingle("'b\"'"));
 
             // Escapes
-            Assert.AreEqual(tokenString("'\\x00'"), lexSingle("'\\x00'"));
-            Assert.AreEqual(tokenString("'\\x0F'"), lexSingle("'\\x0F'"));
-            Assert.AreEqual(tokenString("'\\xF0'"), lexSingle("'\\xF0'"));
-            Assert.AreEqual(tokenString("'\\xFF'"), lexSingle("'\\xFF'"));
-            Assert.AreEqual(tokenString("'\\u0000'"), lexSingle("'\\u0000'"));
-            Assert.AreEqual(tokenString("'\\u000F'"), lexSingle("'\\u000F'"));
-            Assert.AreEqual(tokenString("'\\uF000'"), lexSingle("'\\uF000'"));
-            Assert.AreEqual(tokenString("'\\uF00F'"), lexSingle("'\\uF00F'"));
+            Assert.AreEqual(TokenString("'\\x00'"), LexSingle("'\\x00'"));
+            Assert.AreEqual(TokenString("'\\x0F'"), LexSingle("'\\x0F'"));
+            Assert.AreEqual(TokenString("'\\xF0'"), LexSingle("'\\xF0'"));
+            Assert.AreEqual(TokenString("'\\xFF'"), LexSingle("'\\xFF'"));
+            Assert.AreEqual(TokenString("'\\u0000'"), LexSingle("'\\u0000'"));
+            Assert.AreEqual(TokenString("'\\u000F'"), LexSingle("'\\u000F'"));
+            Assert.AreEqual(TokenString("'\\uF000'"), LexSingle("'\\uF000'"));
+            Assert.AreEqual(TokenString("'\\uF00F'"), LexSingle("'\\uF00F'"));
 
             // Unicode
-            Assert.AreEqual(tokenString("'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"),
-                    lexSingle("'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"));
+            Assert.AreEqual(TokenString("'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"),
+                    LexSingle("'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"));
         }
 
         [TestMethod]
-        public void lexesKeywords()
+        public void LexesKeywords()
         {
-            Assert.AreEqual(tokenBooleanTrue(), lexSingle("true"));
-            Assert.AreEqual(tokenBooleanFalse(), lexSingle("false"));
-            Assert.AreEqual(tokenNull(), lexSingle("null"));
-            Assert.AreEqual(tokenNil(), lexSingle("nil"));
+            Assert.AreEqual(TokenBooleanTrue(), LexSingle("true"));
+            Assert.AreEqual(TokenBooleanFalse(), LexSingle("false"));
+            Assert.AreEqual(TokenNull(), LexSingle("null"));
+            Assert.AreEqual(TokenNil(), LexSingle("nil"));
         }
 
         [TestMethod]
-        public void lexesSymbols()
+        public void LexesSymbols()
         {
-            Assert.AreEqual(tokenLBrace(), lexSingle("{"));
-            Assert.AreEqual(tokenRBrace(), lexSingle("}"));
-            Assert.AreEqual(tokenComma(), lexSingle(","));
-            Assert.AreEqual(tokenColon(), lexSingle(":"));
-            Assert.AreEqual(tokenEquals(), lexSingle("="));
+            Assert.AreEqual(TokenLBrace(), LexSingle("{"));
+            Assert.AreEqual(TokenRBrace(), LexSingle("}"));
+            Assert.AreEqual(TokenComma(), LexSingle(","));
+            Assert.AreEqual(TokenColon(), LexSingle(":"));
+            Assert.AreEqual(TokenEquals(), LexSingle("="));
         }
 
         [TestMethod]
-        public void keepsComments()
+        public void KeepsComments()
         {
-            Token expected = token(TokenType.LBrace, "{", new ParsingContext("TEST", 1, 1), "this is a comment\n");
-            Token actual = lexSingle("#this is a comment\n{");
+            Token expected = Token(TokenType.LBrace, "{", new ParsingContext("TEST", 1, 1), "this is a comment\n");
+            Token actual = LexSingle("#this is a comment\n{");
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
-        public void keepsMultipleCommentLines()
+        public void KeepsMultipleCommentLines()
         {
-            Token expected = token(TokenType.LBrace, "{", new ParsingContext("TEST", 1, 1), "this\nis\na\ncomment\n");
-            Token actual = lexSingle("#this\n#is\n#a\n#comment\n{");
+            Token expected = Token(TokenType.LBrace, "{", new ParsingContext("TEST", 1, 1), "this\nis\na\ncomment\n");
+            Token actual = LexSingle("#this\n#is\n#a\n#comment\n{");
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
-        public void ignoresWhitespace()
+        public void IgnoresWhitespace()
         {
-            Assert.AreEqual(tokenLBrace(), lexSingle(" \t\n{ \t\n"));
+            Assert.AreEqual(TokenLBrace(), LexSingle(" \t\n{ \t\n"));
         }
 
         // HARNESS BELOW
         // -------------
 
-        public static Token lexSingle(String text)
+        public static Token LexSingle(string text)
         {
-            Lexer lexer = new Lexer(makeReader(text));
+            Lexer lexer = new Lexer(MakeReader(text));
             Token token = lexer.Pop();
             Assert.AreEqual(TokenType.End, lexer.Peek(), $"Should find END after reading token {token}");
             return token;
         }
 
-        public static Reader makeReader(String text)
+        public static Reader MakeReader(string text)
         {
             return new Reader(new StringReader(text), "TEST");
         }
 
-        public static Token tokenEnd()
+        public static Token TokenEnd()
         {
-            return token(TokenType.End, "");
+            return Token(TokenType.End, "");
         }
 
-        public static Token tokenInt(String number)
+        public static Token TokenInt(string number)
         {
-            return token(TokenType.Integer, number);
+            return Token(TokenType.Integer, number);
         }
 
-        public static Token tokenFloat(String number)
+        public static Token TokenFloat(string number)
         {
-            return token(TokenType.Double, number);
+            return Token(TokenType.Double, number);
         }
 
-        public static Token tokenHexInt(String number)
+        public static Token TokenHexInt(string number)
         {
-            return token(TokenType.HexInt, number);
+            return Token(TokenType.HexInt, number);
         }
 
-        public static Token tokenString(String text)
+        public static Token TokenString(string text)
         {
-            return token(TokenType.String, text);
+            return Token(TokenType.String, text);
         }
 
-        public static Token tokenBooleanTrue()
+        public static Token TokenBooleanTrue()
         {
-            return token(TokenType.True, "true");
+            return Token(TokenType.True, "true");
         }
 
-        public static Token tokenBooleanFalse()
+        public static Token TokenBooleanFalse()
         {
-            return token(TokenType.False, "false");
+            return Token(TokenType.False, "false");
         }
 
-        public static Token tokenNil()
+        public static Token TokenNil()
         {
-            return token(TokenType.Nil, "nil");
+            return Token(TokenType.Nil, "nil");
         }
 
-        public static Token tokenNull()
+        public static Token TokenNull()
         {
-            return token(TokenType.Null, "null");
+            return Token(TokenType.Null, "null");
         }
 
-        public static Token tokenLBrace()
+        public static Token TokenLBrace()
         {
-            return token(TokenType.LBrace, "{");
+            return Token(TokenType.LBrace, "{");
         }
 
-        public static Token tokenRBrace()
+        public static Token TokenRBrace()
         {
-            return token(TokenType.RBrace, "}");
+            return Token(TokenType.RBrace, "}");
         }
 
-        public static Token tokenColon()
+        public static Token TokenColon()
         {
-            return token(TokenType.Colon, ":");
+            return Token(TokenType.Colon, ":");
         }
 
-        public static Token tokenComma()
+        public static Token TokenComma()
         {
-            return token(TokenType.Comma, ",");
+            return Token(TokenType.Comma, ",");
         }
 
-        public static Token tokenEquals()
+        public static Token TokenEquals()
         {
-            return token(TokenType.EqualSign, "=");
+            return Token(TokenType.EqualSign, "=");
         }
 
-        public static Token tokenIdentifier(String text)
+        public static Token TokenIdentifier(string text)
         {
-            return token(TokenType.Ident, text);
+            return Token(TokenType.Ident, text);
         }
 
-        public static Token token(TokenType name, String text)
+        public static Token Token(TokenType name, string text)
         {
-            return token(name, text, new ParsingContext("TEST", 1, 1));
+            return Token(name, text, new ParsingContext("TEST", 1, 1));
         }
 
-        public static Token token(TokenType name, String text, ParsingContext context)
+        public static Token Token(TokenType name, string text, ParsingContext context)
         {
-            return token(name, text, context, "");
+            return Token(name, text, context, "");
         }
 
-        public static Token token(TokenType name, String text, ParsingContext context, String comment)
+        public static Token Token(TokenType name, string text, ParsingContext context, string comment)
         {
             return new Token(name, text, context, comment);
         }

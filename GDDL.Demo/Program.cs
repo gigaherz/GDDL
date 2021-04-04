@@ -5,7 +5,7 @@ namespace GDDL.Test
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             var p = Parser.FromFile("..\\..\\..\\..\\Samples\\Test.txt");
             var parsedData = p.Parse();

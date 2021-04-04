@@ -84,7 +84,7 @@ namespace GDDL.Util
 
             var result = buffer[start];
 
-            buffer[start] = default(T);
+            buffer[start] = default;
             start = ToBufferIndex(1);
             Count--;
             return result;

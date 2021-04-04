@@ -13,7 +13,7 @@ namespace GDDL.Tests
         public const string SOURCE_NAME = "TEST";
 
         [TestMethod]
-        public void parsingContextEqualsWorks()
+        public void ParsingContextEqualsWorks()
         {
             ParsingContext @base = new ParsingContext("A", 2, 3);
             ParsingContext same = new ParsingContext("A", 2, 3);
@@ -27,30 +27,30 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
-        public void readsOneCharacter()
+        public void ReadsOneCharacter()
         {
-            String testString = "a";
+            string testString = "a";
             Reader reader = new Reader(new StringReader(testString), SOURCE_NAME);
             Assert.AreEqual(testString, reader.Read(testString.Length));
         }
 
         [TestMethod]
-        public void readsMultipleCharacters()
+        public void ReadsMultipleCharacters()
         {
-            String testString = "qwerty";
+            string testString = "qwerty";
             Reader reader = new Reader(new StringReader(testString), SOURCE_NAME);
             Assert.AreEqual(testString, reader.Read(testString.Length));
         }
 
         [TestMethod]
-        public void readsOnlyAsMuchAsRequested()
+        public void ReadsOnlyAsMuchAsRequested()
         {
             Reader reader = new Reader(new StringReader("qwerty"), SOURCE_NAME);
             Assert.AreEqual("qwe", reader.Read(3));
         }
 
         [TestMethod]
-        public void peekWorks()
+        public void PeekWorks()
         {
             Reader reader = new Reader(new StringReader("abc"), SOURCE_NAME);
 
@@ -69,7 +69,7 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
-        public void peeksAfterRead()
+        public void PeeksAfterRead()
         {
             Reader reader = new Reader(new StringReader("zxcvbnm"), SOURCE_NAME);
             Assert.AreEqual("zxc", reader.Read(3));
@@ -77,14 +77,14 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
-        public void peeksEndOfFile()
+        public void PeeksEndOfFile()
         {
             Reader reader = new Reader(new StringReader(""), SOURCE_NAME);
             Assert.AreEqual(-1, reader.Peek());
         }
 
         [TestMethod]
-        public void keepsTrackOfLocation()
+        public void KeepsTrackOfLocation()
         {
             Reader reader = new Reader(new StringReader("qwerty\nuiop\rasdf\r\n1234"), SOURCE_NAME);
             Assert.AreEqual(new ParsingContext(SOURCE_NAME, 1, 1), reader.GetParsingContext());
