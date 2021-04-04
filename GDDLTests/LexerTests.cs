@@ -39,17 +39,34 @@ namespace GDDL.Tests
             Assert.AreEqual(tokenFloat("-1.0e-1"), lexSingle("-1.0e-1"));
             Assert.AreEqual(tokenFloat("-1.e1"), lexSingle("-1.e1"));
             Assert.AreEqual(tokenFloat("-.1e1"), lexSingle("-.1e1"));
+
+            Assert.AreEqual(tokenFloat("+1.0"), lexSingle("+1.0"));
+            Assert.AreEqual(tokenFloat("+1."), lexSingle("+1."));
+            Assert.AreEqual(tokenFloat("+.1"), lexSingle("+.1"));
+            Assert.AreEqual(tokenFloat("+1.0e1"), lexSingle("+1.0e1"));
+            Assert.AreEqual(tokenFloat("+1.0e+1"), lexSingle("+1.0e+1"));
+            Assert.AreEqual(tokenFloat("+1.0e-1"), lexSingle("+1.0e-1"));
+            Assert.AreEqual(tokenFloat("+1.e1"), lexSingle("+1.e1"));
+            Assert.AreEqual(tokenFloat("+.1e1"), lexSingle("+.1e1"));
+
+            Assert.AreEqual(tokenFloat(".Inf"), lexSingle(".Inf"));
+            Assert.AreEqual(tokenFloat("-.Inf"), lexSingle("-.Inf"));
+            Assert.AreEqual(tokenFloat("+.Inf"), lexSingle("+.Inf"));
+            Assert.AreEqual(tokenFloat(".NaN"), lexSingle(".NaN"));
         }
 
         [TestMethod]
         public void lexesStrings()
         {
+            // Ascii text
             Assert.AreEqual(tokenString("\"a\""), lexSingle("\"a\""));
             Assert.AreEqual(tokenString("\"b\\\"\""), lexSingle("\"b\\\"\""));
             Assert.AreEqual(tokenString("\"b'\""), lexSingle("\"b'\""));
             Assert.AreEqual(tokenString("'a'"), lexSingle("'a'"));
             Assert.AreEqual(tokenString("'b\\''"), lexSingle("'b\\''"));
             Assert.AreEqual(tokenString("'b\"'"), lexSingle("'b\"'"));
+
+            // Escapes
             Assert.AreEqual(tokenString("'\\x00'"), lexSingle("'\\x00'"));
             Assert.AreEqual(tokenString("'\\x0F'"), lexSingle("'\\x0F'"));
             Assert.AreEqual(tokenString("'\\xF0'"), lexSingle("'\\xF0'"));
@@ -58,6 +75,10 @@ namespace GDDL.Tests
             Assert.AreEqual(tokenString("'\\u000F'"), lexSingle("'\\u000F'"));
             Assert.AreEqual(tokenString("'\\uF000'"), lexSingle("'\\uF000'"));
             Assert.AreEqual(tokenString("'\\uF00F'"), lexSingle("'\\uF00F'"));
+
+            // Unicode
+            Assert.AreEqual(tokenString("'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"),
+                    lexSingle("'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"));
         }
 
         [TestMethod]
@@ -108,10 +129,9 @@ namespace GDDL.Tests
         {
             Lexer lexer = new Lexer(makeReader(text));
             Token token = lexer.Pop();
-            Assert.AreEqual(TokenType.End, lexer.Peek());
+            Assert.AreEqual(TokenType.End, lexer.Peek(), $"Should find END after reading token {token}");
             return token;
         }
-
 
         public static Reader makeReader(String text)
         {

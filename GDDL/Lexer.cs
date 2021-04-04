@@ -195,7 +195,7 @@ namespace GDDL
                 return new Token(TokenType.String, reader.Read(number), startContext, comment);
             }
 
-            if (Utility.IsDigit(ich) || ich == '-' || ich == '.')
+            if (Utility.IsDigit(ich) || ich == '.' || ich == '+' || ich == '-')
             {
                 // numbers
                 int number = 0;

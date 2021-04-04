@@ -185,9 +185,9 @@ namespace GDDL
                 throw new ParserException(this, $"Expected a basic element after EqualSign, found {Lex.Peek()} instead");
 
             var b = BasicElement();
-            b.Comment = name.Comment;
 
             b.Name = n;
+            b.Comment = name.Comment;
 
             return b;
         }
@@ -259,10 +259,9 @@ namespace GDDL
             if (!prefix_set())
                 throw new ParserException(this, "Internal error");
             var s = Set();
+            s.TypeName = type.Text;
 
             s.Comment = type.Comment;
-
-            s.TypeName = type.Text;
 
             return s;
         }
@@ -305,7 +304,7 @@ namespace GDDL
                 p++;
                 sign = -1;
             }
-            Value v = Value.Of(sign * long.Parse(s.Substring(p), 
+            Value v = Value.Of(sign * long.Parse(s.Substring(p),
                 NumberStyles.HexNumber, CultureInfo.InvariantCulture));
             v.Comment = token.Comment;
             return v;
@@ -313,7 +312,24 @@ namespace GDDL
 
         public static Value FloatValue(Token token)
         {
-            Value v = Value.Of(double.Parse(token.Text, CultureInfo.InvariantCulture));
+            double value;
+            switch (token.Text)
+            {
+                case ".NaN":
+                    value = double.NaN;
+                    break;
+                case ".Inf":
+                case "+.Inf":
+                    value = double.PositiveInfinity;
+                    break;
+                case "-.Inf":
+                    value = double.NegativeInfinity;
+                    break;
+                default:
+                    value = double.Parse(token.Text, CultureInfo.InvariantCulture);
+                    break;
+            }
+            Value v = Value.Of(value);
             v.Comment = token.Comment;
             return v;
         }

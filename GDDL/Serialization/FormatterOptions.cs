@@ -1,4 +1,6 @@
-﻿namespace GDDL.Serialization
+﻿using System;
+
+namespace GDDL.Serialization
 {
     public class FormatterOptions
     {
@@ -16,6 +18,7 @@
                     .SpacesBetweenElements(1)
                     .OneElementPerLineThreshold(10)
                     .SpacesPerIndent(4)
+                    .BlankLinesBeforeComment(1)
                 .Build();
 
         // Collections
@@ -46,6 +49,7 @@
 
         // Comments
         public readonly bool writeComments;
+        public readonly int blankLinesBeforeComment;
 
         // Internal Constructor
         private FormatterOptions(Builder builder)
@@ -71,6 +75,7 @@
             indentUsingTabs = builder._indentUsingTabs;
             spacesPerIndent = builder._spacesPerIndent;
             writeComments = builder._writeComments;
+            blankLinesBeforeComment = builder._blankLinesBeforeComment;
         }
 
         public class Builder
@@ -103,6 +108,7 @@
 
             // Comments
             internal protected bool _writeComments = false;
+            internal protected int _blankLinesBeforeComment = 0;
 
             public Builder LineBreaksBeforeOpeningBrace(int lineBreaksBeforeOpeningBrace)
             {
@@ -227,6 +233,12 @@
             public Builder WriteComments(bool writeComments)
             {
                 this._writeComments = writeComments;
+                return this;
+            }
+
+            internal Builder BlankLinesBeforeComment(int blankLinesBeforeComment)
+            {
+                this._blankLinesBeforeComment = blankLinesBeforeComment;
                 return this;
             }
 

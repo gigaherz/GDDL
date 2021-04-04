@@ -100,6 +100,8 @@ namespace GDDL.Serialization
         {
             if (e.HasComment && options.writeComments)
             {
+                for (int i = 0; i < options.blankLinesBeforeComment; i++)
+                    builder.Append("\n");
                 foreach (var s in CommentLineSplitter.Split(e.Comment))
                 {
                     AppendIndent();

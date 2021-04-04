@@ -16,7 +16,12 @@ namespace GDDL.Tests
         {
             ITokenProvider provider = lexerBuilder()
                     .addInt()
+                    .addNInt()
                     .addFloat()
+                    .addNFloat()
+                    .addNaN()
+                    .addInf()
+                    .addNInf()
                     .addHexInt()
                     .addString()
                     .addBooleanTrue()
@@ -28,7 +33,12 @@ namespace GDDL.Tests
                     .Build();
 
             Assert.AreEqual(new Token(TokenType.Integer, "1", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
+            Assert.AreEqual(new Token(TokenType.Integer, "-1", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
             Assert.AreEqual(new Token(TokenType.Double, "1.0", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
+            Assert.AreEqual(new Token(TokenType.Double, "-1.0", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
+            Assert.AreEqual(new Token(TokenType.Double, ".NaN", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
+            Assert.AreEqual(new Token(TokenType.Double, ".Inf", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
+            Assert.AreEqual(new Token(TokenType.Double, "-.Inf", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
             Assert.AreEqual(new Token(TokenType.HexInt, "0x1", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
             Assert.AreEqual(new Token(TokenType.String, "\"1\"", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
             Assert.AreEqual(new Token(TokenType.True, "true", new ParsingContext("TEST", 1, 1), ""), provider.Pop());
@@ -63,6 +73,14 @@ namespace GDDL.Tests
         }
 
         [TestMethod]
+        public void parsesNegativeIntegerAsValue()
+        {
+            ITokenProvider provider = lexerBuilder().addNInt().Build();
+            Parser parser = new Parser(provider);
+            Assert.AreEqual(Value.Of(-1), parser.Parse(false));
+        }
+
+        [TestMethod]
         public void parsesHexIntegerAsValue()
         {
             ITokenProvider provider = lexerBuilder().addHexInt().Build();
@@ -76,6 +94,38 @@ namespace GDDL.Tests
             var provider = lexerBuilder().addFloat().Build();
             Parser parser = new Parser(provider);
             Assert.AreEqual(Value.Of(1.0), parser.Parse(false));
+        }
+
+        [TestMethod]
+        public void parsesNegativeDoubleAsValue()
+        {
+            var provider = lexerBuilder().addNFloat().Build();
+            Parser parser = new Parser(provider);
+            Assert.AreEqual(Value.Of(-1.0), parser.Parse(false));
+        }
+
+        [TestMethod]
+        public void parsesNaNAsValue()
+        {
+            var provider = lexerBuilder().addNaN().Build();
+            Parser parser = new Parser(provider);
+            Assert.AreEqual(Value.Of(double.NaN), parser.Parse(false));
+        }
+
+        [TestMethod]
+        public void parsesInfinityAsValue()
+        {
+            var provider = lexerBuilder().addInf().Build();
+            Parser parser = new Parser(provider);
+            Assert.AreEqual(Value.Of(double.PositiveInfinity), parser.Parse(false));
+        }
+
+        [TestMethod]
+        public void parsesNegativeInfinityAsValue()
+        {
+            var provider = lexerBuilder().addNInf().Build();
+            Parser parser = new Parser(provider);
+            Assert.AreEqual(Value.Of(double.NegativeInfinity), parser.Parse(false));
         }
 
         [TestMethod]
@@ -224,9 +274,34 @@ namespace GDDL.Tests
                 return add(TokenType.Integer, "1");
             }
 
+            public MockLexerBuilder addNInt()
+            {
+                return add(TokenType.Integer, "-1");
+            }
+
             public MockLexerBuilder addFloat()
             {
                 return add(TokenType.Double, "1.0");
+            }
+
+            public MockLexerBuilder addNFloat()
+            {
+                return add(TokenType.Double, "-1.0");
+            }
+
+            public MockLexerBuilder addNaN()
+            {
+                return add(TokenType.Double, ".NaN");
+            }
+
+            public MockLexerBuilder addInf()
+            {
+                return add(TokenType.Double, ".Inf");
+            }
+
+            public MockLexerBuilder addNInf()
+            {
+                return add(TokenType.Double, "-.Inf");
             }
 
             public MockLexerBuilder addHexInt()
