@@ -116,11 +116,11 @@ namespace GDDL
                         break;
                     }
                     default:
-                        goto blah;
+                        goto commentLoopExit;
                 }
             }
 
-        blah:
+        commentLoopExit:
             string comment = commentLines != null ? commentLines.ToString() : "";
 
             switch (ich)
@@ -381,7 +381,7 @@ namespace GDDL
             {
                 return Utility.UnescapeString(t.Text);
             }
-            catch(ArgumentException e)
+            catch (ArgumentException e)
             {
                 throw new ParserException(t, "Unescaping string", e);
             }
