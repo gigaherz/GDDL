@@ -3,7 +3,7 @@
     public enum DoubleFormattingStyle
     {
         Decimal,
-        Scientific, 
+        Scientific,
         Auto
     }
 }

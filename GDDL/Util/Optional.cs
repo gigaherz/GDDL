@@ -8,7 +8,7 @@ namespace GDDL.Util
 {
     public static class Optional
     {
-        [return:NotNull]
+        [return: NotNull]
         public static Optional<T> OfNullable<T>([MaybeNull] T value)
             where T : class
         {
@@ -44,7 +44,8 @@ namespace GDDL.Util
 
         public bool HasValue { get; }
 
-        public T Value {
+        public T Value
+        {
             get
             {
                 if (!HasValue)
@@ -59,7 +60,7 @@ namespace GDDL.Util
             _value = value;
         }
 
-        public Optional<R> Map<R>(Func<T,R> mapping)
+        public Optional<R> Map<R>(Func<T, R> mapping)
         {
             if (HasValue)
                 return Optional.Of(mapping(_value));

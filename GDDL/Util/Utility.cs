@@ -260,7 +260,7 @@ namespace GDDL.Util
         }
 
         public static T RequireNotNull<T>(this T obj)
-            where T: class
+            where T : class
         {
             if (obj is null)
                 throw new NullReferenceException();

@@ -13,7 +13,7 @@ namespace GDDL.Structure
 
         public bool HasName => !string.IsNullOrEmpty(Name);
 
-        public bool HasComment => !string.IsNullOrEmpty(Comment); 
+        public bool HasComment => !string.IsNullOrEmpty(Comment);
 
         public bool IsCollection => this is Collection;
         public Collection AsCollection => (Collection)this;

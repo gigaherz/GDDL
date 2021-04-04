@@ -1,4 +1,3 @@
-
 using System;
 
 namespace GDDL
@@ -46,7 +45,7 @@ namespace GDDL
         private bool EqualsImpl(Token other)
         {
             return Type == other.Type &&
-                Text == other.Text && 
+                Text == other.Text &&
                 Equals(Context, other.Context) &&
                 ((string.IsNullOrEmpty(Comment) && string.IsNullOrEmpty(other.Comment)) || Equals(Comment, other.Comment));
         }

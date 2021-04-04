@@ -52,12 +52,12 @@ namespace GDDL.Util
 
         private bool Contains(TKey key, TValue value)
         {
-            return GetOrEmpty(key).Map(collection=>collection.Contains(value)).OrElse(false);
+            return GetOrEmpty(key).Map(collection => collection.Contains(value)).OrElse(false);
         }
 
         public bool Remove(TKey key, TValue value)
         {
-            return GetOrEmpty(key).Map(collection=>collection.Remove(value)).OrElse(false);
+            return GetOrEmpty(key).Map(collection => collection.Remove(value)).OrElse(false);
         }
 
         public void Add(TKey key, TValue value)
@@ -74,9 +74,9 @@ namespace GDDL.Util
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            foreach(var ks in storage)
+            foreach (var ks in storage)
             {
-                foreach(var v in ks.Value)
+                foreach (var v in ks.Value)
                 {
                     yield return new KeyValuePair<TKey, TValue>(ks.Key, v);
                 }
