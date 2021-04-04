@@ -22,6 +22,211 @@ namespace GDDL.Util
             return x + 1;
         }
 
+        public static bool IsValidIdentifier(string ident)
+        {
+            bool first = true;
+
+            foreach (char c in ident)
+            {
+                if (!Utility.IsLetter(c) && c != '_')
+                {
+                    if (first || !Utility.IsDigit(c))
+                    {
+                        return false;
+                    }
+                }
+
+                first = false;
+            }
+
+            return true;
+        }
+
+        public static string EscapeString(string p)
+        {
+            return EscapeString(p, '"');
+        }
+
+        public static string EscapeString(string p, char delimiter)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(delimiter);
+            foreach (char c in p)
+            {
+                if (IsValidStringCharacter(c, delimiter))
+                {
+                    sb.Append(c);
+                    continue;
+                }
+
+                sb.Append('\\');
+                switch (c)
+                {
+                    case '\b':
+                        sb.Append('b');
+                        break;
+                    case '\t':
+                        sb.Append('t');
+                        break;
+                    case '\n':
+                        sb.Append('n');
+                        break;
+                    case '\f':
+                        sb.Append('f');
+                        break;
+                    case '\r':
+                        sb.Append('r');
+                        break;
+                    case '\"':
+                        sb.Append('\"');
+                        break;
+                    case '\\':
+                        sb.Append('\\');
+                        break;
+                    default:
+                        if (c > 0xFF)
+                            sb.Append(string.Format("u%04x", (int)c));
+                        else
+                            sb.Append(string.Format("x%02x", (int)c));
+                        break;
+                }
+            }
+            sb.Append(delimiter);
+
+            return sb.ToString();
+        }
+
+        private static bool IsValidStringCharacter(char c, char delimiter)
+        {
+            return Utility.IsPrintable(c) && !Utility.IsControl(c) && c != delimiter && c != '\\';
+        }
+
+        public static string UnescapeString(string text)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            char startQuote = (char)0;
+
+            bool inEscape = false;
+
+            bool inHexEscape = false;
+            int escapeAcc = 0;
+            int escapeDigits = 0;
+            int escapeMax = 0;
+
+            foreach (char c in text)
+            {
+                if (startQuote != 0)
+                {
+                    if (inHexEscape)
+                    {
+                        if (escapeDigits == escapeMax)
+                        {
+                            sb.Append((char)escapeAcc);
+                            inHexEscape = false;
+                        }
+                        else if (Utility.IsDigit(c))
+                        {
+                            escapeAcc = (escapeAcc << 4) + (c - '0');
+                        }
+                        else if ((escapeDigits < escapeMax) && (c >= 'a') && (c <= 'f'))
+                        {
+                            escapeAcc = (escapeAcc << 4) + 10 + (c - 'a');
+                        }
+                        else if ((escapeDigits < escapeMax) && (c >= 'A') && (c <= 'F'))
+                        {
+                            escapeAcc = (escapeAcc << 4) + 10 + (c - 'A');
+                        }
+                        else
+                        {
+                            sb.Append((char)escapeAcc);
+                            inHexEscape = false;
+                        }
+                        escapeDigits++;
+                    }
+
+                    if (inEscape)
+                    {
+                        switch (c)
+                        {
+                            case '"':
+                                sb.Append('"');
+                                break;
+                            case '\'':
+                                sb.Append('\'');
+                                break;
+                            case '\\':
+                                sb.Append('\\');
+                                break;
+                            case '0':
+                                sb.Append('\0');
+                                break;
+                            case 'b':
+                                sb.Append('\b');
+                                break;
+                            case 't':
+                                sb.Append('\t');
+                                break;
+                            case 'n':
+                                sb.Append('\n');
+                                break;
+                            case 'f':
+                                sb.Append('\f');
+                                break;
+                            case 'r':
+                                sb.Append('\r');
+                                break;
+                            case 'x':
+                                inHexEscape = true;
+                                escapeAcc = 0;
+                                escapeDigits = 0;
+                                escapeMax = 2;
+                                break;
+                            case 'u':
+                                inHexEscape = true;
+                                escapeAcc = 0;
+                                escapeDigits = 0;
+                                escapeMax = 4;
+                                break;
+                        }
+                        inEscape = false;
+                    }
+                    else if (!inHexEscape)
+                    {
+                        if (c == startQuote)
+                            return sb.ToString();
+                        switch (c)
+                        {
+                            case '\\':
+                                inEscape = true;
+                                break;
+                            default:
+                                sb.Append(c);
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    switch (c)
+                    {
+                        case '"':
+                            startQuote = '"';
+                            break;
+                        case '\'':
+                            startQuote = '\'';
+                            break;
+                        default:
+                            sb.Append(c);
+                            break;
+                    }
+                }
+            }
+
+            throw new ArgumentException("Invalid string literal", nameof(text));
+        }
+
         private const int NON_PRINTABLE =
                         (1 << (int)UnicodeCategory.LineSeparator) |
                         (1 << (int)UnicodeCategory.ParagraphSeparator) |

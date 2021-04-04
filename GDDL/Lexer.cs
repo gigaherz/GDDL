@@ -375,149 +375,16 @@ namespace GDDL
             return $"{{Lexer ahead={string.Join(", ", lookAhead)}, reader={reader}}}";
         }
 
-        public static bool IsValidIdentifier(string ident)
-        {
-            bool first = true;
-
-            foreach (char c in ident)
-            {
-                if (!Utility.IsLetter(c) && c != '_')
-                {
-                    if (first || !Utility.IsDigit(c))
-                    {
-                        return false;
-                    }
-                }
-
-                first = false;
-            }
-
-            return true;
-        }
-
         public static string UnescapeString(Token t)
         {
-            StringBuilder sb = new StringBuilder();
-
-            char startQuote = (char)0;
-
-            bool inEscape = false;
-
-            bool inHexEscape = false;
-            int escapeAcc = 0;
-            int escapeDigits = 0;
-            int escapeMax = 0;
-
-            foreach (char c in t.Text)
+            try
             {
-                if (startQuote != 0)
-                {
-                    if (inHexEscape)
-                    {
-                        if (escapeDigits == escapeMax)
-                        {
-                            sb.Append((char)escapeAcc);
-                            inHexEscape = false;
-                        }
-                        else if (Utility.IsDigit(c))
-                        {
-                            escapeAcc = (escapeAcc << 4) + (c - '0');
-                        }
-                        else if ((escapeDigits < escapeMax) && (c >= 'a') && (c <= 'f'))
-                        {
-                            escapeAcc = (escapeAcc << 4) + 10 + (c - 'a');
-                        }
-                        else if ((escapeDigits < escapeMax) && (c >= 'A') && (c <= 'F'))
-                        {
-                            escapeAcc = (escapeAcc << 4) + 10 + (c - 'A');
-                        }
-                        else
-                        {
-                            sb.Append((char)escapeAcc);
-                            inHexEscape = false;
-                        }
-                        escapeDigits++;
-                    }
-
-                    if (inEscape)
-                    {
-                        switch (c)
-                        {
-                            case '"':
-                                sb.Append('"');
-                                break;
-                            case '\'':
-                                sb.Append('\'');
-                                break;
-                            case '\\':
-                                sb.Append('\\');
-                                break;
-                            case '0':
-                                sb.Append('\0');
-                                break;
-                            case 'b':
-                                sb.Append('\b');
-                                break;
-                            case 't':
-                                sb.Append('\t');
-                                break;
-                            case 'n':
-                                sb.Append('\n');
-                                break;
-                            case 'f':
-                                sb.Append('\f');
-                                break;
-                            case 'r':
-                                sb.Append('\r');
-                                break;
-                            case 'x':
-                                inHexEscape = true;
-                                escapeAcc = 0;
-                                escapeDigits = 0;
-                                escapeMax = 2;
-                                break;
-                            case 'u':
-                                inHexEscape = true;
-                                escapeAcc = 0;
-                                escapeDigits = 0;
-                                escapeMax = 4;
-                                break;
-                        }
-                        inEscape = false;
-                    }
-                    else if (!inHexEscape)
-                    {
-                        if (c == startQuote)
-                            return sb.ToString();
-                        switch (c)
-                        {
-                            case '\\':
-                                inEscape = true;
-                                break;
-                            default:
-                                sb.Append(c);
-                                break;
-                        }
-                    }
-                }
-                else
-                {
-                    switch (c)
-                    {
-                        case '"':
-                            startQuote = '"';
-                            break;
-                        case '\'':
-                            startQuote = '\'';
-                            break;
-                        default:
-                            sb.Append(c);
-                            break;
-                    }
-                }
+                return Utility.UnescapeString(t.Text);
             }
-
-            throw new ParserException(t, "Invalid string literal");
+            catch(ArgumentException e)
+            {
+                throw new ParserException(t, "Unescaping string", e);
+            }
         }
 
         public ParsingContext GetParsingContext()

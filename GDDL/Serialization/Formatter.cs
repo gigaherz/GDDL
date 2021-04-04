@@ -118,8 +118,8 @@ namespace GDDL.Serialization
             if (e.HasName)
             {
                 string sname = e.Name;
-                if (!Lexer.IsValidIdentifier(sname))
-                    sname = EscapeString(sname);
+                if (!Utility.IsValidIdentifier(sname))
+                    sname = Utility.EscapeString(sname);
                 builder.Append(sname);
                 builder.Append(" = ");
             }
@@ -165,7 +165,7 @@ namespace GDDL.Serialization
             }
             else if (v.IsString)
             {
-                builder.Append(EscapeString(v.String));
+                builder.Append(Utility.EscapeString(v.String));
             }
             else
             {
@@ -477,66 +477,6 @@ namespace GDDL.Serialization
             }
 
             PopIndent();
-        }
-
-        public static string EscapeString(string p)
-        {
-            return EscapeString(p, '"');
-        }
-
-        public static string EscapeString(string p, char delimiter)
-        {
-            var sb = new StringBuilder();
-
-            sb.Append(delimiter);
-            foreach (char c in p)
-            {
-                if (IsValidStringCharacter(c, delimiter))
-                {
-                    sb.Append(c);
-                    continue;
-                }
-
-                sb.Append('\\');
-                switch (c)
-                {
-                    case '\b':
-                        sb.Append('b');
-                        break;
-                    case '\t':
-                        sb.Append('t');
-                        break;
-                    case '\n':
-                        sb.Append('n');
-                        break;
-                    case '\f':
-                        sb.Append('f');
-                        break;
-                    case '\r':
-                        sb.Append('r');
-                        break;
-                    case '\"':
-                        sb.Append('\"');
-                        break;
-                    case '\\':
-                        sb.Append('\\');
-                        break;
-                    default:
-                        if (c > 0xFF)
-                            sb.Append(string.Format("u%04x", (int)c));
-                        else
-                            sb.Append(string.Format("x%02x", (int)c));
-                        break;
-                }
-            }
-            sb.Append(delimiter);
-
-            return sb.ToString();
-        }
-
-        private static bool IsValidStringCharacter(char c, char delimiter)
-        {
-            return Utility.IsPrintable(c) && !Utility.IsControl(c) && c != delimiter && c != '\\';
         }
     }
 }

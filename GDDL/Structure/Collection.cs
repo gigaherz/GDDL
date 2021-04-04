@@ -36,7 +36,7 @@ namespace GDDL.Structure
             get => typeName;
             set
             {
-                if (!Lexer.IsValidIdentifier(value))
+                if (!Utility.IsValidIdentifier(value))
                     throw new ArgumentException("Type value must be a valid identifier");
                 typeName = value;
             }

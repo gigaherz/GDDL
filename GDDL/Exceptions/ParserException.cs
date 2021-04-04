@@ -8,5 +8,9 @@ namespace GDDL.Exceptions
             : base($"{context.GetParsingContext()}: {message}")
         {
         }
+        public ParserException(IContextProvider context, string message, Exception e)
+            : base($"{context.GetParsingContext()}: {message}", e)
+        {
+        }
     }
 }
