@@ -21,11 +21,11 @@ namespace GDDL
             return $"{Filename}({Line},{Column})";
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object other)
         {
-            if (obj == this) return true;
-            if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is ParsingContext other && EqualsImpl(other);
+            if (other == this) return true;
+            if (other == null || GetType() != other.GetType()) return false;
+            return EqualsImpl((ParsingContext)other);
         }
 
         public bool Equals(ParsingContext other)
@@ -45,9 +45,6 @@ namespace GDDL
             return HashCode.Combine(Filename, Line, Column);
         }
 
-        ParsingContext IContextProvider.GetParsingContext()
-        {
-            return this;
-        }
+        ParsingContext IContextProvider.ParsingContext => this;
     }
 }

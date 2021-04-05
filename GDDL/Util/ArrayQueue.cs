@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace GDDL.Util
 {
-    public class QueueList<T> : IEnumerable<T>
+    public class ArrayQueue<T> : IEnumerable<T>
     {
         private const int DefaultCapacity = 16;
 
@@ -25,12 +25,12 @@ namespace GDDL.Util
             }
         }
 
-        public QueueList()
+        public ArrayQueue()
             : this(DefaultCapacity)
         {
         }
 
-        public QueueList(int capacity)
+        public ArrayQueue(int capacity)
         {
             if (capacity < 0)
             {

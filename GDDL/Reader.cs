@@ -8,7 +8,7 @@ namespace GDDL
 {
     public sealed class Reader : IContextProvider, IDisposable
     {
-        private readonly QueueList<int> unreadBuffer = new QueueList<int>();
+        private readonly ArrayQueue<int> unreadBuffer = new ArrayQueue<int>();
 
         private readonly TextReader dataSource;
         private readonly string sourceName;
@@ -49,11 +49,20 @@ namespace GDDL
             }
         }
 
+        /**
+         * Returns the first character in the lookahead buffer, reading characters from the input reader as needed.
+         * @return The character, or -1 if end of file
+         */
         public int Peek()
         {
             return Peek(0);
         }
 
+        /**
+         * Returns the Nth character in the lookahead buffer, reading characters from the input reader as needed.
+         * @param index The position in the lookahead buffer, starting at 0.
+         * @return The character, or -1 if end of file
+         */
         public int Peek(int index)
         {
             Require(index + 1);
@@ -61,6 +70,10 @@ namespace GDDL
             return unreadBuffer[index];
         }
 
+        /**
+         * Removes the first character in the lookahead buffer, and returns it.
+         * @return The character, or -1 if end of file
+         */
         public int Next()
         {
             int ch = unreadBuffer.Remove();
@@ -87,6 +100,11 @@ namespace GDDL
             return ch;
         }
 
+        /**
+         * Removes N characters from the lookahead buffer, and returns them as a string.
+         * @param count The number of characters to return
+         * @return A string with the character sequence
+         */
         public string Read(int count)
         {
             Require(count);
@@ -101,6 +119,10 @@ namespace GDDL
             return b.ToString();
         }
 
+        /**
+         * Removes N characters from the lookahead buffer, advancing the input stream as necessary.
+         * @param count The number of characters to drop
+         */
         public void Skip(int count)
         {
             Require(count);
@@ -110,12 +132,7 @@ namespace GDDL
 
         public override string ToString()
         {
-            StringBuilder b = new StringBuilder();
-            foreach (var ch in unreadBuffer)
-            {
-                b.Append((char)ch);
-            }
-            return $"{{Reader ahead={b}}}";
+            return $"{{Reader ahead={string.Join("", unreadBuffer)}}}";
         }
 
         public void Dispose()
@@ -123,9 +140,6 @@ namespace GDDL
             dataSource.Dispose();
         }
 
-        public ParsingContext GetParsingContext()
-        {
-            return new ParsingContext(sourceName, line, column);
-        }
+        public ParsingContext ParsingContext => new ParsingContext(sourceName, line, column);
     }
 }

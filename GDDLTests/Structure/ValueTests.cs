@@ -95,14 +95,14 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfNullWorks()
         {
-            Value v = Value.Null().CopyValue();
+            Value v = Value.Null().Copy();
             Assert.IsTrue(v.IsNull);
         }
 
         [TestMethod]
         public void CopyOfBooleanTrueWorks()
         {
-            Value v = Value.Of(true).CopyValue();
+            Value v = Value.Of(true).Copy();
             Assert.IsFalse(v.IsNull);
             Assert.IsTrue(v.Boolean);
         }
@@ -110,7 +110,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfBooleanFalseWorks()
         {
-            Value v = Value.Of(false).CopyValue();
+            Value v = Value.Of(false).Copy();
             Assert.IsFalse(v.IsNull);
             Assert.IsFalse(v.Boolean);
         }
@@ -118,7 +118,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfLongWorks()
         {
-            Value v = Value.Of(1).CopyValue();
+            Value v = Value.Of(1).Copy();
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1L, v.Integer);
         }
@@ -126,7 +126,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfDoubleWorks()
         {
-            Value v = Value.Of(1.0).CopyValue();
+            Value v = Value.Of(1.0).Copy();
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1L, v.Double, 1E-10);
         }
@@ -134,7 +134,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfStringWorks()
         {
-            Value v = (Value)Value.Of("1").Copy();
+            Value v = (Value)Value.Of("1").CopyInternal();
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual("1", v.String);
         }

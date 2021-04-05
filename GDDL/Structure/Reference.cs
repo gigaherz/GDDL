@@ -1,24 +1,36 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace GDDL.Structure
 {
-    public class Reference : Element, IEquatable<Reference>
+    public sealed class Reference : Element<Reference>, IEquatable<Reference>
     {
         // Factory Methods
+
+        /**
+         * Constructs an absolute reference to the given path.
+         * @param parts The target, as an array of names of each element along the path
+         * @return A Reference set to the given path
+         */
         public static Reference Absolute(params string[] parts)
         {
             return new Reference(true, parts);
         }
 
+        /**
+         * Constructs a relative reference to the given path.
+         * @param parts The target, as an array of names of each element along the path
+         * @return A Reference set to the given path
+         */
         public static Reference Relative(params string[] parts)
         {
             return new Reference(false, parts);
         }
 
         // Implementation
-        protected readonly List<string> nameParts = new List<string>();
+        private readonly List<string> nameParts = new List<string>();
 
         private bool resolved;
         private Element resolvedValue;
@@ -28,6 +40,9 @@ namespace GDDL.Structure
         public override bool IsResolved => resolved;
         public override Element ResolvedValue => resolvedValue;
 
+        /**
+         * @return The current path of this reference
+         */
         public IList<string> NameParts => nameParts.AsReadOnly();
 
         private Reference(bool rooted, params string[] parts)
@@ -36,43 +51,38 @@ namespace GDDL.Structure
             nameParts.AddRange(parts);
         }
 
+        /**
+         * Adds a new name to the path this Reference represents
+         * @param name The name of a named element
+         */
         public void Add(string name)
         {
             nameParts.Add(name);
         }
 
+        /**
+         * Appends the given collection of names to the path this Reference represents
+         * @param names The collection of names
+         */
         public void AddRange(IEnumerable<string> names)
         {
             nameParts.AddRange(names);
         }
 
-        public override Element Copy()
+        public override Reference CopyInternal()
         {
-            return CopyReference();
+            var reference = new Reference(Rooted);
+            CopyTo(reference);
+            return reference;
         }
 
-        public Reference CopyReference()
-        {
-            var b = new Reference(Rooted);
-            CopyTo(b);
-            return b;
-        }
-
-        protected override void CopyTo(Element other)
+        protected override void CopyTo(Reference other)
         {
             base.CopyTo(other);
-            if (!(other is Reference))
-                throw new ArgumentException("CopyTo for invalid type", nameof(other));
-            var b = (Reference)other;
-            b.AddRange(nameParts);
-            if (resolved)
-            {
-                b.resolved = true;
-                b.resolvedValue = resolvedValue;
-            }
+            other.AddRange(nameParts);
         }
 
-        public override void Resolve(Element root, Element parent)
+        public override void Resolve(Element root, [MaybeNull] Collection parent)
         {
             if (IsResolved)
                 return;
@@ -86,22 +96,22 @@ namespace GDDL.Structure
             resolved = TryResolve(root, parent, false);
         }
 
-        private bool TryResolve(Element root, Element parent, bool relative)
+        private bool TryResolve(Element root, [MaybeNull] Collection parent, bool relative)
         {
-            var elm = relative ? parent : root;
+            var target = relative ? (Element)parent ?? this : root;
 
-            bool parentRoot = parent.HasName && nameParts[0] == parent.Name;
+            bool parentRoot = target.HasName && nameParts[0] == target.Name;
 
             for (int i = parentRoot ? 1 : 0; i < nameParts.Count; i++)
             {
                 string part = nameParts[i];
 
-                if (!(elm is Collection s))
+                if (!(target is Collection s))
                     continue;
 
                 if (s.TryGetValue(part, out var ne))
                 {
-                    elm = ne;
+                    target = ne;
                     continue;
                 }
 
@@ -109,10 +119,10 @@ namespace GDDL.Structure
                 return false;
             }
 
-            if (!elm.IsResolved)
-                elm.Resolve(root, parent);
+            if (!target.IsResolved)
+                target.Resolve(root, target.ParentInternal);
 
-            resolvedValue = elm.ResolvedValue;
+            resolvedValue = target.ResolvedValue;
 
             return resolvedValue != null;
         }
@@ -127,27 +137,28 @@ namespace GDDL.Structure
             return copy;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object other)
         {
-            if (obj == this) return true;
-            if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is Reference other && EqualsImpl(other);
+            if (other == this) return true;
+            if (other == null || GetType() != other.GetType()) return false;
+            return EqualsImpl((Reference)other);
         }
 
-        public bool Equals(Reference other)
+        public override bool Equals(Reference other)
         {
             if (other == this) return true;
             if (other == null) return false;
             return EqualsImpl(other);
         }
 
-        protected bool EqualsImpl(Reference other)
+        private bool EqualsImpl(Reference other)
         {
-            if (!base.EqualsImpl(other)) return false;
-            return IsResolved == other.IsResolved &&
+            return base.EqualsImpl(other) &&
                 Rooted == other.Rooted &&
                 Enumerable.SequenceEqual(nameParts, other.nameParts) &&
-                Equals(ResolvedValue, other.ResolvedValue);
+                (IsResolved
+                    ? other.IsResolved && Equals(ResolvedValue, other.ResolvedValue)
+                    : !other.IsResolved);
         }
 
         public override int GetHashCode()

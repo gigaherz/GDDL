@@ -87,13 +87,13 @@ namespace GDDL.Tests
         public void KeepsTrackOfLocation()
         {
             Reader reader = new Reader(new StringReader("qwerty\nuiop\rasdf\r\n1234"), SOURCE_NAME);
-            Assert.AreEqual(new ParsingContext(SOURCE_NAME, 1, 1), reader.GetParsingContext());
+            Assert.AreEqual(new ParsingContext(SOURCE_NAME, 1, 1), reader.ParsingContext);
             Assert.AreEqual("qw", reader.Read(2));
-            Assert.AreEqual(new ParsingContext(SOURCE_NAME, 1, 3), reader.GetParsingContext());
+            Assert.AreEqual(new ParsingContext(SOURCE_NAME, 1, 3), reader.ParsingContext);
             Assert.AreEqual("erty\nuio", reader.Read(8));
-            Assert.AreEqual(new ParsingContext(SOURCE_NAME, 2, 4), reader.GetParsingContext());
+            Assert.AreEqual(new ParsingContext(SOURCE_NAME, 2, 4), reader.ParsingContext);
             Assert.AreEqual("p\rasdf\r\n", reader.Read(8));
-            Assert.AreEqual(new ParsingContext(SOURCE_NAME, 4, 1), reader.GetParsingContext());
+            Assert.AreEqual(new ParsingContext(SOURCE_NAME, 4, 1), reader.ParsingContext);
             Assert.AreEqual("1234", reader.Read(4));
             Assert.AreEqual(-1, reader.Peek());
         }

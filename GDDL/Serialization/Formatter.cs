@@ -254,10 +254,8 @@ namespace GDDL.Serialization
             double value = integral / Math.Pow(10, exp);
 
             int nonTrailingDigits = FormatDigits(temp, Math.Min(exp, options.floatSignificantFigures), value);
-            for (int i = nonTrailingDigits; i < exp; i++)
-            {
-                builder.Append('0');
-            }
+
+            AppendMultiple('0', exp - nonTrailingDigits);
             return exp;
         }
 

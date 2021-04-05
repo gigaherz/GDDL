@@ -1,12 +1,36 @@
 using GDDL.Serialization;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GDDL.Structure
 {
     public abstract class Element
     {
+        internal protected Element()
+        {
+        }
+
+        [MaybeNull]
+        internal protected Collection ParentInternal { get; set; }
+
         public string Comment { get; internal set; }
-        public string Name { get; internal set; }
+
+        private string name;
+        public string Name {
+            get => name;
+            internal set
+            {
+                if (ParentInternal != null)
+                    ParentInternal.SetName(this, value);
+                else
+                    SetNameInternal(value);
+            } 
+        }
+        
+        internal protected void SetNameInternal(String name)
+        {
+            this.name = name;
+        }
 
         public virtual bool IsResolved => true;
         public virtual Element ResolvedValue => this;
@@ -26,7 +50,7 @@ namespace GDDL.Structure
             return this;
         }
 
-        public virtual void Resolve(Element root, Element parent)
+        public virtual void Resolve(Element root, [MaybeNull] Collection parent)
         {
         }
 
@@ -35,26 +59,13 @@ namespace GDDL.Structure
             return Formatter.FormatCompact(this);
         }
 
-        public abstract Element Copy();
-
-        protected virtual void CopyTo(Element other)
-        {
-            if (HasName)
-                other.Name = Name;
-        }
-
         public Element WithName(string name)
         {
             this.Name = name;
             return this;
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj == this) return true;
-            if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is Element e && EqualsImpl(e);
-        }
+        public override abstract bool Equals(object obj);
 
         protected bool EqualsImpl(Element other)
         {
@@ -66,5 +77,47 @@ namespace GDDL.Structure
         {
             return HashCode.Combine(Comment, Name);
         }
+
+        public Element Copy()
+        {
+            return CopyBridge();
+        }
+
+        protected internal abstract Element CopyBridge();
+    }
+
+    public abstract class Element<T> : Element, IEquatable<T>
+        where T : Element<T>
+    {
+        internal protected Element()
+        {
+        }
+
+        protected internal sealed override Element CopyBridge()
+        {
+            return Copy();
+        }
+
+        public new T Copy()
+        {
+            T copy = CopyInternal();
+            copy.Resolve(this, null);
+            return copy;
+        }
+
+        public abstract T CopyInternal();
+
+        protected virtual void CopyTo(T other)
+        {
+            if (HasName)
+                other.Name = Name;
+        }
+
+        public new T WithName(string name)
+        {
+            return (T)base.WithName(name);
+        }
+
+        public abstract bool Equals(T other);
     }
 }

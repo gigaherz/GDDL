@@ -3,29 +3,54 @@ using GDDL.Util;
 
 namespace GDDL.Structure
 {
-    public class Value : Element, IEquatable<Value>
+    /**
+     * Represents a simple value within the GDDL hierarchy.
+     * Simple values are: null, boolean false and true, strings, integers (long), and floats (double).
+     */
+    public sealed class Value : Element<Value>, IEquatable<Value>
     {
         // Factory Methods
+
+        /**
+         * Constructs a Value representing `null`
+         * @return The value
+         */
         public static Value Null()
         {
             return new Value();
         }
 
+        /**
+         * Constructs a Value representing the given boolean
+         * @return The value
+         */
         public static Value Of(bool value)
         {
             return new Value(value);
         }
 
+        /**
+         * Constructs a Value representing the given long integer
+         * @return The value
+         */
         public static Value Of(long num)
         {
             return new Value(num);
         }
 
+        /**
+         * Constructs a Value representing the given floating-point number
+         * @return The value
+         */
         public static Value Of(double num)
         {
             return new Value(num);
         }
 
+        /**
+         * Constructs a Value representing the given string
+         * @return The value
+         */
         public static Value Of(string s)
         {
             return new Value(s ?? "");
@@ -64,75 +89,69 @@ namespace GDDL.Structure
             set => data = value;
         }
 
-        internal Value()
+        private Value()
         {
             data = null;
         }
 
-        internal Value(bool valueData)
+        private Value(bool valueData)
         {
             data = valueData;
         }
 
-        internal Value(string valueData)
+        private Value(string valueData)
         {
             data = valueData;
         }
 
-        internal Value(long valueData)
+        private Value(long valueData)
         {
             data = valueData;
         }
 
-        internal Value(double valueData)
+        private Value(double valueData)
         {
             data = valueData;
         }
 
+        /**
+         * Changes the contained value to be `null`
+         */
         public void SetNull()
         {
             data = null;
         }
 
-        public override Element Copy()
+        public override Value CopyInternal()
         {
-            return CopyValue();
+            var value = new Value();
+            CopyTo(value);
+            return value;
         }
 
-        public Value CopyValue()
-        {
-            var b = new Value();
-            CopyTo(b);
-            return b;
-        }
-
-        protected override void CopyTo(Element other)
+        protected override void CopyTo(Value other)
         {
             base.CopyTo(other);
-            if (!(other is Value))
-                throw new ArgumentException("CopyTo for invalid type");
-            var b = (Value)other;
-            b.data = data;
+            other.data = data;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object other)
         {
-            if (obj == this) return true;
-            if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is Value other && EqualsImpl(other);
+            if (other == this) return true;
+            if (other == null || GetType() != other.GetType()) return false;
+            return EqualsImpl((Value)other);
         }
 
-        public bool Equals(Value other)
+        public override bool Equals(Value other)
         {
             if (other == this) return true;
             if (other == null) return false;
             return EqualsImpl(other);
         }
 
-        protected bool EqualsImpl(Value other)
+        private bool EqualsImpl(Value other)
         {
-            if (!base.EqualsImpl(other)) return false;
-            return Equals(data, other.data);
+            return base.EqualsImpl(other) && Equals(data, other.data);
         }
 
         public override int GetHashCode()

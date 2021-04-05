@@ -7,32 +7,32 @@ namespace GDDL
         public readonly string Comment;
         public readonly TokenType Type;
         public readonly string Text;
-        public readonly ParsingContext Context;
+        public ParsingContext ParsingContext { get; }
 
         public Token(TokenType name, string text, IContextProvider context, string comment)
         {
             Comment = comment;
             Type = name;
             Text = text;
-            Context = context.GetParsingContext();
+            ParsingContext = context.ParsingContext;
         }
 
         public override string ToString()
         {
             if (Text == null)
-                return $"({Type} @ {Context.Line}:{Context.Column})";
+                return $"({Type} @ {ParsingContext.Line}:{ParsingContext.Column})";
 
             if (Text.Length > 22)
-                return $"({Type} @ {Context.Line}:{Context.Column}: {Text.Substring(0, 20)}...)";
+                return $"({Type} @ {ParsingContext.Line}:{ParsingContext.Column}: {Text[0..20]}...)";
 
-            return $"({Type} @ {Context.Line}:{Context.Column}: {Text})";
+            return $"({Type} @ {ParsingContext.Line}:{ParsingContext.Column}: {Text})";
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object other)
         {
-            if (obj == this) return true;
-            if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is Token other && EqualsImpl(other);
+            if (other == this) return true;
+            if (other == null || GetType() != other.GetType()) return false;
+            return EqualsImpl((Token)other);
         }
 
         public bool Equals(Token other)
@@ -46,18 +46,18 @@ namespace GDDL
         {
             return Type == other.Type &&
                 Text == other.Text &&
-                Equals(Context, other.Context) &&
+                Equals(ParsingContext, other.ParsingContext) &&
                 ((string.IsNullOrEmpty(Comment) && string.IsNullOrEmpty(other.Comment)) || Equals(Comment, other.Comment));
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Type, Text, Context, Comment);
+            return HashCode.Combine(Type, Text, ParsingContext, Comment);
         }
 
         public ParsingContext GetParsingContext()
         {
-            return Context;
+            return ParsingContext;
         }
     }
 }

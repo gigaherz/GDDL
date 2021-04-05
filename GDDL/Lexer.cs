@@ -7,7 +7,7 @@ namespace GDDL
 {
     public sealed class Lexer : ITokenProvider
     {
-        private readonly QueueList<Token> lookAhead = new QueueList<Token>();
+        private readonly ArrayQueue<Token> lookAhead = new ArrayQueue<Token>();
 
         private readonly Reader reader;
 
@@ -58,7 +58,7 @@ namespace GDDL
 
         private Token ParseOne()
         {
-            var startContext = reader.GetParsingContext();
+            var startContext = reader.ParsingContext;
 
             if (seenEnd)
                 return MakeEndToken(startContext);
@@ -380,23 +380,14 @@ namespace GDDL
             return $"{{Lexer ahead={string.Join(", ", lookAhead)}, reader={reader}}}";
         }
 
-        public static string UnescapeString(Token t)
+        public ParsingContext ParsingContext
         {
-            try
+            get
             {
-                return Utility.UnescapeString(t.Text);
+                if (lookAhead.Count > 0)
+                    return lookAhead[0].ParsingContext;
+                return reader.ParsingContext;
             }
-            catch (ArgumentException e)
-            {
-                throw new ParserException(t, "Unescaping string", e);
-            }
-        }
-
-        public ParsingContext GetParsingContext()
-        {
-            if (lookAhead.Count > 0)
-                return lookAhead[0].Context;
-            return reader.GetParsingContext();
         }
 
         public void Dispose()

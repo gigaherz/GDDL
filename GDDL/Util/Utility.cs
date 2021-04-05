@@ -7,12 +7,18 @@ namespace GDDL.Util
 {
     public static class Utility
     {
-        // Ooooh... I just got how this works! Clever!
-        // It's causing all the bits to spread downward
-        // until all the bits below the most-significant 1
-        // are also 1, then adds 1 to fill the power of two.
+        /**
+         * Calculates the next power of two bigger than the given number
+         * @param n The number to calculate the magnitude of
+         * @return The power of two number
+         */
         public static int UpperPower(int x)
         {
+            // Ooooh... I just got how this works! Clever!
+            // It's causing all the bits to spread downward
+            // until all the bits below the most-significant 1
+            // are also 1, then adds 1 to fill the power of two.
+
             x--;
             x |= x >> 1;
             x |= x >> 2;
@@ -22,6 +28,11 @@ namespace GDDL.Util
             return x + 1;
         }
 
+        /**
+         * Validates if the given string contains a sequence of characters that is a valid identifier in GDDL.
+         * @param text The string to validate
+         * @return True if the string is a valid identifier
+         */
         public static bool IsValidIdentifier(string text)
         {
             bool first = true;
@@ -42,11 +53,22 @@ namespace GDDL.Util
             return true;
         }
 
+        /**
+         * Replaces any disallowed characters with escape codes, assuming a `"` delimiter.
+         * @param text The string to escape
+         * @return The escaped string
+         */
         public static string EscapeString(string p)
         {
             return EscapeString(p, '"');
         }
 
+        /**
+         * Replaces any disallowed characters with escape codes, using the given delimiter as a disallowed character.
+         * @param text The string to escape
+         * @param delimiter The delimiter that will surround the string
+         * @return The escaped string
+         */
         public static string EscapeString(string p, char delimiter)
         {
             var sb = new StringBuilder();
@@ -97,11 +119,22 @@ namespace GDDL.Util
             return sb.ToString();
         }
 
+        /**
+         * Validates if a character is valid within a quoted string.
+         * @param c The character
+         * @param delimiter The delimiter used for the string
+         * @return True if the character is valid
+         */
         private static bool IsValidStringCharacter(char c, char delimiter)
         {
             return IsPrintable(c) && !IsControl(c) && c != delimiter && c != '\\';
         }
 
+        /**
+         * Processes any escape sequences in the string, replacing them with the codepoints those sequences represent.
+         * @param text The text to unescape
+         * @return The unescaped string
+         */
         public static string UnescapeString(string text)
         {
             StringBuilder sb = new StringBuilder();
@@ -231,23 +264,50 @@ namespace GDDL.Util
                         (1 << (int)UnicodeCategory.ParagraphSeparator) |
                         (1 << (int)UnicodeCategory.Control) |
                         (1 << (int)UnicodeCategory.PrivateUse) |
+                        (1 << (int)UnicodeCategory.Format) |
                         (1 << (int)UnicodeCategory.Surrogate);
 
+        /**
+         * Determines if a character is printable.
+         * A printable character is a character that can be used for display.
+         * Non-printable characters are line separators, paragraph separators, other control characters,
+         *  codepoints representing the (unmatched) halves of a surrogate pair, and private use characters.
+         * @param c The character
+         * @return True if the character is deemed printable
+         */
         public static bool IsPrintable(char c)
         {
             return ((NON_PRINTABLE >> (int)char.GetUnicodeCategory(c)) & 1) == 0;
         }
 
+        /**
+         * Determines if a character is a letter, as per the unicode rules.
+         * See {@link Character#isLetter(char)}
+         * @param c The character
+         * @return True if the character is a letter
+         */
         public static bool IsLetter(int c)
         {
             return char.IsLetter((char)c);
         }
 
+        /**
+         * Determines if a character is a numeric digit, as per the unicode rules.
+         * See {@link Character#isDigit(char)}
+         * @param c The character
+         * @return True if the character is a digit
+         */
         public static bool IsDigit(int c)
         {
             return char.IsDigit((char)c);
         }
 
+        /**
+         * Determines if a character is a control character, as per the unicode rules.
+         * See {@link Character#isISOControl(char)}
+         * @param c The character
+         * @return True if the character is a control character
+         */
         public static bool IsControl(int c)
         {
             return char.IsControl((char)c);

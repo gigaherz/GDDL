@@ -7,7 +7,7 @@ using GDDL.Util;
 
 namespace GDDL.Structure
 {
-    public class Collection : Element, IList<Element>, IEquatable<Collection>
+    public sealed class Collection : Element<Collection>, IList<Element>, IEquatable<Collection>
     {
         // Factory Methods
         public static Collection Empty()
@@ -77,6 +77,20 @@ namespace GDDL.Structure
             AddRange(init);
         }
 
+        private void OnAdd(Element e)
+        {
+            if (e.HasName)
+                names.Add(e.Name, e);
+            e.ParentInternal = this;
+        }
+
+        private void OnRemove(Element e)
+        {
+            if (e.HasName)
+                names.Remove(e.Name, e);
+            e.ParentInternal = null;
+        }
+
         public Collection WithTypeName(string typeName)
         {
             TypeName = typeName;
@@ -86,22 +100,20 @@ namespace GDDL.Structure
         public void Add(Element e)
         {
             contents.Add(e);
-            if (e.HasName)
-                names.Add(e.Name, e);
+            OnAdd(e);
         }
 
         public void Put(string name, Element e)
         {
             e = e.WithName(name);
             contents.Add(e);
-            names.Add(e.Name, e);
+            OnAdd(e);
         }
 
         public void Insert(int before, Element e)
         {
             contents.Insert(before, e);
-            if (e.HasName)
-                names.Add(e.Name, e);
+            OnAdd(e);
         }
 
         public void AddRange(IEnumerable<Element> c)
@@ -115,8 +127,7 @@ namespace GDDL.Structure
         public bool Remove(Element e)
         {
             bool r = contents.Remove(e);
-            if (e.HasName)
-                names.Remove(e.Name, e);
+            OnRemove(e);
             return r;
         }
 
@@ -124,8 +135,18 @@ namespace GDDL.Structure
         {
             var e = contents[index];
             contents.RemoveAt(index);
-            if (e.HasName)
-                names.Remove(e.Name, e);
+            OnRemove(e);
+        }
+
+        public void SetName(Element e, string name)
+        {
+            string currentName = e.Name;
+            if (!Equals(currentName, name))
+            {
+                OnRemove(e);
+                e.Name = name;
+                OnAdd(e);
+            }
         }
 
         public int IndexOf(Element o)
@@ -135,33 +156,29 @@ namespace GDDL.Structure
 
         public void Clear()
         {
+            foreach(var e in contents) e.ParentInternal = null;
             contents.Clear();
             names.Clear();
         }
 
-        public override Element Copy()
+        public override Collection CopyInternal()
         {
-            return CopyCollection();
+            var collection = new Collection();
+            CopyTo(collection);
+            return collection;
         }
 
-        public Collection CopyCollection()
-        {
-            var b = new Collection();
-            CopyTo(b);
-            return b;
-        }
-
-        protected override void CopyTo(Element other)
+        protected override void CopyTo(Collection other)
         {
             base.CopyTo(other);
-            if (!(other is Collection))
-                throw new ArgumentException("CopyTo for invalid type", nameof(other));
-            Collection b = (Collection)other;
-            foreach (var e in contents) b.Add(e.Copy());
+            foreach (var e in contents)
+            {
+                other.Add(e.Copy());
+            }
         }
 
 
-        public override void Resolve(Element root, Element parent)
+        public override void Resolve(Element root, [MaybeNull] Collection parent)
         {
             foreach (var el in contents)
             {
@@ -181,7 +198,7 @@ namespace GDDL.Structure
 
         public IEnumerable<Element> ByName(string elementName)
         {
-            return contents.Where(t => t.HasName && t.Name == elementName);
+            return names[elementName];
         }
 
         public IEnumerable<Collection> ByType(string type)
@@ -231,32 +248,34 @@ namespace GDDL.Structure
 
         public bool RemoveAll(string key)
         {
+            bool removed = false;
             var items = names[key];
-            if (items.Count == 0)
-                return false;
-            items.Clear();
+            foreach (var it in items)
+            {
+                removed |= Remove(it);
+            }
             return true;
         }
 
         #region Equality
-        public override bool Equals(object obj)
+        public override bool Equals(object other)
         {
-            if (obj == this) return true;
-            if (obj == null || GetType() != obj.GetType()) return false;
-            return obj is Collection other && EqualsImpl(other);
+            if (other == this) return true;
+            if (other == null || GetType() != other.GetType()) return false;
+            return EqualsImpl((Collection)other);
         }
 
-        public bool Equals(Collection other)
+        public override bool Equals(Collection other)
         {
             if (other == this) return true;
             if (other == null) return false;
             return EqualsImpl(other);
         }
 
-        protected bool EqualsImpl(Collection other)
+        private bool EqualsImpl(Collection other)
         {
-            if (!base.EqualsImpl(other)) return false;
-            return Enumerable.SequenceEqual(contents, other.contents) &&
+            return base.EqualsImpl(other) &&
+                Enumerable.SequenceEqual(contents, other.contents) &&
                 Enumerable.SequenceEqual(names, other.names) &&
                 Equals(typeName, other.typeName);
         }

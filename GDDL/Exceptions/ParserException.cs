@@ -5,11 +5,11 @@ namespace GDDL.Exceptions
     public class ParserException : Exception
     {
         public ParserException(IContextProvider context, string message)
-            : base($"{context.GetParsingContext()}: {message}")
+            : base($"{context.ParsingContext}: {message}")
         {
         }
         public ParserException(IContextProvider context, string message, Exception e)
-            : base($"{context.GetParsingContext()}: {message}", e)
+            : base($"{context.ParsingContext}: {message}", e)
         {
         }
     }

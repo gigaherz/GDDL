@@ -3,22 +3,83 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using GDDL.Exceptions;
 using GDDL.Structure;
+using GDDL.Util;
 
 namespace GDDL
 {
     public sealed class Parser : IContextProvider, IDisposable
     {
         // Factory Methods
+
+        /**
+         * Constructs a Parser instance that reads from the given filename.
+         * @param filename The filename to read from.
+         * @return A parser ready to process the file.
+         */
         public static Parser FromFile(string filename)
         {
-            return new Parser(new Lexer(new Reader(new StreamReader(filename), filename)));
+            return FromFile(filename, Encoding.UTF8);
         }
 
-        public static Parser FromString(string text)
+        /**
+         * Constructs a Parser instance that reads from the given filename.
+         * @param filename The filename to read from.
+         * @param charset The charset.
+         * @return A parser ready to process the file.
+         */
+        public static Parser FromFile(string filename, Encoding encoding)
         {
-            return new Parser(new Lexer(new Reader(new StringReader(text), "UNKNOWN")));
+            return FromReader(new StreamReader(filename, encoding), filename);
+        }
+
+        /**
+         * Constructs a Parser instance that reads from the given file.
+         * @param file The file to read from.
+         * @return A parser ready to process the file.
+         */
+        public static Parser FromFile(FileInfo file)
+        {
+            return FromFile(file.FullName);
+        }
+
+        /**
+         * Constructs a Parser instance that reads from the given file.
+         * @param file The file to read from.
+         * @param charset The charset.
+         * @return A parser ready to process the file.
+         */
+        public static Parser FromFile(FileInfo file, Encoding encoding)
+        {
+            return FromFile(file.FullName, encoding);
+        }
+
+        /**
+         * Constructs a Parser instance that reads from the given string.
+         * @param text The text to parse.
+         * @return A parser ready to process the file.
+         */
+        public static Parser FromString(string text, string sourceName = "UNKNOWN")
+        {
+            return FromReader(new StringReader(text), sourceName);
+        }
+
+        /**
+         * Constructs a Parser instance that reads from the given reader.
+         * @param reader The stream to read from.
+         * @return A parser ready to process the file.
+         */
+        public static Parser FromReader(TextReader text, string sourceName = "UNKNOWN")
+        {
+            return new Parser(new Lexer(new Reader(text, sourceName)));
+        }
+
+        // For unit test purposes
+        public static Parser FromProvider(ITokenProvider lexer)
+        {
+            return new Parser(lexer);
         }
 
         // Implementation
@@ -28,23 +89,33 @@ namespace GDDL
 
         public ITokenProvider Lex { get; }
 
-        public Parser(ITokenProvider lexer)
+        private Parser(ITokenProvider lexer)
         {
             Lex = lexer;
         }
 
+        /**
+         * Parses the whole file and returns the resulting root element.
+         * Equivalent to {@link #parse(boolean)} with simplify=true
+         * @return The root element
+         */
         public Element Parse()
         {
             return Parse(true);
         }
 
+        /**
+         * Parses the whole file and returns the resulting root element.
+         * @param simplify If true, the structure
+         * @return The root element
+         */
         public Element Parse(bool simplify)
         {
             Element ret = Root();
 
             if (simplify)
             {
-                ret.Resolve(ret, ret);
+                ret.Resolve(ret, null);
                 ret = ret.Simplify();
             }
 
@@ -177,7 +248,7 @@ namespace GDDL
         {
             var name = PopExpected(TokenType.Ident, TokenType.String);
 
-            var n = name.Type == TokenType.Ident ? name.Text : Lexer.UnescapeString(name);
+            var n = name.Type == TokenType.Ident ? name.Text : UnescapeString(name);
 
             PopExpected(TokenType.EqualSign);
 
@@ -338,15 +409,24 @@ namespace GDDL
 
         public static Value StringValue(Token token)
         {
-            Value v = Value.Of(Lexer.UnescapeString(token));
+            Value v = Value.Of(UnescapeString(token));
             v.Comment = token.Comment;
             return v;
         }
 
-        public ParsingContext GetParsingContext()
+        public static string UnescapeString(Token t)
         {
-            return Lex.GetParsingContext();
+            try
+            {
+                return Utility.UnescapeString(t.Text);
+            }
+            catch (ArgumentException e)
+            {
+                throw new ParserException(t, "Unescaping string", e);
+            }
         }
+
+        public ParsingContext ParsingContext => Lex.ParsingContext;
 
         public void Dispose()
         {
