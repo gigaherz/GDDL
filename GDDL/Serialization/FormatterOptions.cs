@@ -50,147 +50,150 @@ namespace GDDL.Serialization
         // Comments
         public readonly bool writeComments;
         public readonly int blankLinesBeforeComment;
+        public readonly bool trimCommentLines;
 
         // Internal Constructor
         private FormatterOptions(Builder builder)
         {
-            lineBreaksBeforeOpeningBrace = builder._lineBreaksBeforeOpeningBrace;
-            lineBreaksAfterOpeningBrace = builder._lineBreaksAfterOpeningBrace;
-            lineBreaksBeforeClosingBrace = builder._lineBreaksBeforeClosingBrace;
-            lineBreaksAfterClosingBrace = builder._lineBreaksAfterClosingBrace;
-            spacesBeforeOpeningBrace = builder._spacesBeforeOpeningBrace;
-            spacesAfterOpeningBrace = builder._spacesAfterOpeningBrace;
-            spacesBeforeClosingBrace = builder._spacesBeforeClosingBrace;
-            spacesAfterClosingBrace = builder._spacesAfterClosingBrace;
-            oneElementPerLineThreshold = builder._oneElementPerLineThreshold;
-            spacesBetweenElements = builder._spacesBetweenElements;
-            omitCommaAfterClosingBrace = builder._omitCommaAfterClosingBrace;
-            lineBreaksAfterValues = builder._lineBreaksAfterValues;
-            floatFormattingStyle = builder._floatFormattingStyle;
-            alwaysShowNumberSign = builder._alwaysShowNumberSign;
+            lineBreaksBeforeOpeningBrace = builder.lineBreaksBeforeOpeningBrace;
+            lineBreaksAfterOpeningBrace = builder.lineBreaksAfterOpeningBrace;
+            lineBreaksBeforeClosingBrace = builder.lineBreaksBeforeClosingBrace;
+            lineBreaksAfterClosingBrace = builder.lineBreaksAfterClosingBrace;
+            spacesBeforeOpeningBrace = builder.spacesBeforeOpeningBrace;
+            spacesAfterOpeningBrace = builder.spacesAfterOpeningBrace;
+            spacesBeforeClosingBrace = builder.spacesBeforeClosingBrace;
+            spacesAfterClosingBrace = builder.spacesAfterClosingBrace;
+            oneElementPerLineThreshold = builder.oneElementPerLineThreshold;
+            spacesBetweenElements = builder.spacesBetweenElements;
+            omitCommaAfterClosingBrace = builder.omitCommaAfterClosingBrace;
+            lineBreaksAfterValues = builder.lineBreaksAfterValues;
+            floatFormattingStyle = builder.floatFormattingStyle;
+            alwaysShowNumberSign = builder.alwaysShowNumberSign;
             alwaysShowExponentSign = builder._alwaysShowExponentSign;
-            autoScientificNotationUpper = builder._autoScientificNotationUpper;
-            autoScientificNotationLower = builder._autoScientificNotationLower;
-            floatSignificantFigures = builder._floatSignificantFigures;
-            indentUsingTabs = builder._indentUsingTabs;
-            spacesPerIndent = builder._spacesPerIndent;
-            writeComments = builder._writeComments;
-            blankLinesBeforeComment = builder._blankLinesBeforeComment;
+            autoScientificNotationUpper = builder.autoScientificNotationUpper;
+            autoScientificNotationLower = builder.autoScientificNotationLower;
+            floatSignificantFigures = builder.floatSignificantFigures;
+            indentUsingTabs = builder.indentUsingTabs;
+            spacesPerIndent = builder.spacesPerIndent;
+            writeComments = builder.writeComments;
+            blankLinesBeforeComment = builder.blankLinesBeforeComment;
+            trimCommentLines = builder.trimCommentLines;
         }
 
         public class Builder
         {
             // Collections
-            internal protected int _lineBreaksBeforeOpeningBrace = 0;
-            internal protected int _lineBreaksAfterOpeningBrace = 0;
-            internal protected int _lineBreaksBeforeClosingBrace = 0;
-            internal protected int _lineBreaksAfterClosingBrace = 0;
-            internal protected int _spacesBeforeOpeningBrace = 0;
-            internal protected int _spacesAfterOpeningBrace = 0;
-            internal protected int _spacesBeforeClosingBrace = 0;
-            internal protected int _spacesAfterClosingBrace = 0;
-            internal protected int _oneElementPerLineThreshold = int.MaxValue;
-            internal protected int _spacesBetweenElements = 1;
-            internal protected bool _omitCommaAfterClosingBrace = false;
+            internal protected int lineBreaksBeforeOpeningBrace = 0;
+            internal protected int lineBreaksAfterOpeningBrace = 0;
+            internal protected int lineBreaksBeforeClosingBrace = 0;
+            internal protected int lineBreaksAfterClosingBrace = 0;
+            internal protected int spacesBeforeOpeningBrace = 0;
+            internal protected int spacesAfterOpeningBrace = 0;
+            internal protected int spacesBeforeClosingBrace = 0;
+            internal protected int spacesAfterClosingBrace = 0;
+            internal protected int oneElementPerLineThreshold = int.MaxValue;
+            internal protected int spacesBetweenElements = 1;
+            internal protected bool omitCommaAfterClosingBrace = false;
 
             // Values
-            internal protected int _lineBreaksAfterValues = 0;
-            internal protected DoubleFormattingStyle _floatFormattingStyle = DoubleFormattingStyle.Auto;
-            internal protected bool _alwaysShowNumberSign = false;
+            internal protected int lineBreaksAfterValues = 0;
+            internal protected DoubleFormattingStyle floatFormattingStyle = DoubleFormattingStyle.Auto;
+            internal protected bool alwaysShowNumberSign = false;
             internal protected bool _alwaysShowExponentSign = false;
-            internal protected int _autoScientificNotationUpper = 5;
-            internal protected int _autoScientificNotationLower = -2;
-            internal protected int _floatSignificantFigures = 15;
+            internal protected int autoScientificNotationUpper = 5;
+            internal protected int autoScientificNotationLower = -2;
+            internal protected int floatSignificantFigures = 15;
 
             // Indentation
-            internal protected bool _indentUsingTabs = false;
-            internal protected int _spacesPerIndent = 2;
+            internal protected bool indentUsingTabs = false;
+            internal protected int spacesPerIndent = 2;
 
             // Comments
-            internal protected bool _writeComments = false;
-            internal protected int _blankLinesBeforeComment = 0;
+            internal protected bool writeComments = false;
+            internal protected int blankLinesBeforeComment = 0;
+            internal protected bool trimCommentLines = true;
 
             public Builder LineBreaksBeforeOpeningBrace(int lineBreaksBeforeOpeningBrace)
             {
-                this._lineBreaksBeforeOpeningBrace = lineBreaksBeforeOpeningBrace;
+                this.lineBreaksBeforeOpeningBrace = lineBreaksBeforeOpeningBrace;
                 return this;
             }
 
             public Builder LineBreaksAfterOpeningBrace(int lineBreaksAfterOpeningBrace)
             {
-                this._lineBreaksAfterOpeningBrace = lineBreaksAfterOpeningBrace;
+                this.lineBreaksAfterOpeningBrace = lineBreaksAfterOpeningBrace;
                 return this;
             }
 
             public Builder LineBreaksBeforeClosingBrace(int lineBreaksBeforeClosingBrace)
             {
-                this._lineBreaksBeforeClosingBrace = lineBreaksBeforeClosingBrace;
+                this.lineBreaksBeforeClosingBrace = lineBreaksBeforeClosingBrace;
                 return this;
             }
 
             public Builder LineBreaksAfterClosingBrace(int lineBreaksAfterClosingBrace)
             {
-                this._lineBreaksAfterClosingBrace = lineBreaksAfterClosingBrace;
+                this.lineBreaksAfterClosingBrace = lineBreaksAfterClosingBrace;
                 return this;
             }
 
             public Builder SpacesBeforeOpeningBrace(int spacesBeforeOpeningBrace)
             {
-                this._spacesBeforeOpeningBrace = spacesBeforeOpeningBrace;
+                this.spacesBeforeOpeningBrace = spacesBeforeOpeningBrace;
                 return this;
             }
 
             public Builder SpacesAfterOpeningBrace(int spacesAfterOpeningBrace)
             {
-                this._spacesAfterOpeningBrace = spacesAfterOpeningBrace;
+                this.spacesAfterOpeningBrace = spacesAfterOpeningBrace;
                 return this;
             }
 
             public Builder SpacesBeforeClosingBrace(int spacesBeforeClosingBrace)
             {
-                this._spacesBeforeClosingBrace = spacesBeforeClosingBrace;
+                this.spacesBeforeClosingBrace = spacesBeforeClosingBrace;
                 return this;
             }
 
             public Builder SpacesAfterClosingBrace(int spacesAfterClosingBrace)
             {
-                this._spacesAfterClosingBrace = spacesAfterClosingBrace;
+                this.spacesAfterClosingBrace = spacesAfterClosingBrace;
                 return this;
             }
 
             public Builder OneElementPerLineThreshold(int oneElementPerLineThreshold)
             {
-                this._oneElementPerLineThreshold = oneElementPerLineThreshold;
+                this.oneElementPerLineThreshold = oneElementPerLineThreshold;
                 return this;
             }
 
             public Builder SpacesBetweenElements(int spacesBetweenElements)
             {
-                this._spacesBetweenElements = spacesBetweenElements;
+                this.spacesBetweenElements = spacesBetweenElements;
                 return this;
             }
 
             public Builder OmitCommaAfterClosingBrace(bool omitCommaAfterClosingBrace)
             {
-                this._omitCommaAfterClosingBrace = omitCommaAfterClosingBrace;
+                this.omitCommaAfterClosingBrace = omitCommaAfterClosingBrace;
                 return this;
             }
 
             public Builder LineBreaksAfterValues(int lineBreaksAfterValues)
             {
-                this._lineBreaksAfterValues = lineBreaksAfterValues;
+                this.lineBreaksAfterValues = lineBreaksAfterValues;
                 return this;
             }
 
             public Builder FloatFormattingStyle(DoubleFormattingStyle floatFormattingStyle)
             {
-                this._floatFormattingStyle = floatFormattingStyle;
+                this.floatFormattingStyle = floatFormattingStyle;
                 return this;
             }
 
             public Builder AlwaysShowNumberSign(bool alwaysShowNumberSign)
             {
-                this._alwaysShowNumberSign = alwaysShowNumberSign;
+                this.alwaysShowNumberSign = alwaysShowNumberSign;
                 return this;
             }
 
@@ -202,43 +205,43 @@ namespace GDDL.Serialization
 
             public Builder AutoScientificNotationUpper(int autoScientificNotationUpper)
             {
-                this._autoScientificNotationUpper = autoScientificNotationUpper;
+                this.autoScientificNotationUpper = autoScientificNotationUpper;
                 return this;
             }
 
             public Builder AutoScientificNotationLower(int autoScientificNotationLower)
             {
-                this._autoScientificNotationLower = autoScientificNotationLower;
+                this.autoScientificNotationLower = autoScientificNotationLower;
                 return this;
             }
 
             public Builder FloatSignificantFigures(int floatSignificantFigures)
             {
-                this._floatSignificantFigures = floatSignificantFigures;
+                this.floatSignificantFigures = floatSignificantFigures;
                 return this;
             }
 
             public Builder IndentUsingTabs(bool indentUsingTabs)
             {
-                this._indentUsingTabs = indentUsingTabs;
+                this.indentUsingTabs = indentUsingTabs;
                 return this;
             }
 
             public Builder SpacesPerIndent(int spacesPerIndent)
             {
-                this._spacesPerIndent = spacesPerIndent;
+                this.spacesPerIndent = spacesPerIndent;
                 return this;
             }
 
             public Builder WriteComments(bool writeComments)
             {
-                this._writeComments = writeComments;
+                this.writeComments = writeComments;
                 return this;
             }
 
             internal Builder BlankLinesBeforeComment(int blankLinesBeforeComment)
             {
-                this._blankLinesBeforeComment = blankLinesBeforeComment;
+                this.blankLinesBeforeComment = blankLinesBeforeComment;
                 return this;
             }
 

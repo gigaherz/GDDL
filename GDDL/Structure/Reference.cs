@@ -7,7 +7,7 @@ namespace GDDL.Structure
 {
     public sealed class Reference : Element<Reference>, IEquatable<Reference>
     {
-        // Factory Methods
+        #region Factory Methods
 
         /**
          * Constructs an absolute reference to the given path.
@@ -28,8 +28,9 @@ namespace GDDL.Structure
         {
             return new Reference(false, parts);
         }
+        #endregion
 
-        // Implementation
+        #region Implementation
         private readonly List<string> nameParts = new List<string>();
 
         private bool resolved;
@@ -68,6 +69,9 @@ namespace GDDL.Structure
         {
             nameParts.AddRange(names);
         }
+        #endregion
+
+        #region Element
 
         public override Reference CopyInternal()
         {
@@ -136,6 +140,9 @@ namespace GDDL.Structure
             copy.Name = Name;
             return copy;
         }
+        #endregion
+
+        #region Equality
 
         public override bool Equals(object other)
         {
@@ -165,5 +172,6 @@ namespace GDDL.Structure
         {
             return HashCode.Combine(base.GetHashCode(), nameParts, IsResolved, ResolvedValue, Rooted);
         }
+        #endregion
     }
 }

@@ -9,7 +9,7 @@ namespace GDDL.Structure
 {
     public sealed class Collection : Element<Collection>, IList<Element>, IEquatable<Collection>
     {
-        // Factory Methods
+        #region Factory Methods
         public static Collection Empty()
         {
             return new Collection();
@@ -23,8 +23,9 @@ namespace GDDL.Structure
         {
             return new Collection(initial);
         }
+        #endregion
 
-        // Implementation
+        #region Implementation
         private readonly List<Element> contents = new List<Element>();
         private readonly MultiMap<string, Element> names = new MultiMap<string, Element>();
 
@@ -160,7 +161,47 @@ namespace GDDL.Structure
             contents.Clear();
             names.Clear();
         }
+        #endregion
 
+        #region IList Extras
+        public IEnumerator<Element> GetEnumerator()
+        {
+            return contents.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)contents).GetEnumerator();
+        }
+
+        public bool Contains(Element item)
+        {
+            return contents.Contains(item);
+        }
+
+        public void CopyTo(Element[] array, int arrayIndex)
+        {
+            contents.CopyTo(array, arrayIndex);
+        }
+
+        public bool ContainsKey(string key)
+        {
+            return names[key].Count > 0;
+        }
+
+        public bool RemoveAll(string key)
+        {
+            bool removed = false;
+            var items = names[key];
+            foreach (var it in items)
+            {
+                removed |= Remove(it);
+            }
+            return true;
+        }
+        #endregion
+
+        #region Element Implementation
         public override Collection CopyInternal()
         {
             var collection = new Collection();
@@ -176,7 +217,6 @@ namespace GDDL.Structure
                 other.Add(e.Copy());
             }
         }
-
 
         public override void Resolve(Element root, [MaybeNull] Collection parent)
         {
@@ -220,42 +260,7 @@ namespace GDDL.Structure
                 return false;
             }
         }
-
-        public IEnumerator<Element> GetEnumerator()
-        {
-            return contents.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable)contents).GetEnumerator();
-        }
-
-        public bool Contains(Element item)
-        {
-            return contents.Contains(item);
-        }
-
-        public void CopyTo(Element[] array, int arrayIndex)
-        {
-            contents.CopyTo(array, arrayIndex);
-        }
-
-        public bool ContainsKey(string key)
-        {
-            return names[key].Count > 0;
-        }
-
-        public bool RemoveAll(string key)
-        {
-            bool removed = false;
-            var items = names[key];
-            foreach (var it in items)
-            {
-                removed |= Remove(it);
-            }
-            return true;
-        }
+        #endregion
 
         #region Equality
         public override bool Equals(object other)

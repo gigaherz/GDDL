@@ -98,8 +98,17 @@ namespace GDDL.Serialization
             if (e.HasComment && options.writeComments)
             {
                 AppendMultiple('\n', options.blankLinesBeforeComment);
-                foreach (var s in CommentLineSplitter.Split(e.Comment))
+                string[] lines = CommentLineSplitter.Split(e.Comment);
+
+                int count = lines.Length;
+                if (options.trimCommentLines)
                 {
+                    while (lines[count - 1].Length == 0)
+                        count--;
+                }
+                for (int i = 0; i < count; i++)
+                {
+                    string s = lines[i];
                     AppendIndent();
                     builder.Append('#');
                     builder.Append(s);
@@ -123,21 +132,19 @@ namespace GDDL.Serialization
 
         protected void FormatElement(Element e, bool hasNext)
         {
-            if (e is Value v)
+            switch (e)
             {
-                FormatValue(v);
-            }
-            else if (e is Reference r)
-            {
-                FormatReference(r);
-            }
-            else if (e is Collection c)
-            {
-                FormatCollection(c, hasNext);
-            }
-            else
-            {
-                throw new NotImplementedException("A new Element type has been added without updating Formatter#FormatElement.");
+                case Value v:
+                    FormatValue(v);
+                    break;
+                case Reference r:
+                    FormatReference(r);
+                    break;
+                case Collection c:
+                    FormatCollection(c, hasNext);
+                    break;
+                default:
+                    throw new NotImplementedException("A new Element type has been added without updating Formatter#FormatElement.");
             }
         }
 

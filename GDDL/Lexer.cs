@@ -63,65 +63,10 @@ namespace GDDL
             if (seenEnd)
                 return MakeEndToken(startContext);
 
-            StringBuilder commentLines = null;
+            string comment = WhitespaceAndComments();
+
             int ich = reader.Peek();
-
-            while (true)
-            {
-                if (ich < 0) return MakeEndToken(startContext);
-
-                switch (ich)
-                {
-                    case ' ':
-                    case '\t':
-                        reader.Skip(1);
-                        ich = reader.Peek();
-                        break;
-                    case '\r':
-                    case '\n':
-                        if (commentLines != null)
-                        {
-                            commentLines.Append(reader.Read(1));
-                        }
-                        else
-                        {
-                            reader.Skip(1);
-                        }
-                        ich = reader.Peek();
-                        break;
-                    case '#':
-                    {
-                        // comment
-                        if (commentLines == null)
-                        {
-                            commentLines = new StringBuilder();
-                        }
-
-                        reader.Skip(1);
-                        ich = reader.Peek();
-
-                        int number = 0;
-                        while (ich > 0 && ich != '\n' && ich != '\r')
-                        {
-                            number++;
-                            ich = reader.Peek(number);
-                        }
-
-                        if (number > 0)
-                        {
-                            commentLines.Append(reader.Read(number));
-                        }
-                        ich = reader.Peek();
-
-                        break;
-                    }
-                    default:
-                        goto commentLoopExit;
-                }
-            }
-
-        commentLoopExit:
-            string comment = commentLines != null ? commentLines.ToString() : "";
+            if (ich < 0) return MakeEndToken(startContext);
 
             switch (ich)
             {
@@ -295,6 +240,70 @@ namespace GDDL
             }
 
             throw new LexerException(this, $"Unexpected character: {reader.Peek()}");
+        }
+
+        private string WhitespaceAndComments()
+        {
+            StringBuilder commentLines = null;
+            int ich = reader.Peek();
+
+            while (true)
+            {
+                if (ich < 0) break;
+
+                switch (ich)
+                {
+                    case ' ':
+                    case '\t':
+                        reader.Skip(1);
+                        ich = reader.Peek();
+                        break;
+                    case '\r':
+                    case '\n':
+                        if (commentLines != null)
+                        {
+                            commentLines.Append(reader.Read(1));
+                        }
+                        else
+                        {
+                            reader.Skip(1);
+                        }
+                        ich = reader.Peek();
+                        break;
+                    case '#':
+                    {
+                        // comment
+                        if (commentLines == null)
+                        {
+                            commentLines = new StringBuilder();
+                        }
+
+                        reader.Skip(1);
+                        ich = reader.Peek();
+
+                        int number = 0;
+                        while (ich > 0 && ich != '\n' && ich != '\r')
+                        {
+                            number++;
+                            ich = reader.Peek(number);
+                        }
+
+                        if (number > 0)
+                        {
+                            commentLines.Append(reader.Read(number));
+                        }
+                        ich = reader.Peek();
+
+                        break;
+                    }
+                    default:
+                        goto commentLoopExit;
+                }
+            }
+
+        commentLoopExit:
+
+            return commentLines != null ? commentLines.ToString() : "";
         }
 
         private Token MakeEndToken(ParsingContext startContext)

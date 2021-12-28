@@ -9,7 +9,7 @@ namespace GDDL.Structure
      */
     public sealed class Value : Element<Value>, IEquatable<Value>
     {
-        // Factory Methods
+        #region Factory Methods
 
         /**
          * Constructs a Value representing `null`
@@ -55,8 +55,9 @@ namespace GDDL.Structure
         {
             return new Value(s ?? "");
         }
+        #endregion
 
-        // Implementation
+        #region Implementation
         private object data;
 
         public bool IsNull => data == null;
@@ -121,6 +122,9 @@ namespace GDDL.Structure
         {
             data = null;
         }
+        #endregion
+
+        #region Element
 
         public override Value CopyInternal()
         {
@@ -134,6 +138,9 @@ namespace GDDL.Structure
             base.CopyTo(other);
             other.data = data;
         }
+        #endregion
+
+        #region Equals
 
         public override bool Equals(object other)
         {
@@ -158,5 +165,6 @@ namespace GDDL.Structure
         {
             return HashCode.Combine(base.GetHashCode(), data);
         }
+        #endregion
     }
 }

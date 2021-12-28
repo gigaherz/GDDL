@@ -82,6 +82,54 @@ namespace GDDL.Tests.Structure
             collection.Insert(1, third);
             Assert.AreEqual(third, collection[1]);
         }
-    }
 
+        [TestMethod]
+        public void CollectionRemoveElementRemovesElements()
+        {
+            Value first = Value.Of(1);
+            Value second = Value.Of("test");
+            Collection collection = Collection.Of(first, second);
+            Assert.AreEqual(2, collection.Count);
+            collection.Remove(second);
+            Assert.AreEqual(1, collection.Count);
+            Assert.AreEqual(first, collection[0]);
+        }
+
+        [TestMethod]
+        public void CollectionRemoveIndexRemovesElements()
+        {
+            Value second = Value.Of("test");
+            Collection collection = Collection.Of(Value.Of(1), second);
+            Assert.AreEqual(2, collection.Count);
+            collection.RemoveAt(0);
+            Assert.AreEqual(1, collection.Count);
+            Assert.AreEqual(second, collection[0]);
+        }
+
+        [TestMethod]
+        public void CollectionRemoveElementRemovesNames()
+        {
+            Value first = Value.Of(1);
+            Value second = Value.Of("test");
+            Collection collection = Collection.Of(first, second);
+            Assert.AreEqual(2, collection.Count);
+            collection.Remove(second);
+            Assert.AreEqual(1, collection.Count);
+            Assert.AreEqual(first, collection[0]);
+            List<Element> byName = collection.ByName("test").ToList();
+            Assert.AreEqual(0, byName.Count);
+        }
+
+        [TestMethod]
+        public void CollectionRemoveIndexRemovesNames()
+        {
+            Value named = Value.Of("test").WithName("test");
+            Collection collection = Collection.Of(named, Value.Of(1));
+            Assert.AreEqual(2, collection.Count);
+            collection.RemoveAt(0);
+            Assert.AreEqual(1, collection.Count);
+            List<Element> byName = collection.ByName("test").ToList();
+            Assert.AreEqual(0, byName.Count);
+        }
+    }
 }

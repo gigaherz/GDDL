@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GDDL.Demo": {
+      "commandName": "Project",
+      "workingDirectory": "D:\\Projects\\GDDL\\Samples"
+    }
+  }
+}
