@@ -65,7 +65,7 @@ namespace GDDL.Tests
         public static string FormatOneCompact(GddlElement e)
         {
             var b = new StringBuilder();
-            new Formatter(b, FormatterOptions.Compact).FormatStandalone(e);
+            new Formatter(b, FormatterOptions.Compact).FormatElement(e);
             return b.ToString();
         }
     }

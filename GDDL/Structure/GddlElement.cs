@@ -6,25 +6,45 @@ namespace GDDL.Structure
 {
     public abstract class GddlElement
     {
-        protected internal GddlElement()
-        {
-        }
-        
-        public string Comment { get; internal set; }
-        
-        public virtual bool IsResolved => true;
-        public virtual GddlElement ResolvedValue => this;
-        
+        #region API
+        public string Comment { get; set; }
         public bool HasComment => !string.IsNullOrEmpty(Comment);
 
-        public bool IsList => this is GddlList;
-        public GddlList AsList => (GddlList)this;
+        public string Whitespace { get; set; }
+        public bool HasWhitespace => !string.IsNullOrEmpty(Whitespace);
 
-        public bool IsMap => this is GddlMap;
-        public GddlList AsMap => (GddlList)this;
+        public virtual bool IsResolved => true;
+        public virtual GddlElement ResolvedValue => this;
 
-        public bool IsValue => this is GddlValue;
-        public GddlValue AsValue => (GddlValue)this;
+        public virtual bool IsMap => false;
+        public virtual GddlMap AsMap => throw new InvalidCastException("This element is not a Map.");
+
+        public virtual bool IsList => false;
+        public virtual GddlList AsList => throw new InvalidCastException("This element is not a List.");
+
+        public virtual bool IsValue => false;
+        public virtual GddlValue AsValue => throw new InvalidCastException("This element is not a Value.");
+
+        public virtual bool IsReference => false;
+        public virtual GddlReference AsReference => throw new InvalidCastException("This element is not a Reference.");
+
+        public virtual bool IsCollection => IsMap || IsList;
+
+        public virtual bool IsNull => false;
+
+        public virtual bool IsBoolean => false;
+        public virtual bool AsBoolean => throw new InvalidCastException("This element is not a Value.");
+
+        public virtual bool IsInteger => false;
+        public virtual long AsInteger => throw new InvalidCastException("This element is not a Value.");
+
+        public virtual bool IsDouble => false;
+        public virtual double AsDouble => throw new InvalidCastException("This element is not a Value.");
+
+        public virtual bool IsString => false;
+        public virtual string AsString => throw new InvalidCastException("This element is not a Value.");
+
+        public GddlElement Parent { get; protected internal set; }
 
         public virtual GddlElement Simplify()
         {
@@ -35,12 +55,21 @@ namespace GDDL.Structure
         {
         }
 
+        public GddlElement Copy()
+        {
+            return CopyBridge();
+        }
+        #endregion
+
+        #region ToString
         public sealed override string ToString()
         {
             return Formatter.FormatCompact(this);
         }
-        
-        public override abstract bool Equals(object obj);
+        #endregion
+
+        #region Equality
+        public abstract override bool Equals(object obj);
 
         protected bool EqualsImpl(GddlElement other)
         {
@@ -51,19 +80,31 @@ namespace GDDL.Structure
         {
             return HashCode.Combine(Comment);
         }
+        #endregion
 
-        public GddlElement Copy()
+        #region Implementation
+
+        protected internal GddlElement()
         {
-            return CopyBridge();
         }
 
         protected internal abstract GddlElement CopyBridge();
+        #endregion
     }
 
-    public abstract class Element<T> : GddlElement, IEquatable<T>
-        where T : Element<T>
+    public abstract class GddlElement<T> : GddlElement, IEquatable<T>
+        where T : GddlElement<T>
     {
-        internal protected Element()
+        #region API
+        public T WithComment(string comment)
+        {
+            Comment = comment;
+            return (T)this;
+        }
+        #endregion
+
+        #region Implementation
+        protected internal GddlElement()
         {
         }
 
@@ -81,8 +122,15 @@ namespace GDDL.Structure
 
         public abstract T CopyInternal();
 
-        protected abstract void CopyTo(T other);
+        protected virtual void CopyTo(T other)
+        {
+            if (HasWhitespace)
+                other.Whitespace = Whitespace;
+            if (HasComment)
+                other.Comment = Comment;
+        }
 
         public abstract bool Equals(T other);
+        #endregion
     }
 }

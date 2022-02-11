@@ -13,7 +13,7 @@ namespace GDDL.Parsing
             reader = r;
         }
 
-        private WhitespaceMode WhitespaceMode { get; set; }
+        public WhitespaceMode WhitespaceMode { get; set; }
 
         public TokenType Peek(int pos)
         {
@@ -127,7 +127,7 @@ namespace GDDL.Parsing
                     }
                 }
 
-                var id = new Token(TokenType.Ident, reader.Read(number), startContext, comment, whitespace);
+                var id = new Token(TokenType.Identifier, reader.Read(number), startContext, comment, whitespace);
 
                 if (id.Text.CompareOrdinalIgnoreCase("nil") == 0) 
                     return new Token(TokenType.Nil, id.Text, id, comment, whitespace);

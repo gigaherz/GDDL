@@ -8,31 +8,44 @@ using System.Text.RegularExpressions;
 
 namespace GDDL.Serialization
 {
-    public partial class Formatter
+    public class Formatter
     {
-        public static string FormatCompact(GddlElement e)
+        #region API
+        public static string FormatCompact(GddlDocument doc)
         {
-            return Format(e, FormatterOptions.Compact);
+            return Format(doc, FormatterOptions.Compact);
         }
 
-        public static string FormatNice(GddlElement e)
+        public static string FormatCompact(GddlElement element)
         {
-            return Format(e, FormatterOptions.Nice);
+            return Format(element, FormatterOptions.Compact);
         }
 
-        public static string Format(GddlElement e, FormatterOptions options)
+        public static string FormatNice(GddlDocument doc)
+        {
+            return Format(doc, FormatterOptions.Nice);
+        }
+
+        public static string FormatNice(GddlElement element)
+        {
+            return Format(element, FormatterOptions.Nice);
+        }
+
+        public static string Format(GddlDocument doc, FormatterOptions options)
         {
             var b = new StringBuilder();
             var f = new Formatter(b, options);
-            f.FormatStandalone(e);
+            f.FormatDocument(doc);
             return b.ToString();
         }
 
-        private readonly Stack<int> IndentLevels = new Stack<int>();
-        private readonly FormatterOptions options;
-        private readonly StringBuilder builder;
-
-        public int IndentLevel = 0;
+        public static string Format(GddlElement element, FormatterOptions options)
+        {
+            var b = new StringBuilder();
+            var f = new Formatter(b, options);
+            f.FormatElement(element);
+            return b.ToString();
+        }
 
         public Formatter(StringBuilder builder, FormatterOptions options)
         {
@@ -40,22 +53,48 @@ namespace GDDL.Serialization
             this.options = options;
         }
 
-        public void PushIndent()
+        public void FormatDocument(GddlDocument doc)
+        {
+            FormatElement(doc.Root);
+
+            if (doc.HasDanglingComment && options.writeComments)
+                FormatComment(doc.DanglingComment);
+        }
+
+        public void FormatElement(GddlElement element)
+        {
+            FormatComment(element);
+            AppendIndent();
+            FormatElement(element, false);
+        }
+
+
+        #endregion
+        #region Implementation
+        private static readonly Regex CommentLineSplitter = new Regex("(?:(?:\n)|(?:\r\n))");
+
+        private readonly Stack<int> IndentLevels = new Stack<int>();
+        private readonly FormatterOptions options;
+        private readonly StringBuilder builder;
+
+        public int IndentLevel = 0;
+
+        private void PushIndent()
         {
             IndentLevels.Push(IndentLevel);
         }
 
-        public void PopIndent()
+        private void PopIndent()
         {
             IndentLevel = IndentLevels.Pop();
         }
 
-        public void ClearIndent()
+        private void ClearIndent()
         {
             IndentLevel = 0;
         }
 
-        public void IncIndent()
+        private void IncIndent()
         {
             IndentLevel++;
         }
@@ -63,12 +102,10 @@ namespace GDDL.Serialization
         private void AppendMultiple(char c, int n)
         {
             for (int i = 0; i < n; i++)
-            {
                 builder.Append(c);
-            }
         }
 
-        public void AppendIndent()
+        private void AppendIndent()
         {
             int tabsToGen = IndentLevel;
             for (int i = 0; i < tabsToGen; i++)
@@ -84,55 +121,36 @@ namespace GDDL.Serialization
             }
         }
 
-        public void FormatStandalone(GddlElement e)
-        {
-            FormatComment(e);
-            FormatName(e);
-            FormatElement(e, false);
-        }
-
-        private static readonly Regex CommentLineSplitter = new Regex("(?:(?:\n)|(?:\r\n))");
-
         protected void FormatComment(GddlElement e)
         {
             if (e.HasComment && options.writeComments)
             {
-                AppendMultiple('\n', options.blankLinesBeforeComment);
-                string[] lines = CommentLineSplitter.Split(e.Comment);
-
-                int count = lines.Length;
-                if (options.trimCommentLines)
-                {
-                    while (lines[count - 1].Length == 0)
-                        count--;
-                }
-                for (int i = 0; i < count; i++)
-                {
-                    string s = lines[i];
-                    AppendIndent();
-                    builder.Append('#');
-                    builder.Append(s);
-                    builder.Append('\n');
-                }
+                FormatComment(e.Comment);
             }
         }
 
-        protected void FormatName(GddlElement e)
+        private void FormatComment(string comment)
         {
-            AppendIndent();
-            if (e.HasName)
+            AppendMultiple('\n', options.blankLinesBeforeComment);
+            string[] lines = CommentLineSplitter.Split(comment);
+            int count = lines.Length;
+            if (count > 0 && options.trimCommentLines)
             {
-                string sname = e.Name;
-                if (!Utility.IsValidIdentifier(sname))
-                    sname = Utility.EscapeString(sname);
-                builder.Append(sname);
-                builder.Append(" = ");
+                while (lines[count - 1].Length == 0)
+                    count--;
+            }
+            for (int i = 0; i < count; i++)
+            {
+                AppendIndent();
+                builder.Append('#');
+                builder.Append(lines[i]);
+                builder.Append('\n');
             }
         }
 
-        protected void FormatElement(GddlElement e, bool hasNext)
+        protected void FormatElement(GddlElement element, bool hasNext)
         {
-            switch (e)
+            switch (element)
             {
                 case GddlValue v:
                     FormatValue(v);
@@ -140,8 +158,11 @@ namespace GDDL.Serialization
                 case GddlReference r:
                     FormatReference(r);
                     break;
-                case Collection c:
-                    FormatCollection(c, hasNext);
+                case GddlMap m:
+                    FormatMap(m, hasNext);
+                    break;
+                case GddlList l:
+                    FormatList(l, hasNext);
                     break;
                 default:
                     throw new NotImplementedException("A new Element type has been added without updating Formatter#FormatElement.");
@@ -156,19 +177,19 @@ namespace GDDL.Serialization
             }
             else if (v.IsBoolean)
             {
-                builder.Append(v.Boolean ? "true" : "false");
+                builder.Append(v.AsBoolean ? "true" : "false");
             }
             else if (v.IsInteger)
             {
-                FormatInteger(v.Integer);
+                FormatInteger(v.AsInteger);
             }
             else if (v.IsDouble)
             {
-                FormatDoubleCustom(v.Double);
+                FormatDoubleCustom(v.AsDouble);
             }
             else if (v.IsString)
             {
-                builder.Append(Utility.EscapeString(v.String));
+                builder.Append(Utility.EscapeString(v.AsString));
             }
             else
             {
@@ -332,7 +353,8 @@ namespace GDDL.Serialization
                 builder.Append(".NaN");
                 return true;
             }
-            else if (!double.IsFinite(value))
+
+            if (!double.IsFinite(value))
             {
                 if (options.alwaysShowNumberSign)
                     FormatSign(value);
@@ -341,10 +363,8 @@ namespace GDDL.Serialization
                 builder.Append(".Inf");
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         private void FormatNegative(double value)
@@ -369,21 +389,21 @@ namespace GDDL.Serialization
                 builder.Append(it);
             }
 
-            if (r.IsResolved)
+            /*if (r.IsResolved)
             {
                 builder.Append('=');
                 if (r.ResolvedValue == null)
                     builder.Append("NULL");
                 else
                     builder.Append(r.ResolvedValue);
-            }
+            }*/
         }
 
-        protected void FormatCollection(Collection c, bool hasNext0)
+        protected void FormatMap(GddlMap c, bool hasNext0)
         {
             PushIndent();
 
-            bool oneElementPerLine = !c.IsSimple || c.Count > options.oneElementPerLineThreshold;
+            bool oneElementPerLine = c.GetFormattingComplexity() > options.oneElementPerLineThreshold;
 
             if (c.HasTypeName)
             {
@@ -391,35 +411,38 @@ namespace GDDL.Serialization
                 if (options.lineBreaksBeforeOpeningBrace == 0)
                     builder.Append(' ');
             }
-            bool addBraces = IndentLevel > 0 || c.HasTypeName;
-            if (addBraces)
+            if (oneElementPerLine && options.lineBreaksBeforeOpeningBrace > 0)
             {
-                if (oneElementPerLine && options.lineBreaksBeforeOpeningBrace > 0)
-                {
-                    AppendMultiple('\n', options.lineBreaksBeforeOpeningBrace);
-                    AppendIndent();
-                }
-                else if (options.spacesBeforeOpeningBrace > 0)
-                {
-                    AppendMultiple(' ', options.spacesBeforeOpeningBrace);
-                }
-                builder.Append('{');
-                if (oneElementPerLine && options.lineBreaksAfterOpeningBrace > 0)
-                {
-                    AppendMultiple('\n', options.lineBreaksAfterOpeningBrace);
-                }
-                else if (options.spacesAfterOpeningBrace > 0)
-                {
-                    AppendMultiple(' ', options.spacesAfterOpeningBrace);
-                }
-                PushIndent();
-                IncIndent();
+                AppendMultiple('\n', options.lineBreaksBeforeOpeningBrace);
+                AppendIndent();
             }
+            else if (options.spacesBeforeOpeningBrace > 0)
+            {
+                AppendMultiple(' ', options.spacesBeforeOpeningBrace);
+            }
+            builder.Append('{');
+            if (c.Count == 0 && !oneElementPerLine)
+            {
+                AppendMultiple(' ', options.spacesInEmptyCollection);
+            }
+            else if (oneElementPerLine && options.lineBreaksAfterOpeningBrace > 0)
+            {
+                AppendMultiple('\n', options.lineBreaksAfterOpeningBrace);
+            }
+            else if (options.spacesAfterOpeningBrace > 0)
+            {
+                AppendMultiple(' ', options.spacesAfterOpeningBrace);
+            }
+            PushIndent();
+            IncIndent();
 
             bool first = true;
-            for (int i = 0; i < c.Count; i++)
+            List<string> keys = new List<string>(c.Keys);
+            keys.Sort(string.Compare);
+            for (int i = 0; i < keys.Count; i++)
             {
-                GddlElement e = c[i];
+                string key = keys[i];
+                var e = c[key];
                 PushIndent();
 
                 if (first && (!oneElementPerLine || options.lineBreaksAfterOpeningBrace == 0))
@@ -442,42 +465,155 @@ namespace GDDL.Serialization
                 }
 
                 bool hasNext1 = (i + 1) < c.Count;
+
                 FormatComment(e);
-                FormatName(e);
+                AppendIndent();
+                if (!Utility.IsValidIdentifier(key))
+                    key = Utility.EscapeString(key);
+                builder.Append(key);
+                AppendMultiple(' ', options.spacesBeforeEquals);
+                builder.Append('=');
+                AppendMultiple(' ', options.spacesAfterEquals);
                 FormatElement(e, hasNext1);
-                if (hasNext1 && (!e.IsCollection || !options.omitCommaAfterClosingBrace)) builder.Append(',');
+                if (hasNext1 && (!e.IsCollection || !options.omitCommaAfterClosingBrace))
+                {
+                    AppendMultiple(' ', options.spacesBeforeComma);
+                    builder.Append(',');
+                }
 
                 first = false;
                 PopIndent();
             }
 
-            if (addBraces)
+            if (c.HasTrailingComment && options.writeComments)
+                FormatComment(c.TrailingComment);
+
+            PopIndent();
+            if (c.Count == 0 && !oneElementPerLine)
             {
-                PopIndent();
-                if (oneElementPerLine && options.lineBreaksBeforeClosingBrace > 0)
+                // Done on the open side
+            }
+            else if (oneElementPerLine && options.lineBreaksBeforeClosingBrace > 0)
+            {
+                AppendMultiple('\n', options.lineBreaksBeforeClosingBrace);
+                AppendIndent();
+            }
+            else if (options.spacesBeforeClosingBrace > 0)
+            {
+                AppendMultiple(' ', options.spacesBeforeClosingBrace);
+            }
+            builder.Append('}');
+            if (!hasNext0 || options.omitCommaAfterClosingBrace)
+            {
+                if (oneElementPerLine && options.lineBreaksAfterClosingBrace > 0)
                 {
-                    AppendMultiple('\n', options.lineBreaksBeforeClosingBrace);
-                    AppendIndent();
+                    AppendMultiple('\n', options.lineBreaksAfterClosingBrace);
                 }
-                else if (options.spacesBeforeClosingBrace > 0)
+                else if (options.spacesAfterClosingBrace > 0)
                 {
-                    AppendMultiple(' ', options.spacesBeforeClosingBrace);
-                }
-                builder.Append('}');
-                if (!hasNext0 || options.omitCommaAfterClosingBrace)
-                {
-                    if (oneElementPerLine && options.lineBreaksAfterClosingBrace > 0)
-                    {
-                        AppendMultiple('\n', options.lineBreaksAfterClosingBrace);
-                    }
-                    else if (options.spacesAfterClosingBrace > 0)
-                    {
-                        AppendMultiple(' ', options.spacesAfterClosingBrace);
-                    }
+                    AppendMultiple(' ', options.spacesAfterClosingBrace);
                 }
             }
 
             PopIndent();
         }
+
+        protected void Formatlist(GddlList c, bool hasNext0)
+        {
+            PushIndent();
+
+            bool oneElementPerLine = !c.IsSimple || c.Count > options.oneElementPerLineThreshold;
+
+            if (oneElementPerLine && options.lineBreaksBeforeOpeningBrace > 0)
+            {
+                AppendMultiple('\n', options.lineBreaksBeforeOpeningBrace);
+                AppendIndent();
+            }
+            else if (options.spacesBeforeOpeningBrace > 0)
+            {
+                AppendMultiple(' ', options.spacesBeforeOpeningBrace);
+            }
+            builder.Append('[');
+            if (oneElementPerLine && options.lineBreaksAfterOpeningBrace > 0)
+            {
+                AppendMultiple('\n', options.lineBreaksAfterOpeningBrace);
+            }
+            else if (options.spacesAfterOpeningBrace > 0)
+            {
+                AppendMultiple(' ', options.spacesAfterOpeningBrace);
+            }
+            PushIndent();
+            IncIndent();
+
+            bool first = true;
+            for (int i = 0; i < c.Count; i++)
+            {
+                GddlElement e = c[i];
+                PushIndent();
+
+                if (first && (!oneElementPerLine || options.lineBreaksAfterOpeningBrace == 0))
+                {
+                    ClearIndent();
+                }
+                else if (!first)
+                {
+                    if (oneElementPerLine)
+                    {
+                        builder.Append('\n');
+                    }
+                    else if (options.spacesAfterComma > 0)
+                    {
+                        AppendMultiple(' ', options.spacesAfterComma);
+                    }
+
+                    if (!oneElementPerLine)
+                        ClearIndent();
+                }
+
+                bool hasNext1 = (i + 1) < c.Count;
+
+                FormatComment(e);
+                AppendIndent();
+                FormatElement(e, hasNext1);
+
+                if (hasNext1 && (!e.IsCollection || !options.omitCommaAfterClosingBrace))
+                {
+                    AppendMultiple(' ', options.spacesBeforeComma);
+                    builder.Append(',');
+                }
+
+                first = false;
+                PopIndent();
+            }
+
+            if (c.HasTrailingComment && options.writeComments)
+                FormatComment(c.TrailingComment);
+
+            PopIndent();
+            if (oneElementPerLine && options.lineBreaksBeforeClosingBrace > 0)
+            {
+                AppendMultiple('\n', options.lineBreaksBeforeClosingBrace);
+                AppendIndent();
+            }
+            else if (options.spacesBeforeClosingBrace > 0)
+            {
+                AppendMultiple(' ', options.spacesBeforeClosingBrace);
+            }
+            builder.Append(']');
+            if (!hasNext0 || options.omitCommaAfterClosingBrace)
+            {
+                if (oneElementPerLine && options.lineBreaksAfterClosingBrace > 0)
+                {
+                    AppendMultiple('\n', options.lineBreaksAfterClosingBrace);
+                }
+                else if (options.spacesAfterClosingBrace > 0)
+                {
+                    AppendMultiple(' ', options.spacesAfterClosingBrace);
+                }
+            }
+
+            PopIndent();
+        }
+        #endregion
     }
 }

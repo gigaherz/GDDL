@@ -12,65 +12,49 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void ReferenceResolvesToElement()
         {
-            Collection root = Collection.Of(GddlValue.Of("child"));
+            GddlMap root = new GddlMap() { { "child", GddlValue.Of("child") } };
             GddlReference r = GddlReference.Absolute();
-            r.Resolve(root, root);
+            r.Resolve(root);
             Assert.AreEqual(root, r.ResolvedValue);
-        }
-
-        [TestMethod]
-        public void AbsoluteReferenceResolvesToRoot()
-        {
-            Collection parent = Collection.Of(GddlValue.Of("parent"));
-            Collection root = Collection.Of(GddlValue.Of("root"), parent);
-            GddlReference r = GddlReference.Absolute();
-            r.Resolve(root, parent);
-            Assert.AreEqual(root, r.ResolvedValue);
-        }
-
-        [TestMethod]
-        public void RelativeReferenceResolvesToParent()
-        {
-            Collection parent = Collection.Of(GddlValue.Of("parent"));
-            Collection root = Collection.Of(GddlValue.Of("root"), parent);
-            GddlReference r = GddlReference.Relative();
-            r.Resolve(root, parent);
-            Assert.AreEqual(parent, r.ResolvedValue);
         }
 
         [TestMethod]
         public void AbsoluteChildReferenceResolvesToChild()
         {
-            var relativeChild = GddlValue.Of("Relative child").WithName("child");
-            var absoluteChild = GddlValue.Of("Absolute child").WithName("child");
-            Collection parent = Collection.Of(GddlValue.Of("parent"), relativeChild);
-            Collection root = Collection.Of(GddlValue.Of("root"), absoluteChild, parent);
+            var relativeChild = GddlValue.Of("Relative child");
+            var absoluteChild = GddlValue.Of("Absolute child");
+            GddlMap parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
+            GddlMap root = new GddlMap() { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
             GddlReference r = GddlReference.Absolute("child");
-            r.Resolve(root, parent);
+            parent.Add("reference", r);
+            r.Resolve(root);
             Assert.AreEqual(absoluteChild, r.ResolvedValue);
         }
 
         [TestMethod]
         public void RelativeChildReferenceResolvesToChild()
         {
-            var relativeChild = GddlValue.Of("Relative child").WithName("child");
-            var absoluteChild = GddlValue.Of("Absolute child").WithName("child");
-            Collection parent = Collection.Of(GddlValue.Of("parent"), relativeChild);
-            Collection root = Collection.Of(GddlValue.Of("root"), absoluteChild, parent);
+            var relativeChild = GddlValue.Of("Relative child");
+            var absoluteChild = GddlValue.Of("Absolute child");
+            GddlMap parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
+            GddlMap root = new GddlMap() { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
             GddlReference r = GddlReference.Relative("child");
-            r.Resolve(root, parent);
-            Assert.AreEqual(relativeChild, r.ResolvedValue);
+            parent.Add("reference", r);
+            r.Resolve(root);
+            Assert.AreEqual(absoluteChild, r.ResolvedValue);
         }
 
         [TestMethod]
         public void NestedChildReferenceResolvesToChild()
         {
-            var relativeChild = GddlValue.Of("the child").WithName("child");
-            var parent = Collection.Of(GddlValue.Of("the parent"), relativeChild).WithName("parent");
-            var root = Collection.Of(GddlValue.Of("root"), parent);
+            var relativeChild = GddlValue.Of("Relative child");
+            var absoluteChild = GddlValue.Of("Absolute child");
+            GddlMap parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
+            GddlMap root = new GddlMap() { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
             GddlReference r = GddlReference.Relative("parent", "child");
-            r.Resolve(root, parent);
-            Assert.AreEqual(relativeChild, r.ResolvedValue);
+            parent.Add("reference", r);
+            r.Resolve(root);
+            Assert.AreEqual(absoluteChild, r.ResolvedValue);
         }
     }
 }

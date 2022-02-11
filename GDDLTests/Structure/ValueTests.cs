@@ -31,10 +31,10 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            Assert.ThrowsException<NullReferenceException>(() => v.Boolean);
-            Assert.ThrowsException<NullReferenceException>(() => v.Integer);
-            Assert.ThrowsException<NullReferenceException>(() => v.Double);
-            Assert.ThrowsException<NullReferenceException>(() => v.String);
+            Assert.ThrowsException<NullReferenceException>(() => v.AsBoolean);
+            Assert.ThrowsException<NullReferenceException>(() => v.AsInteger);
+            Assert.ThrowsException<NullReferenceException>(() => v.AsDouble);
+            Assert.ThrowsException<NullReferenceException>(() => v.AsString);
         }
 
         [TestMethod]
@@ -42,10 +42,10 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Of(true);
             Assert.IsFalse(v.IsNull);
-            Assert.IsTrue(v.Boolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.Integer);
-            Assert.ThrowsException<InvalidCastException>(() => v.Double);
-            Assert.ThrowsException<InvalidCastException>(() => v.String);
+            Assert.IsTrue(v.AsBoolean);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsDouble);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsString);
         }
 
         [TestMethod]
@@ -53,10 +53,10 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Of(false);
             Assert.IsFalse(v.IsNull);
-            Assert.IsFalse(v.Boolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.Integer);
-            Assert.ThrowsException<InvalidCastException>(() => v.Double);
-            Assert.ThrowsException<InvalidCastException>(() => v.String);
+            Assert.IsFalse(v.AsBoolean);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsDouble);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsString);
         }
 
         [TestMethod]
@@ -64,10 +64,10 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Of(1);
             Assert.IsFalse(v.IsNull);
-            Assert.AreEqual(1L, v.Integer);
-            Assert.ThrowsException<InvalidCastException>(() => v.Boolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.Double);
-            Assert.ThrowsException<InvalidCastException>(() => v.String);
+            Assert.AreEqual(1L, v.AsInteger);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsBoolean);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsDouble);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsString);
         }
 
         [TestMethod]
@@ -75,10 +75,10 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Of(1.0);
             Assert.IsFalse(v.IsNull);
-            Assert.AreEqual(1L, v.Double, 1E-10);
-            Assert.ThrowsException<InvalidCastException>(() => v.Boolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.Integer);
-            Assert.ThrowsException<InvalidCastException>(() => v.String);
+            Assert.AreEqual(1L, v.AsDouble, 1E-10);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsBoolean);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsString);
         }
 
         [TestMethod]
@@ -86,10 +86,10 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Of("1");
             Assert.IsFalse(v.IsNull);
-            Assert.AreEqual("1", v.String);
-            Assert.ThrowsException<InvalidCastException>(() => v.Boolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.Integer);
-            Assert.ThrowsException<InvalidCastException>(() => v.Double);
+            Assert.AreEqual("1", v.AsString);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsBoolean);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
+            Assert.ThrowsException<InvalidCastException>(() => v.AsDouble);
         }
 
         [TestMethod]
@@ -104,7 +104,7 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Of(true).Copy();
             Assert.IsFalse(v.IsNull);
-            Assert.IsTrue(v.Boolean);
+            Assert.IsTrue(v.AsBoolean);
         }
 
         [TestMethod]
@@ -112,7 +112,7 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Of(false).Copy();
             Assert.IsFalse(v.IsNull);
-            Assert.IsFalse(v.Boolean);
+            Assert.IsFalse(v.AsBoolean);
         }
 
         [TestMethod]
@@ -120,7 +120,7 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Of(1).Copy();
             Assert.IsFalse(v.IsNull);
-            Assert.AreEqual(1L, v.Integer);
+            Assert.AreEqual(1L, v.AsInteger);
         }
 
         [TestMethod]
@@ -128,7 +128,7 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Of(1.0).Copy();
             Assert.IsFalse(v.IsNull);
-            Assert.AreEqual(1L, v.Double, 1E-10);
+            Assert.AreEqual(1L, v.AsDouble, 1E-10);
         }
 
         [TestMethod]
@@ -136,7 +136,7 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = (GddlValue)GddlValue.Of("1").CopyInternal();
             Assert.IsFalse(v.IsNull);
-            Assert.AreEqual("1", v.String);
+            Assert.AreEqual("1", v.AsString);
         }
 
         [TestMethod]
@@ -153,9 +153,9 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            v.Boolean = false;
+            v.AsBoolean = false;
             Assert.IsFalse(v.IsNull);
-            Assert.IsFalse(v.Boolean);
+            Assert.IsFalse(v.AsBoolean);
         }
 
         [TestMethod]
@@ -163,9 +163,9 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            v.Integer = 1;
+            v.AsInteger = 1;
             Assert.IsFalse(v.IsNull);
-            Assert.AreEqual(1, v.Integer);
+            Assert.AreEqual(1, v.AsInteger);
         }
 
         [TestMethod]
@@ -173,9 +173,9 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            v.Double = 1;
+            v.AsDouble = 1;
             Assert.IsFalse(v.IsNull);
-            Assert.AreEqual(1, v.Double, 1E-10);
+            Assert.AreEqual(1, v.AsDouble, 1E-10);
         }
 
         [TestMethod]
@@ -183,9 +183,9 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            v.String = "a";
+            v.AsString = "a";
             Assert.IsFalse(v.IsNull);
-            Assert.AreEqual("a", v.String);
+            Assert.AreEqual("a", v.AsString);
         }
     }
 }

@@ -6,7 +6,7 @@ using GDDL.Parsing;
 
 namespace GDDL
 {
-    public static class GDDL
+    public static class Gddl
     {
         /**
          * Constructs a Parser instance that reads from the given filename.

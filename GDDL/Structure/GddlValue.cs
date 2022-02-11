@@ -7,9 +7,9 @@ namespace GDDL.Structure
      * Represents a simple value within the GDDL hierarchy.
      * Simple values are: null, boolean false and true, strings, integers (long), and floats (double).
      */
-    public sealed class GddlValue : Element<GddlValue>, IEquatable<GddlValue>
+    public sealed class GddlValue : GddlElement<GddlValue>, IEquatable<GddlValue>
     {
-        #region Factory Methods
+        #region API
 
         /**
          * Constructs a Value representing `null`
@@ -55,40 +55,55 @@ namespace GDDL.Structure
         {
             return new GddlValue(s ?? "");
         }
+
+        public override bool IsValue => true;
+        public override GddlValue AsValue => this;
+
+        public override bool IsNull => data == null;
+
+        public override bool IsBoolean => data is bool;
+        public override bool AsBoolean => (bool)data;
+
+        public override bool IsInteger => data is long;
+        public override long AsInteger => (long)data;
+
+        public override bool IsDouble => data is double;
+        public override double AsDouble => (double)data;
+
+        public override bool IsString => data is string;
+        public override string AsString => (string)Utility.RequireNotNull(data);
+
+        public void Set(string value)
+        {
+            data = Utility.RequireNotNull(value);
+        }
+
+        public void Set(int value)
+        {
+            data = value;
+        }
+
+        public void Set(double value)
+        {
+            data = value;
+        }
+
+        public void Set(bool value)
+        {
+            data = value;
+        }
+
+        /**
+         * Changes the contained value to be `null`
+         */
+        public void SetNull()
+        {
+            data = null;
+        }
         #endregion
 
         #region Implementation
         private object data;
-
-        public bool IsNull => data == null;
-        public bool IsBoolean => data is bool;
-        public bool IsInteger => data is long;
-        public bool IsDouble => data is double;
-        public bool IsString => data is string;
-
-        public string String
-        {
-            get => (string)Utility.RequireNotNull(data);
-            set => data = Utility.RequireNotNull(value);
-        }
-
-        public bool Boolean
-        {
-            get => (bool)data;
-            set => data = value;
-        }
-
-        public long Integer
-        {
-            get => (long)data;
-            set => data = value;
-        }
-
-        public double Double
-        {
-            get => (double)data;
-            set => data = value;
-        }
 
         private GddlValue()
         {
@@ -115,13 +130,6 @@ namespace GDDL.Structure
             data = valueData;
         }
 
-        /**
-         * Changes the contained value to be `null`
-         */
-        public void SetNull()
-        {
-            data = null;
-        }
         #endregion
 
         #region Element
@@ -144,14 +152,14 @@ namespace GDDL.Structure
 
         public override bool Equals(object other)
         {
-            if (other == this) return true;
+            if (ReferenceEquals(other, this)) return true;
             if (other == null || GetType() != other.GetType()) return false;
             return EqualsImpl((GddlValue)other);
         }
 
         public override bool Equals(GddlValue other)
         {
-            if (other == this) return true;
+            if (ReferenceEquals(other, this)) return true;
             if (other == null) return false;
             return EqualsImpl(other);
         }

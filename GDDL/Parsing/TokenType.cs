@@ -20,7 +20,7 @@ namespace GDDL.Parsing
         DecimalLiteral,
         StringLiteral,
 
-        Ident,
+        Identifier,
 
         // Identifiers
         Nil,

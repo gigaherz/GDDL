@@ -1,13 +1,14 @@
-﻿using GDDL.Serialization;
-using System;
+﻿using System;
+using GDDL.Parsing;
+using GDDL.Serialization;
 
-namespace GDDL.Test
+namespace GDDL.Demo
 {
-    class Program
+    public static class Program
     {
-        static void Main()
+        public static void Main()
         {
-            var p = Parsing.FromFile("Test.txt");
+            var p = Gddl.FromFile("Test.txt");
             var parsedData = p.Parse();
             var text = Formatter.FormatNice(parsedData);
             //File.WriteAllText("Output.txt", text);

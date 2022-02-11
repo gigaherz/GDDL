@@ -6,7 +6,7 @@ using GDDL.Util;
 
 namespace GDDL.Structure
 {
-    public sealed class GddlMap : Element<GddlMap>, IDictionary<string, GddlElement>, IEquatable<GddlMap>
+    public sealed class GddlMap : GddlElement<GddlMap>, IDictionary<string, GddlElement>
     {
         #region API
         public static GddlMap Empty()
@@ -23,6 +23,12 @@ namespace GDDL.Structure
         {
             return new GddlMap(initial);
         }
+
+        public override bool IsMap => true;
+        public override GddlMap AsMap => this;
+
+        public string TrailingComment { get; set; }
+        public bool HasTrailingComment => !string.IsNullOrEmpty(TrailingComment);
 
         public bool HasTypeName => !string.IsNullOrEmpty(typeName);
         public string TypeName
@@ -50,7 +56,25 @@ namespace GDDL.Structure
         public GddlElement this[string name]
         {
             get => contents[name];
-            set => contents[name] = value;
+            set
+            {
+                var prev = contents[name];
+                if (!ReferenceEquals(prev, value))
+                {
+                    contents[name] = value;
+                    OnRemove(prev);
+                    OnAdd(value);
+                }
+            }
+        }
+
+        public GddlMap()
+        {
+        }
+
+        public GddlMap(IEnumerable<KeyValuePair<string, GddlElement>> init)
+        {
+            AddRange(init);
         }
 
         public GddlMap WithTypeName(string typeName)
@@ -62,6 +86,7 @@ namespace GDDL.Structure
         public void Add(string name, GddlElement e)
         {
             contents.Add(name, e);
+            OnAdd(e);
         }
 
         public void AddRange(IEnumerable<KeyValuePair<string, GddlElement>> c)
@@ -74,11 +99,16 @@ namespace GDDL.Structure
 
         public bool Remove(string name)
         {
+            if (contents.TryGetValue(name, out var existing))
+            {
+                OnRemove(existing);
+            }
             return contents.Remove(name);
         }
 
         public void Clear()
         {
+            foreach (var e in contents.Values) OnRemove(e);
             contents.Clear();
         }
         #endregion
@@ -88,15 +118,22 @@ namespace GDDL.Structure
 
         private string typeName;
 
-        private GddlMap()
+        private void OnAdd(GddlElement e)
         {
+            if (e.Parent != null) throw new InvalidOperationException("The element is already assigned to a collection.");
+            e.Parent = this;
         }
 
-        private GddlMap(IEnumerable<KeyValuePair<string, GddlElement>> init)
+        private void OnRemove(GddlElement e)
         {
-            AddRange(init);
+            e.Parent = null;
         }
-        
+
+        protected internal IEnumerable<string> KeysOf(GddlElement value)
+        {
+            return contents.Where(kv => ReferenceEquals(kv.Value, value)).Select(kv => kv.Key);
+        }
+
         #endregion
 
         #region IDictionary Extras
@@ -128,7 +165,7 @@ namespace GDDL.Structure
 
         void ICollection<KeyValuePair<string, GddlElement>>.Add(KeyValuePair<string, GddlElement> item)
         {
-            ((ICollection<KeyValuePair<string, GddlElement>>)contents).Add(item);
+            Add(item.Key, item.Value);
         }
 
         bool ICollection<KeyValuePair<string, GddlElement>>.Contains(KeyValuePair<string, GddlElement> item)
@@ -143,6 +180,10 @@ namespace GDDL.Structure
 
         bool ICollection<KeyValuePair<string, GddlElement>>.Remove(KeyValuePair<string, GddlElement> item)
         {
+            if (contents.TryGetValue(item.Key, out var existing) && Equals(existing, item.Value))
+            {
+                OnRemove(existing);
+            }
             return ((ICollection<KeyValuePair<string, GddlElement>>)contents).Remove(item);
         }
         #endregion
@@ -157,6 +198,7 @@ namespace GDDL.Structure
 
         protected override void CopyTo(GddlMap other)
         {
+            base.CopyTo(other);
             foreach (var (name,e) in contents)
             {
                 other.Add(name, e.Copy());
@@ -185,14 +227,14 @@ namespace GDDL.Structure
         #region Equality
         public override bool Equals(object other)
         {
-            if (other == this) return true;
+            if (ReferenceEquals(other, this)) return true;
             if (other == null || GetType() != other.GetType()) return false;
             return EqualsImpl((GddlMap)other);
         }
 
         public override bool Equals(GddlMap other)
         {
-            if (other == this) return true;
+            if (ReferenceEquals(other, this)) return true;
             if (other == null) return false;
             return EqualsImpl(other);
         }

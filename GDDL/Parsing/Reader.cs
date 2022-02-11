@@ -8,6 +8,70 @@ namespace GDDL.Parsing
 {
     public sealed class Reader : IContextProvider, IDisposable
     {
+        #region API
+        public Reader(TextReader source, string sourceName)
+        {
+            this.sourceName = sourceName;
+            this.dataSource = source;
+        }
+        
+        /**
+         * Returns the Nth character in the lookahead buffer, reading characters from the input reader as needed.
+         * @param index The position in the lookahead buffer, starting at 0.
+         * @return The character, or -1 if end of file
+         */
+        public int Peek(int index = 0)
+        {
+            Require(index + 1);
+
+            return unreadBuffer[index];
+        }
+
+        /**
+         * Removes the first character in the lookahead buffer, and returns it.
+         * @return The character, or -1 if end of file
+         */
+        public int Next()
+        {
+            Require(1);
+
+            return NextInternal();
+        }
+
+        /**
+         * Removes N characters from the lookahead buffer, and returns them as a string.
+         * @param count The number of characters to return
+         * @return A string with the character sequence
+         */
+        public string Read(int count)
+        {
+            Require(count);
+
+            var b = new StringBuilder();
+            while (count-- > 0)
+            {
+                int ch = NextInternal();
+                if (ch < 0)
+                    throw new ReaderException(this, "Tried to Read beyond the end of the file.");
+                b.Append((char)ch);
+            }
+            return b.ToString();
+        }
+
+        /**
+         * Removes N characters from the lookahead buffer, advancing the input stream as necessary.
+         * @param count The number of characters to drop
+         */
+        public void Skip(int count)
+        {
+            Require(count);
+            while (count-- > 0)
+                Next();
+        }
+
+        #endregion
+
+        #region Implementation
         private readonly ArrayQueue<int> unreadBuffer = new ArrayQueue<int>();
 
         private readonly TextReader dataSource;
@@ -17,12 +81,6 @@ namespace GDDL.Parsing
         private int line = 1;
         private int column = 1;
         private int lastEol;
-
-        public Reader(TextReader source, string sourceName)
-        {
-            this.sourceName = sourceName;
-            this.dataSource = source;
-        }
 
         private void Require(int number)
         {
@@ -49,32 +107,7 @@ namespace GDDL.Parsing
             }
         }
 
-        /**
-         * Returns the first character in the lookahead buffer, reading characters from the input reader as needed.
-         * @return The character, or -1 if end of file
-         */
-        public int Peek()
-        {
-            return Peek(0);
-        }
-
-        /**
-         * Returns the Nth character in the lookahead buffer, reading characters from the input reader as needed.
-         * @param index The position in the lookahead buffer, starting at 0.
-         * @return The character, or -1 if end of file
-         */
-        public int Peek(int index)
-        {
-            Require(index + 1);
-
-            return unreadBuffer[index];
-        }
-
-        /**
-         * Removes the first character in the lookahead buffer, and returns it.
-         * @return The character, or -1 if end of file
-         */
-        public int Next()
+        private int NextInternal()
         {
             int ch = unreadBuffer.Remove();
 
@@ -99,47 +132,24 @@ namespace GDDL.Parsing
 
             return ch;
         }
+        #endregion
 
-        /**
-         * Removes N characters from the lookahead buffer, and returns them as a string.
-         * @param count The number of characters to return
-         * @return A string with the character sequence
-         */
-        public string Read(int count)
-        {
-            Require(count);
-            var b = new StringBuilder();
-            while (count-- > 0)
-            {
-                int ch = Next();
-                if (ch < 0)
-                    throw new ReaderException(this, "Tried to Read beyond the end of the file.");
-                b.Append((char)ch);
-            }
-            return b.ToString();
-        }
-
-        /**
-         * Removes N characters from the lookahead buffer, advancing the input stream as necessary.
-         * @param count The number of characters to drop
-         */
-        public void Skip(int count)
-        {
-            Require(count);
-            while (count-- > 0)
-                Next();
-        }
-
+        #region ToString
         public override string ToString()
         {
             return $"{{Reader ahead={string.Join("", unreadBuffer)}}}";
         }
+        #endregion
 
+        #region IContextProvider
+        public ParsingContext ParsingContext => new ParsingContext(sourceName, line, column);
+        #endregion
+
+        #region IDisposable
         public void Dispose()
         {
             dataSource.Dispose();
         }
-
-        public ParsingContext ParsingContext => new ParsingContext(sourceName, line, column);
+        #endregion
     }
 }

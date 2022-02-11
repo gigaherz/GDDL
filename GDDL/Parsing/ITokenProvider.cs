@@ -25,5 +25,9 @@ namespace GDDL.Parsing
          */
         Token Pop();
 
+        /**
+         * Changes the whitespace processing mode.
+         */
+        WhitespaceMode WhitespaceMode { get; set; }
     }
 }

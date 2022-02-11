@@ -318,7 +318,7 @@ namespace GDDL.Util
             return string.Compare(a, b, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static T RequireNotNull<T>(this T obj)
+        public static T RequireNotNull<T>(T obj)
             where T : class
         {
             if (obj is null)

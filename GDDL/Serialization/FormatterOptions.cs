@@ -6,19 +6,24 @@ namespace GDDL.Serialization
     {
         public static readonly FormatterOptions Compact = new Builder().Build(); // Default
         public static readonly FormatterOptions Nice = new Builder()
-                    .WriteComments(true)
-                    .LineBreaksAfterOpeningBrace(1)
-                    .LineBreaksBeforeClosingBrace(1)
-                    .LineBreaksAfterClosingBrace(1)
-                    .LineBreaksAfterValues(1)
-                    .SpacesBeforeOpeningBrace(0)
-                    .SpacesAfterOpeningBrace(1)
-                    .SpacesBeforeClosingBrace(1)
-                    .SpacesAfterClosingBrace(0)
-                    .SpacesBetweenElements(1)
-                    .OneElementPerLineThreshold(10)
-                    .SpacesPerIndent(4)
-                    .BlankLinesBeforeComment(1)
+                .WriteComments(true)
+                .LineBreaksAfterOpeningBrace(1)
+                .LineBreaksBeforeClosingBrace(1)
+                .LineBreaksAfterClosingBrace(1)
+                .LineBreaksAfterValues(1)
+                .SpacesBeforeOpeningBrace(0)
+                .SpacesAfterOpeningBrace(1)
+                .SpacesBeforeClosingBrace(1)
+                .SpacesAfterClosingBrace(0)
+                .SpacesInEmptyCollection(1)
+                .SpacesAfterComma(1)
+                .SpacesBeforeEquals(0)
+                .SpacesAfterEquals(1)
+                .SpacesInEmptyCollection(1)
+                .OneElementPerLineThreshold(10)
+                .SpacesPerIndent(4)
+                .BlankLinesBeforeComment(1)
+                .PreferJsonStyle(true)
                 .Build();
 
         // Collections
@@ -30,8 +35,12 @@ namespace GDDL.Serialization
         public readonly int spacesAfterOpeningBrace;
         public readonly int spacesBeforeClosingBrace;
         public readonly int spacesAfterClosingBrace;
+        public readonly int spacesBeforeComma;
+        public readonly int spacesAfterComma;
+        public readonly int spacesBeforeEquals;
+        public readonly int spacesAfterEquals;
+        public readonly int spacesInEmptyCollection;
         public readonly int oneElementPerLineThreshold;
-        public readonly int spacesBetweenElements;
         public readonly bool omitCommaAfterClosingBrace;
 
         // Values
@@ -52,6 +61,9 @@ namespace GDDL.Serialization
         public readonly int blankLinesBeforeComment;
         public readonly bool trimCommentLines;
 
+        // Other
+        public readonly bool preferJsonStyle;
+
         // Internal Constructor
         private FormatterOptions(Builder builder)
         {
@@ -63,13 +75,17 @@ namespace GDDL.Serialization
             spacesAfterOpeningBrace = builder.spacesAfterOpeningBrace;
             spacesBeforeClosingBrace = builder.spacesBeforeClosingBrace;
             spacesAfterClosingBrace = builder.spacesAfterClosingBrace;
+            spacesBeforeComma = builder.spacesBeforeComma;
+            spacesAfterComma = builder.spacesAfterComma;
+            spacesBeforeEquals = builder.spacesBeforeEquals;
+            spacesAfterEquals = builder.spacesAfterEquals;
+            spacesInEmptyCollection = builder.spacesInEmptyCollection;
             oneElementPerLineThreshold = builder.oneElementPerLineThreshold;
-            spacesBetweenElements = builder.spacesBetweenElements;
             omitCommaAfterClosingBrace = builder.omitCommaAfterClosingBrace;
             lineBreaksAfterValues = builder.lineBreaksAfterValues;
             floatFormattingStyle = builder.floatFormattingStyle;
             alwaysShowNumberSign = builder.alwaysShowNumberSign;
-            alwaysShowExponentSign = builder._alwaysShowExponentSign;
+            alwaysShowExponentSign = builder.alwaysShowExponentSign;
             autoScientificNotationUpper = builder.autoScientificNotationUpper;
             autoScientificNotationLower = builder.autoScientificNotationLower;
             floatSignificantFigures = builder.floatSignificantFigures;
@@ -78,40 +94,48 @@ namespace GDDL.Serialization
             writeComments = builder.writeComments;
             blankLinesBeforeComment = builder.blankLinesBeforeComment;
             trimCommentLines = builder.trimCommentLines;
+            preferJsonStyle = builder.preferJsonStyle;
         }
 
         public class Builder
         {
             // Collections
-            internal protected int lineBreaksBeforeOpeningBrace = 0;
-            internal protected int lineBreaksAfterOpeningBrace = 0;
-            internal protected int lineBreaksBeforeClosingBrace = 0;
-            internal protected int lineBreaksAfterClosingBrace = 0;
-            internal protected int spacesBeforeOpeningBrace = 0;
-            internal protected int spacesAfterOpeningBrace = 0;
-            internal protected int spacesBeforeClosingBrace = 0;
-            internal protected int spacesAfterClosingBrace = 0;
-            internal protected int oneElementPerLineThreshold = int.MaxValue;
-            internal protected int spacesBetweenElements = 1;
-            internal protected bool omitCommaAfterClosingBrace = false;
+            protected internal int lineBreaksBeforeOpeningBrace = 0;
+            protected internal int lineBreaksAfterOpeningBrace = 0;
+            protected internal int lineBreaksBeforeClosingBrace = 0;
+            protected internal int lineBreaksAfterClosingBrace = 0;
+            protected internal int spacesBeforeOpeningBrace = 0;
+            protected internal int spacesAfterOpeningBrace = 0;
+            protected internal int spacesBeforeClosingBrace = 0;
+            protected internal int spacesAfterClosingBrace = 0;
+            protected internal int spacesBeforeComma = 0;
+            protected internal int spacesAfterComma = 0;
+            protected internal int spacesBeforeEquals = 0;
+            protected internal int spacesAfterEquals = 0;
+            protected internal int spacesInEmptyCollection = 0;
+            protected internal int oneElementPerLineThreshold = int.MaxValue;
+            protected internal bool omitCommaAfterClosingBrace = false;
 
             // Values
-            internal protected int lineBreaksAfterValues = 0;
-            internal protected DoubleFormattingStyle floatFormattingStyle = DoubleFormattingStyle.Auto;
-            internal protected bool alwaysShowNumberSign = false;
-            internal protected bool _alwaysShowExponentSign = false;
-            internal protected int autoScientificNotationUpper = 5;
-            internal protected int autoScientificNotationLower = -2;
-            internal protected int floatSignificantFigures = 15;
+            protected internal int lineBreaksAfterValues = 0;
+            protected internal DoubleFormattingStyle floatFormattingStyle = DoubleFormattingStyle.Auto;
+            protected internal bool alwaysShowNumberSign = false;
+            protected internal bool alwaysShowExponentSign = false;
+            protected internal int autoScientificNotationUpper = 5;
+            protected internal int autoScientificNotationLower = -2;
+            protected internal int floatSignificantFigures = 15;
 
             // Indentation
-            internal protected bool indentUsingTabs = false;
-            internal protected int spacesPerIndent = 2;
+            protected internal bool indentUsingTabs = false;
+            protected internal int spacesPerIndent = 2;
 
             // Comments
-            internal protected bool writeComments = false;
-            internal protected int blankLinesBeforeComment = 0;
-            internal protected bool trimCommentLines = true;
+            protected internal bool writeComments = false;
+            protected internal int blankLinesBeforeComment = 0;
+            protected internal bool trimCommentLines = true;
+
+            // Other
+            protected internal bool preferJsonStyle = false;
 
             public Builder LineBreaksBeforeOpeningBrace(int lineBreaksBeforeOpeningBrace)
             {
@@ -161,15 +185,39 @@ namespace GDDL.Serialization
                 return this;
             }
 
-            public Builder OneElementPerLineThreshold(int oneElementPerLineThreshold)
+            public Builder SpacesBeforeComma(int spacesBeforeComma)
             {
-                this.oneElementPerLineThreshold = oneElementPerLineThreshold;
+                this.spacesBeforeComma = spacesBeforeComma;
                 return this;
             }
 
-            public Builder SpacesBetweenElements(int spacesBetweenElements)
+            public Builder SpacesAfterComma(int spacesAfterComma)
             {
-                this.spacesBetweenElements = spacesBetweenElements;
+                this.spacesAfterComma = spacesAfterComma;
+                return this;
+            }
+
+            public Builder SpacesBeforeEquals(int spacesBeforeEquals)
+            {
+                this.spacesBeforeEquals = spacesBeforeEquals;
+                return this;
+            }
+
+            public Builder SpacesAfterEquals(int spacesAfterEquals)
+            {
+                this.spacesAfterEquals = spacesAfterEquals;
+                return this;
+            }
+
+            public Builder SpacesInEmptyCollection(int spacesInEmptyCollection)
+            {
+                this.spacesInEmptyCollection = spacesInEmptyCollection;
+                return this;
+            }
+
+            public Builder OneElementPerLineThreshold(int oneElementPerLineThreshold)
+            {
+                this.oneElementPerLineThreshold = oneElementPerLineThreshold;
                 return this;
             }
 
@@ -242,6 +290,18 @@ namespace GDDL.Serialization
             internal Builder BlankLinesBeforeComment(int blankLinesBeforeComment)
             {
                 this.blankLinesBeforeComment = blankLinesBeforeComment;
+                return this;
+            }
+
+            public Builder TrimCommentLines(bool trimCommentLines)
+            {
+                this.trimCommentLines = trimCommentLines;
+                return this;
+            }
+
+            public Builder PreferJsonStyle(bool prefer)
+            {
+                this.preferJsonStyle = prefer;
                 return this;
             }
 

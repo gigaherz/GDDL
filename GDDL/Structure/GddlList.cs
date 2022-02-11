@@ -1,67 +1,74 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using GDDL.Util;
 
 namespace GDDL.Structure
 {
-    public sealed class GddlList : Element<GddlList>, IList<GddlElement>
+    public sealed class GddlList : GddlElement<GddlList>, IList<GddlElement>
     {
-        #region Factory Methods
-        public static Collection Empty()
+        #region API
+        public static GddlList Empty()
         {
-            return new Collection();
+            return new GddlList();
         }
-        public static Collection Of(params GddlElement[] initial)
+        public static GddlList Of(params GddlElement[] initial)
         {
-            return new Collection(initial);
+            return new GddlList(initial);
         }
 
-        public static Collection CopyOf(IEnumerable<GddlElement> initial)
+        public static GddlList CopyOf(IEnumerable<GddlElement> initial)
         {
-            return new Collection(initial);
+            return new GddlList(initial);
         }
-        #endregion
 
-        #region Implementation
-        private readonly List<GddlElement> contents = new List<GddlElement>();
-        
+        public override bool IsList => true;
+        public override GddlList AsList => this;
+
+        public string TrailingComment { get; set; }
+        public bool HasTrailingComment => !string.IsNullOrEmpty(TrailingComment);
+
         public int Count => contents.Count;
 
         public bool IsReadOnly => false;
 
         public bool IsEmpty => contents.Count == 0;
+
         public bool IsSimple => !contents.Any(a => a is GddlMap || a is GddlList);
-        
+
         public GddlElement this[int index]
         {
             get => contents[index];
-            set
-            {
-                var old = contents[index];
-                contents[index] = value;
+            set {
+                var prev = contents[index];
+                if (!ReferenceEquals(prev, value))
+                {
+                    contents[index] = value;
+                    OnRemove(prev);
+                    OnAdd(value);
+                }
             }
         }
 
-        private GddlList()
+        public GddlList()
         {
         }
 
-        private GddlList(IEnumerable<GddlElement> init)
+        public GddlList(IEnumerable<GddlElement> init)
         {
             AddRange(init);
         }
-        
+
         public void Add(GddlElement e)
         {
             contents.Add(e);
+            OnAdd(e);
         }
-        
+
         public void Insert(int before, GddlElement e)
         {
             contents.Insert(before, e);
+            OnAdd(e);
         }
 
         public void AddRange(IEnumerable<GddlElement> c)
@@ -74,14 +81,18 @@ namespace GDDL.Structure
 
         public bool Remove(GddlElement e)
         {
-            return contents.Remove(e);
+            var removed = contents.Remove(e);
+            OnRemove(e);
+            return removed;
         }
 
         public void RemoveAt(int index)
         {
+            var at = contents[index];
             contents.RemoveAt(index);
+            OnRemove(at);
         }
-        
+
         public int IndexOf(GddlElement o)
         {
             return contents.IndexOf(o);
@@ -89,8 +100,25 @@ namespace GDDL.Structure
 
         public void Clear()
         {
+            foreach(var e in contents) OnRemove(e);
             contents.Clear();
         }
+        #endregion
+
+        #region Implementation
+        private readonly List<GddlElement> contents = new List<GddlElement>();
+
+        private void OnAdd(GddlElement e)
+        {
+            if (e.Parent != null) throw new InvalidOperationException("The element is already assigned to a collection.");
+            e.Parent = this;
+        }
+
+        private void OnRemove(GddlElement e)
+        {
+            e.Parent = null;
+        }
+
         #endregion
 
         #region IList Extras
@@ -125,6 +153,7 @@ namespace GDDL.Structure
 
         protected override void CopyTo(GddlList other)
         {
+            base.CopyTo(other);
             foreach (var e in contents)
             {
                 other.Add(e.Copy());
@@ -158,14 +187,14 @@ namespace GDDL.Structure
         #region Equality
         public override bool Equals(object other)
         {
-            if (other == this) return true;
+            if (ReferenceEquals(other, this)) return true;
             if (other == null || GetType() != other.GetType()) return false;
             return EqualsImpl((GddlList)other);
         }
 
         public override bool Equals(GddlList other)
         {
-            if (other == this) return true;
+            if (ReferenceEquals(other, this)) return true;
             if (other == null) return false;
             return EqualsImpl(other);
         }

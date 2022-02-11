@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace GDDL.Structure
 {
-    public sealed class GddlReference : Element<GddlReference>, IEquatable<GddlReference>
+    public sealed class GddlReference : GddlElement<GddlReference>, IEquatable<GddlReference>
     {
-        #region Factory Methods
+        #region API
 
         /**
          * Constructs an absolute reference to the given path.
@@ -28,29 +27,25 @@ namespace GDDL.Structure
         {
             return new GddlReference(false, parts);
         }
-        #endregion
 
-        #region Implementation
-        private readonly List<string> nameParts = new List<string>();
-
-        private bool resolved;
-        private GddlElement resolvedValue;
+        public override bool IsReference => true;
+        public override GddlReference AsReference => this;
 
         public bool Rooted { get; }
 
         public override bool IsResolved => resolved;
         public override GddlElement ResolvedValue => resolvedValue;
 
-        /**
-         * @return The current path of this reference
-         */
-        public IList<string> NameParts => nameParts.AsReadOnly();
-
-        private GddlReference(bool rooted, params string[] parts)
+        public GddlReference(bool rooted, params string[] parts)
         {
             Rooted = rooted;
             nameParts.AddRange(parts);
         }
+
+        /**
+         * @return The current path of this reference
+         */
+        public IList<string> NameParts => nameParts.AsReadOnly();
 
         /**
          * Adds a new name to the path this Reference represents
@@ -71,6 +66,13 @@ namespace GDDL.Structure
         }
         #endregion
 
+        #region Implementation
+        private readonly List<string> nameParts = new List<string>();
+
+        private bool resolved;
+        private GddlElement resolvedValue;
+        #endregion
+
         #region Element
 
         public override GddlReference CopyInternal()
@@ -86,32 +88,49 @@ namespace GDDL.Structure
             other.AddRange(nameParts);
         }
 
-        public override void Resolve(GddlElement root, [MaybeNull] Collection parent)
+        public override void Resolve(GddlElement root)
         {
             if (IsResolved)
                 return;
 
-            if (!Rooted && TryResolve(root, parent, true))
-            {
-                resolved = true;
-                return;
-            }
-
-            resolved = TryResolve(root, parent, false);
+            resolved = TryResolve(root, !Rooted);
         }
 
-        private bool TryResolve(GddlElement root, [MaybeNull] Collection parent, bool relative)
+        private bool TryResolve(GddlElement root, bool relative)
         {
-            var target = relative ? (GddlElement)parent ?? this : root;
+            var parent = Parent;
 
-            bool parentRoot = target.HasName && nameParts[0] == target.Name;
+            GddlElement target;
+            if (relative)
+            {
+                target = parent;
+                if (target == null) // In case this element is itself the root.
+                    target = this;
+            }
+            else
+            {
+                target = root;
+            }
+
+            bool parentRoot = false;
+
+            if (target.Parent != null)
+            {
+                var targetParent = target.Parent;
+                if (targetParent.IsMap)
+                {
+                    parentRoot = targetParent.AsMap.KeysOf(target).Any(key => Equals(key,nameParts[0]));
+                }
+            }
 
             for (int i = parentRoot ? 1 : 0; i < nameParts.Count; i++)
             {
                 string part = nameParts[i];
 
-                if (!(target is Collection s))
+                if (!target.IsMap)
                     continue;
+
+                var s = target.AsMap;
 
                 if (s.TryGetValue(part, out var ne))
                 {
@@ -124,21 +143,30 @@ namespace GDDL.Structure
             }
 
             if (!target.IsResolved)
-                target.Resolve(root, target.ParentInternal);
+                target.Resolve(root);
 
             resolvedValue = target.ResolvedValue;
+
+            if (ReferenceEquals(resolvedValue, this))
+                throw new InvalidOperationException("Invalid cyclic reference: Reference resolves to itself.");
+
+            while (parent != null)
+            {
+                if (ReferenceEquals(resolvedValue, parent))
+                    throw new InvalidOperationException("Invalid cyclic reference: Reference resolves to a parent of the current element.");
+                parent = parent.Parent;
+            }
 
             return resolvedValue != null;
         }
 
         public override GddlElement Simplify()
         {
-            if (!resolved || resolvedValue == null)
-                return this;
+            if (resolved && resolvedValue != null)
+                return resolvedValue.Copy();
 
-            var copy = resolvedValue.Copy();
-            copy.Name = Name;
-            return copy;
+            return this;
+
         }
         #endregion
 
@@ -146,14 +174,14 @@ namespace GDDL.Structure
 
         public override bool Equals(object other)
         {
-            if (other == this) return true;
+            if (ReferenceEquals(other, this)) return true;
             if (other == null || GetType() != other.GetType()) return false;
             return EqualsImpl((GddlReference)other);
         }
 
         public override bool Equals(GddlReference other)
         {
-            if (other == this) return true;
+            if (ReferenceEquals(other, this)) return true;
             if (other == null) return false;
             return EqualsImpl(other);
         }
@@ -162,7 +190,7 @@ namespace GDDL.Structure
         {
             return base.EqualsImpl(other) &&
                 Rooted == other.Rooted &&
-                Enumerable.SequenceEqual(nameParts, other.nameParts) &&
+                Equals(nameParts, other.nameParts) &&
                 (IsResolved
                     ? other.IsResolved && Equals(ResolvedValue, other.ResolvedValue)
                     : !other.IsResolved);
