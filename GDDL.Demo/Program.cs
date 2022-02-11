@@ -7,7 +7,7 @@ namespace GDDL.Test
     {
         static void Main()
         {
-            var p = Parser.FromFile("Test.txt");
+            var p = Parsing.FromFile("Test.txt");
             var parsedData = p.Parse();
             var text = Formatter.FormatNice(parsedData);
             //File.WriteAllText("Output.txt", text);

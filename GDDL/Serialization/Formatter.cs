@@ -10,17 +10,17 @@ namespace GDDL.Serialization
 {
     public partial class Formatter
     {
-        public static string FormatCompact(Element e)
+        public static string FormatCompact(GddlElement e)
         {
             return Format(e, FormatterOptions.Compact);
         }
 
-        public static string FormatNice(Element e)
+        public static string FormatNice(GddlElement e)
         {
             return Format(e, FormatterOptions.Nice);
         }
 
-        public static string Format(Element e, FormatterOptions options)
+        public static string Format(GddlElement e, FormatterOptions options)
         {
             var b = new StringBuilder();
             var f = new Formatter(b, options);
@@ -84,7 +84,7 @@ namespace GDDL.Serialization
             }
         }
 
-        public void FormatStandalone(Element e)
+        public void FormatStandalone(GddlElement e)
         {
             FormatComment(e);
             FormatName(e);
@@ -93,7 +93,7 @@ namespace GDDL.Serialization
 
         private static readonly Regex CommentLineSplitter = new Regex("(?:(?:\n)|(?:\r\n))");
 
-        protected void FormatComment(Element e)
+        protected void FormatComment(GddlElement e)
         {
             if (e.HasComment && options.writeComments)
             {
@@ -117,7 +117,7 @@ namespace GDDL.Serialization
             }
         }
 
-        protected void FormatName(Element e)
+        protected void FormatName(GddlElement e)
         {
             AppendIndent();
             if (e.HasName)
@@ -130,14 +130,14 @@ namespace GDDL.Serialization
             }
         }
 
-        protected void FormatElement(Element e, bool hasNext)
+        protected void FormatElement(GddlElement e, bool hasNext)
         {
             switch (e)
             {
-                case Value v:
+                case GddlValue v:
                     FormatValue(v);
                     break;
-                case Reference r:
+                case GddlReference r:
                     FormatReference(r);
                     break;
                 case Collection c:
@@ -148,7 +148,7 @@ namespace GDDL.Serialization
             }
         }
 
-        protected void FormatValue(Value v)
+        protected void FormatValue(GddlValue v)
         {
             if (v.IsNull)
             {
@@ -359,7 +359,7 @@ namespace GDDL.Serialization
             builder.Append(l < 0 ? "-" : "+");
         }
 
-        protected void FormatReference(Reference r)
+        protected void FormatReference(GddlReference r)
         {
             int count = 0;
             foreach (string it in r.NameParts)
@@ -419,7 +419,7 @@ namespace GDDL.Serialization
             bool first = true;
             for (int i = 0; i < c.Count; i++)
             {
-                Element e = c[i];
+                GddlElement e = c[i];
                 PushIndent();
 
                 if (first && (!oneElementPerLine || options.lineBreaksAfterOpeningBrace == 0))

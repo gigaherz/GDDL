@@ -7,7 +7,7 @@ namespace GDDL.Structure
      * Represents a simple value within the GDDL hierarchy.
      * Simple values are: null, boolean false and true, strings, integers (long), and floats (double).
      */
-    public sealed class Value : Element<Value>, IEquatable<Value>
+    public sealed class GddlValue : Element<GddlValue>, IEquatable<GddlValue>
     {
         #region Factory Methods
 
@@ -15,45 +15,45 @@ namespace GDDL.Structure
          * Constructs a Value representing `null`
          * @return The value
          */
-        public static Value Null()
+        public static GddlValue Null()
         {
-            return new Value();
+            return new GddlValue();
         }
 
         /**
          * Constructs a Value representing the given boolean
          * @return The value
          */
-        public static Value Of(bool value)
+        public static GddlValue Of(bool value)
         {
-            return new Value(value);
+            return new GddlValue(value);
         }
 
         /**
          * Constructs a Value representing the given long integer
          * @return The value
          */
-        public static Value Of(long num)
+        public static GddlValue Of(long num)
         {
-            return new Value(num);
+            return new GddlValue(num);
         }
 
         /**
          * Constructs a Value representing the given floating-point number
          * @return The value
          */
-        public static Value Of(double num)
+        public static GddlValue Of(double num)
         {
-            return new Value(num);
+            return new GddlValue(num);
         }
 
         /**
          * Constructs a Value representing the given string
          * @return The value
          */
-        public static Value Of(string s)
+        public static GddlValue Of(string s)
         {
-            return new Value(s ?? "");
+            return new GddlValue(s ?? "");
         }
         #endregion
 
@@ -90,27 +90,27 @@ namespace GDDL.Structure
             set => data = value;
         }
 
-        private Value()
+        private GddlValue()
         {
             data = null;
         }
 
-        private Value(bool valueData)
+        private GddlValue(bool valueData)
         {
             data = valueData;
         }
 
-        private Value(string valueData)
+        private GddlValue(string valueData)
         {
             data = valueData;
         }
 
-        private Value(long valueData)
+        private GddlValue(long valueData)
         {
             data = valueData;
         }
 
-        private Value(double valueData)
+        private GddlValue(double valueData)
         {
             data = valueData;
         }
@@ -126,14 +126,14 @@ namespace GDDL.Structure
 
         #region Element
 
-        public override Value CopyInternal()
+        public override GddlValue CopyInternal()
         {
-            var value = new Value();
+            var value = new GddlValue();
             CopyTo(value);
             return value;
         }
 
-        protected override void CopyTo(Value other)
+        protected override void CopyTo(GddlValue other)
         {
             base.CopyTo(other);
             other.data = data;
@@ -146,17 +146,17 @@ namespace GDDL.Structure
         {
             if (other == this) return true;
             if (other == null || GetType() != other.GetType()) return false;
-            return EqualsImpl((Value)other);
+            return EqualsImpl((GddlValue)other);
         }
 
-        public override bool Equals(Value other)
+        public override bool Equals(GddlValue other)
         {
             if (other == this) return true;
             if (other == null) return false;
             return EqualsImpl(other);
         }
 
-        private bool EqualsImpl(Value other)
+        private bool EqualsImpl(GddlValue other)
         {
             return base.EqualsImpl(other) && Equals(data, other.data);
         }

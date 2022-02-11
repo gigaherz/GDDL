@@ -1,117 +1,33 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
 using GDDL.Exceptions;
 using GDDL.Structure;
 using GDDL.Util;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
-namespace GDDL
+namespace GDDL.Parsing
 {
     public sealed class Parser : IContextProvider, IDisposable
     {
-        // Factory Methods
-
-        /**
-         * Constructs a Parser instance that reads from the given filename.
-         * @param filename The filename to read from.
-         * @return A parser ready to process the file.
-         */
-        public static Parser FromFile(string filename)
-        {
-            return FromFile(filename, Encoding.UTF8);
-        }
-
-        /**
-         * Constructs a Parser instance that reads from the given filename.
-         * @param filename The filename to read from.
-         * @param charset The charset.
-         * @return A parser ready to process the file.
-         */
-        public static Parser FromFile(string filename, Encoding encoding)
-        {
-            return FromReader(new StreamReader(filename, encoding), filename);
-        }
-
-        /**
-         * Constructs a Parser instance that reads from the given file.
-         * @param file The file to read from.
-         * @return A parser ready to process the file.
-         */
-        public static Parser FromFile(FileInfo file)
-        {
-            return FromFile(file.FullName);
-        }
-
-        /**
-         * Constructs a Parser instance that reads from the given file.
-         * @param file The file to read from.
-         * @param charset The charset.
-         * @return A parser ready to process the file.
-         */
-        public static Parser FromFile(FileInfo file, Encoding encoding)
-        {
-            return FromFile(file.FullName, encoding);
-        }
-
-        /**
-         * Constructs a Parser instance that reads from the given string.
-         * @param text The text to parse.
-         * @return A parser ready to process the file.
-         */
-        public static Parser FromString(string text, string sourceName = "UNKNOWN")
-        {
-            return FromReader(new StringReader(text), sourceName);
-        }
-
-        /**
-         * Constructs a Parser instance that reads from the given reader.
-         * @param reader The stream to read from.
-         * @return A parser ready to process the file.
-         */
-        public static Parser FromReader(TextReader text, string sourceName = "UNKNOWN")
-        {
-            return new Parser(new Lexer(new Reader(text, sourceName)));
-        }
-
-        // For unit test purposes
-        public static Parser FromProvider(ITokenProvider lexer)
-        {
-            return new Parser(lexer);
-        }
-
-        // Implementation
-        int prefixPos = -1;
-        readonly Stack<int> prefixStack = new Stack<int>();
-        private bool finishedWithRBrace;
-
-        public ITokenProvider Lex { get; }
-
-        private Parser(ITokenProvider lexer)
+        #region API
+        public Parser(ITokenProvider lexer)
         {
             Lex = lexer;
         }
 
-        /**
-         * Parses the whole file and returns the resulting root element.
-         * Equivalent to {@link #parse(boolean)} with simplify=true
-         * @return The root element
-         */
-        public Element Parse()
-        {
-            return Parse(true);
-        }
+        private WhitespaceMode WhitespaceMode { get; set; }
 
+        public ITokenProvider Lex { get; }
+        
         /**
          * Parses the whole file and returns the resulting root element.
          * @param simplify If true, the structure
          * @return The root element
          */
-        public Element Parse(bool simplify)
+        public GddlDocument Parse(bool simplify = true)
         {
-            Element ret = Root();
+            var (ret, danglingComment) = Root();
 
             if (simplify)
             {
@@ -119,8 +35,18 @@ namespace GDDL
                 ret = ret.Simplify();
             }
 
-            return ret;
+            var doc = new GddlDocument(root);
+            doc.setDanglingComment(result.getValue());
+
+            return doc;
         }
+        #endregion
+
+
+        #region Implementation
+        int prefixPos = -1;
+        readonly Stack<int> prefixStack = new Stack<int>();
+        private bool finishedWithRBrace;
 
         private Token PopExpected(params TokenType[] expected)
         {
@@ -164,7 +90,7 @@ namespace GDDL
         {
             BeginPrefixScan();
             var r = HasAny(TokenType.Nil, TokenType.Null, TokenType.True, TokenType.False,
-                TokenType.HexInt, TokenType.Integer, TokenType.Double, TokenType.String);
+                TokenType.HexIntLiteral, TokenType.IntegerLiteral, TokenType.DecimalLiteral, TokenType.StringLiteral);
             EndPrefixScan();
 
             return r || PrefixReference() || PrefixCollection() || PrefixTypedCollection();
@@ -173,7 +99,7 @@ namespace GDDL
         private bool PrefixNamedElement()
         {
             BeginPrefixScan();
-            var r = HasAny(TokenType.Ident, TokenType.String) && HasAny(TokenType.EqualSign);
+            var r = HasAny(TokenType.Ident, TokenType.StringLiteral) && HasAny(TokenType.EqualSign);
             EndPrefixScan();
             return r;
         }
@@ -211,14 +137,14 @@ namespace GDDL
             return r;
         }
 
-        private Element Root()
+        private (GddlElement, string) Root()
         {
             var e = Element();
-            PopExpected(TokenType.End);
-            return e;
+            var end = PopExpected(TokenType.End);
+            return (e, end.Comment);
         }
 
-        private Element Element()
+        private GddlElement Element()
         {
             if (PrefixNamedElement()) return NamedElement();
             if (PrefixBasicElement()) return BasicElement();
@@ -226,17 +152,17 @@ namespace GDDL
             throw new ParserException(this, "Internal Error");
         }
 
-        private Element BasicElement()
+        private GddlElement BasicElement()
         {
             if (Lex.Peek() == TokenType.Nil) return NullValue(PopExpected(TokenType.Nil));
             if (Lex.Peek() == TokenType.Null) return NullValue(PopExpected(TokenType.Null));
             if (Lex.Peek() == TokenType.True) return BooleanValue(PopExpected(TokenType.True));
             if (Lex.Peek() == TokenType.False) return BooleanValue(PopExpected(TokenType.False));
-            if (Lex.Peek() == TokenType.Integer) return IntValue(PopExpected(TokenType.Integer));
-            if (Lex.Peek() == TokenType.HexInt) return IntValue(PopExpected(TokenType.HexInt), 16);
-            if (Lex.Peek() == TokenType.Integer) return IntValue(PopExpected(TokenType.Integer));
-            if (Lex.Peek() == TokenType.Double) return FloatValue(PopExpected(TokenType.Double));
-            if (Lex.Peek() == TokenType.String) return StringValue(PopExpected(TokenType.String));
+            if (Lex.Peek() == TokenType.IntegerLiteral) return IntValue(PopExpected(TokenType.IntegerLiteral));
+            if (Lex.Peek() == TokenType.HexIntLiteral) return IntValue(PopExpected(TokenType.HexIntLiteral), 16);
+            if (Lex.Peek() == TokenType.IntegerLiteral) return IntValue(PopExpected(TokenType.IntegerLiteral));
+            if (Lex.Peek() == TokenType.DecimalLiteral) return FloatValue(PopExpected(TokenType.DecimalLiteral));
+            if (Lex.Peek() == TokenType.StringLiteral) return StringValue(PopExpected(TokenType.StringLiteral));
             if (PrefixCollection()) return Set();
             if (PrefixTypedCollection()) return TypedSet();
             if (PrefixReference()) return Reference();
@@ -244,9 +170,9 @@ namespace GDDL
             throw new ParserException(this, "Internal Error");
         }
 
-        private Element NamedElement()
+        private GddlElement NamedElement()
         {
-            var name = PopExpected(TokenType.Ident, TokenType.String);
+            var name = PopExpected(TokenType.Ident, TokenType.StringLiteral);
 
             var n = name.Type == TokenType.Ident ? name.Text : UnescapeString(name);
 
@@ -263,7 +189,7 @@ namespace GDDL
             return b;
         }
 
-        private Reference Reference()
+        private GddlReference Reference()
         {
             var rooted = false;
 
@@ -276,7 +202,7 @@ namespace GDDL
                 throw new ParserException(this, $"Expected identifier, found {Lex.Peek()} instead");
 
             var name = Identifier();
-            var b = rooted ? Structure.Reference.Absolute(name.Text) : Structure.Reference.Relative(name.Text);
+            var b = rooted ? Structure.GddlReference.Absolute(name.Text) : Structure.GddlReference.Relative(name.Text);
             b.Comment = name.Comment;
 
             while (Lex.Peek() == TokenType.Colon)
@@ -344,28 +270,28 @@ namespace GDDL
             throw new ParserException(this, "Internal error");
         }
 
-        public static Value NullValue(Token token)
+        public static GddlValue NullValue(Token token)
         {
-            Value v = Value.Null();
+            GddlValue v = GddlValue.Null();
             v.Comment = token.Comment;
             return v;
         }
 
-        public static Value BooleanValue(Token token)
+        public static GddlValue BooleanValue(Token token)
         {
-            Value v = Value.Of(token.Type == TokenType.True);
+            GddlValue v = GddlValue.Of(token.Type == TokenType.True);
             v.Comment = token.Comment;
             return v;
         }
 
-        public static Value IntValue(Token token)
+        public static GddlValue IntValue(Token token)
         {
-            Value v = Value.Of(long.Parse(token.Text, CultureInfo.InvariantCulture));
+            GddlValue v = GddlValue.Of(long.Parse(token.Text, CultureInfo.InvariantCulture));
             v.Comment = token.Comment;
             return v;
         }
 
-        public static Value IntValue(Token token, int @base)
+        public static GddlValue IntValue(Token token, int @base)
         {
             if (@base != 16)
                 throw new NotImplementedException("IntValue is only implemented for base=16");
@@ -377,13 +303,13 @@ namespace GDDL
                 p++;
                 sign = -1;
             }
-            Value v = Value.Of(sign * long.Parse(s[p..],
+            GddlValue v = GddlValue.Of(sign * long.Parse(s[p..],
                 NumberStyles.HexNumber, CultureInfo.InvariantCulture));
             v.Comment = token.Comment;
             return v;
         }
 
-        public static Value FloatValue(Token token)
+        public static GddlValue FloatValue(Token token)
         {
             double value;
             switch (token.Text)
@@ -402,14 +328,14 @@ namespace GDDL
                     value = double.Parse(token.Text, CultureInfo.InvariantCulture);
                     break;
             }
-            Value v = Value.Of(value);
+            GddlValue v = GddlValue.Of(value);
             v.Comment = token.Comment;
             return v;
         }
 
-        public static Value StringValue(Token token)
+        public static GddlValue StringValue(Token token)
         {
-            Value v = Value.Of(UnescapeString(token));
+            GddlValue v = GddlValue.Of(UnescapeString(token));
             v.Comment = token.Comment;
             return v;
         }
@@ -426,11 +352,17 @@ namespace GDDL
             }
         }
 
-        public ParsingContext ParsingContext => Lex.ParsingContext;
+        #endregion
 
+        #region IContextProvider
+        public ParsingContext ParsingContext => Lex.ParsingContext;
+        #endregion
+
+        #region IDisposable
         public void Dispose()
         {
             Lex.Dispose();
         }
+        #endregion
     }
 }

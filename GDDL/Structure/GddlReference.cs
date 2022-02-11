@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace GDDL.Structure
 {
-    public sealed class Reference : Element<Reference>, IEquatable<Reference>
+    public sealed class GddlReference : Element<GddlReference>, IEquatable<GddlReference>
     {
         #region Factory Methods
 
@@ -14,9 +14,9 @@ namespace GDDL.Structure
          * @param parts The target, as an array of names of each element along the path
          * @return A Reference set to the given path
          */
-        public static Reference Absolute(params string[] parts)
+        public static GddlReference Absolute(params string[] parts)
         {
-            return new Reference(true, parts);
+            return new GddlReference(true, parts);
         }
 
         /**
@@ -24,9 +24,9 @@ namespace GDDL.Structure
          * @param parts The target, as an array of names of each element along the path
          * @return A Reference set to the given path
          */
-        public static Reference Relative(params string[] parts)
+        public static GddlReference Relative(params string[] parts)
         {
-            return new Reference(false, parts);
+            return new GddlReference(false, parts);
         }
         #endregion
 
@@ -34,19 +34,19 @@ namespace GDDL.Structure
         private readonly List<string> nameParts = new List<string>();
 
         private bool resolved;
-        private Element resolvedValue;
+        private GddlElement resolvedValue;
 
         public bool Rooted { get; }
 
         public override bool IsResolved => resolved;
-        public override Element ResolvedValue => resolvedValue;
+        public override GddlElement ResolvedValue => resolvedValue;
 
         /**
          * @return The current path of this reference
          */
         public IList<string> NameParts => nameParts.AsReadOnly();
 
-        private Reference(bool rooted, params string[] parts)
+        private GddlReference(bool rooted, params string[] parts)
         {
             Rooted = rooted;
             nameParts.AddRange(parts);
@@ -73,20 +73,20 @@ namespace GDDL.Structure
 
         #region Element
 
-        public override Reference CopyInternal()
+        public override GddlReference CopyInternal()
         {
-            var reference = new Reference(Rooted);
+            var reference = new GddlReference(Rooted);
             CopyTo(reference);
             return reference;
         }
 
-        protected override void CopyTo(Reference other)
+        protected override void CopyTo(GddlReference other)
         {
             base.CopyTo(other);
             other.AddRange(nameParts);
         }
 
-        public override void Resolve(Element root, [MaybeNull] Collection parent)
+        public override void Resolve(GddlElement root, [MaybeNull] Collection parent)
         {
             if (IsResolved)
                 return;
@@ -100,9 +100,9 @@ namespace GDDL.Structure
             resolved = TryResolve(root, parent, false);
         }
 
-        private bool TryResolve(Element root, [MaybeNull] Collection parent, bool relative)
+        private bool TryResolve(GddlElement root, [MaybeNull] Collection parent, bool relative)
         {
-            var target = relative ? (Element)parent ?? this : root;
+            var target = relative ? (GddlElement)parent ?? this : root;
 
             bool parentRoot = target.HasName && nameParts[0] == target.Name;
 
@@ -131,7 +131,7 @@ namespace GDDL.Structure
             return resolvedValue != null;
         }
 
-        public override Element Simplify()
+        public override GddlElement Simplify()
         {
             if (!resolved || resolvedValue == null)
                 return this;
@@ -148,17 +148,17 @@ namespace GDDL.Structure
         {
             if (other == this) return true;
             if (other == null || GetType() != other.GetType()) return false;
-            return EqualsImpl((Reference)other);
+            return EqualsImpl((GddlReference)other);
         }
 
-        public override bool Equals(Reference other)
+        public override bool Equals(GddlReference other)
         {
             if (other == this) return true;
             if (other == null) return false;
             return EqualsImpl(other);
         }
 
-        private bool EqualsImpl(Reference other)
+        private bool EqualsImpl(GddlReference other)
         {
             return base.EqualsImpl(other) &&
                 Rooted == other.Rooted &&

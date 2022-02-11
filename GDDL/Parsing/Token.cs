@@ -1,17 +1,19 @@
 using System;
 
-namespace GDDL
+namespace GDDL.Parsing
 {
     public class Token : IContextProvider, IEquatable<Token>
     {
         public readonly string Comment;
+        public readonly string Whitespace;
         public readonly TokenType Type;
         public readonly string Text;
         public ParsingContext ParsingContext { get; }
 
-        public Token(TokenType name, string text, IContextProvider context, string comment)
+        public Token(TokenType name, string text, IContextProvider context, string comment, string whitespace)
         {
             Comment = comment;
+            Whitespace = whitespace;
             Type = name;
             Text = text;
             ParsingContext = context.ParsingContext;

@@ -1,7 +1,7 @@
 
 using System;
 
-namespace GDDL
+namespace GDDL.Parsing
 {
     public class ParsingContext : IEquatable<ParsingContext>, IContextProvider
     {

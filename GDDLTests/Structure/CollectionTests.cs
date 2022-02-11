@@ -20,16 +20,16 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CollectionOfAddsElements()
         {
-            Collection collection = Collection.Of(Value.Of(1));
+            Collection collection = Collection.Of(GddlValue.Of(1));
             Assert.AreEqual(1, collection.Count);
         }
 
         [TestMethod]
         public void CollectionOfAddsNames()
         {
-            var named = Value.Of(true).WithName("test");
+            var named = GddlValue.Of(true).WithName("test");
             Collection collection = Collection.Of(named);
-            List<Element> l = collection.ByName("test").ToList();
+            List<GddlElement> l = collection.ByName("test").ToList();
             Assert.AreEqual(1, l.Count);
             Assert.AreEqual(l[0], named);
         }
@@ -39,18 +39,18 @@ namespace GDDL.Tests.Structure
         {
             Collection collection = Collection.Empty();
             Assert.AreEqual(0, collection.Count);
-            collection.Add(Value.Of(1));
+            collection.Add(GddlValue.Of(1));
             Assert.AreEqual(1, collection.Count);
         }
 
         [TestMethod]
         public void CollectionAddAddsNames()
         {
-            var named = Value.Of(1).WithName("test");
+            var named = GddlValue.Of(1).WithName("test");
             Collection collection = Collection.Empty();
             Assert.AreEqual(0, collection.Count);
             collection.Add(named);
-            List<Element> l = collection.ByName("test").ToList();
+            List<GddlElement> l = collection.ByName("test").ToList();
             Assert.AreEqual(1, l.Count);
             Assert.AreEqual(l[0], named);
         }
@@ -60,24 +60,24 @@ namespace GDDL.Tests.Structure
         {
             Collection collection = Collection.Empty();
             Assert.AreEqual(0, collection.Count);
-            collection.AddRange(new Element[] { Value.Of(1), Value.Of(2), Value.Of(3) });
+            collection.AddRange(new GddlElement[] { GddlValue.Of(1), GddlValue.Of(2), GddlValue.Of(3) });
             Assert.AreEqual(3, collection.Count);
         }
 
         [TestMethod]
         public void CollectionGetReturnsElements()
         {
-            Value second = Value.Of(2);
-            Collection collection = Collection.Of(Value.Of(1), second, Value.Of(3));
+            GddlValue second = GddlValue.Of(2);
+            Collection collection = Collection.Of(GddlValue.Of(1), second, GddlValue.Of(3));
             Assert.AreEqual(second, collection[1]);
         }
 
         [TestMethod]
         public void CollectionInsertInsertsElements()
         {
-            Value second = Value.Of(2);
-            Value third = Value.Of(3);
-            Collection collection = Collection.Of(Value.Of(1), second, Value.Of(4));
+            GddlValue second = GddlValue.Of(2);
+            GddlValue third = GddlValue.Of(3);
+            Collection collection = Collection.Of(GddlValue.Of(1), second, GddlValue.Of(4));
             Assert.AreEqual(second, collection[1]);
             collection.Insert(1, third);
             Assert.AreEqual(third, collection[1]);
@@ -86,8 +86,8 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CollectionRemoveElementRemovesElements()
         {
-            Value first = Value.Of(1);
-            Value second = Value.Of("test");
+            GddlValue first = GddlValue.Of(1);
+            GddlValue second = GddlValue.Of("test");
             Collection collection = Collection.Of(first, second);
             Assert.AreEqual(2, collection.Count);
             collection.Remove(second);
@@ -98,8 +98,8 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CollectionRemoveIndexRemovesElements()
         {
-            Value second = Value.Of("test");
-            Collection collection = Collection.Of(Value.Of(1), second);
+            GddlValue second = GddlValue.Of("test");
+            Collection collection = Collection.Of(GddlValue.Of(1), second);
             Assert.AreEqual(2, collection.Count);
             collection.RemoveAt(0);
             Assert.AreEqual(1, collection.Count);
@@ -109,26 +109,26 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CollectionRemoveElementRemovesNames()
         {
-            Value first = Value.Of(1);
-            Value second = Value.Of("test");
+            GddlValue first = GddlValue.Of(1);
+            GddlValue second = GddlValue.Of("test");
             Collection collection = Collection.Of(first, second);
             Assert.AreEqual(2, collection.Count);
             collection.Remove(second);
             Assert.AreEqual(1, collection.Count);
             Assert.AreEqual(first, collection[0]);
-            List<Element> byName = collection.ByName("test").ToList();
+            List<GddlElement> byName = collection.ByName("test").ToList();
             Assert.AreEqual(0, byName.Count);
         }
 
         [TestMethod]
         public void CollectionRemoveIndexRemovesNames()
         {
-            Value named = Value.Of("test").WithName("test");
-            Collection collection = Collection.Of(named, Value.Of(1));
+            GddlValue named = GddlValue.Of("test").WithName("test");
+            Collection collection = Collection.Of(named, GddlValue.Of(1));
             Assert.AreEqual(2, collection.Count);
             collection.RemoveAt(0);
             Assert.AreEqual(1, collection.Count);
-            List<Element> byName = collection.ByName("test").ToList();
+            List<GddlElement> byName = collection.ByName("test").ToList();
             Assert.AreEqual(0, byName.Count);
         }
     }

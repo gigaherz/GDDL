@@ -4,7 +4,7 @@ using System.Text;
 using GDDL.Exceptions;
 using GDDL.Util;
 
-namespace GDDL
+namespace GDDL.Parsing
 {
     public sealed class Reader : IContextProvider, IDisposable
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GDDL
+namespace GDDL.Parsing
 {
     public interface ITokenProvider : IContextProvider, IDisposable
     {

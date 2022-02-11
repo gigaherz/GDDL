@@ -1,5 +1,5 @@
 
-namespace GDDL
+namespace GDDL.Parsing
 {
     public interface IContextProvider
     {
