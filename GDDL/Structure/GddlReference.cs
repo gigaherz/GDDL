@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GDDL.Util;
 
 namespace GDDL.Structure
 {
@@ -190,7 +191,7 @@ namespace GDDL.Structure
         {
             return base.EqualsImpl(other) &&
                 Rooted == other.Rooted &&
-                Equals(nameParts, other.nameParts) &&
+                Utility.ListEquals(nameParts, other.nameParts) &&
                 (IsResolved
                     ? other.IsResolved && Equals(ResolvedValue, other.ResolvedValue)
                     : !other.IsResolved);

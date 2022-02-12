@@ -111,6 +111,11 @@ namespace GDDL.Structure
             foreach (var e in contents.Values) OnRemove(e);
             contents.Clear();
         }
+
+        public override int GetFormattingComplexity()
+        {
+            return 2 + contents.Values.Sum(e => e.GetFormattingComplexity());
+        }
         #endregion
 
         #region Implementation
@@ -241,9 +246,25 @@ namespace GDDL.Structure
 
         private bool EqualsImpl(GddlMap other)
         {
-            return base.EqualsImpl(other) &&
-                Equals(contents, other.contents) &&
-                Equals(typeName, other.typeName);
+            if (!base.EqualsImpl(other))
+                return false;
+
+            if (!Equals(typeName, other.typeName))
+                return false;
+
+            if (contents.Count != other.contents.Count)
+                return false;
+
+            foreach (var (k,v) in contents)
+            {
+                if (!other.contents.TryGetValue(k, out var v2))
+                    return false;
+
+                if (!Equals(v, v2))
+                    return false;
+            }
+
+            return true;
         }
 
         public override int GetHashCode()

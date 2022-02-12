@@ -1,8 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GDDL;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using GDDL.Parsing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
 namespace GDDL.Tests

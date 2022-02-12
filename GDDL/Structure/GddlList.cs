@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using GDDL.Util;
 
 namespace GDDL.Structure
 {
@@ -103,6 +104,11 @@ namespace GDDL.Structure
             foreach(var e in contents) OnRemove(e);
             contents.Clear();
         }
+
+        public override int GetFormattingComplexity()
+        {
+            return 2 + contents.Sum(e => e.GetFormattingComplexity());
+        }
         #endregion
 
         #region Implementation
@@ -201,8 +207,10 @@ namespace GDDL.Structure
 
         private bool EqualsImpl(GddlList other)
         {
-            return base.EqualsImpl(other) &&
-                   Equals(contents, other.contents);
+            if (!base.EqualsImpl(other))
+                return false;
+
+            return Utility.ListEquals(contents, other.contents);
         }
 
         public override int GetHashCode()

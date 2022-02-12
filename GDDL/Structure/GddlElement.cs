@@ -59,6 +59,11 @@ namespace GDDL.Structure
         {
             return CopyBridge();
         }
+
+        public virtual int GetFormattingComplexity()
+        {
+            return 1;
+        }
         #endregion
 
         #region ToString
@@ -73,7 +78,7 @@ namespace GDDL.Structure
 
         protected bool EqualsImpl(GddlElement other)
         {
-            return (string.IsNullOrEmpty(Comment) && string.IsNullOrEmpty(other.Comment)) || Equals(Comment, other.Comment);
+            return !(HasComment || other.HasComment) || Equals(Comment, other.Comment);
         }
 
         public override int GetHashCode()

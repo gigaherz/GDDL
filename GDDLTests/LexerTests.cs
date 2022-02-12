@@ -1,9 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GDDL;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
+using GDDL.Parsing;
 
 namespace GDDL.Tests
 {
@@ -145,22 +142,22 @@ namespace GDDL.Tests
 
         public static Token TokenInt(string number)
         {
-            return Token(TokenType.Integer, number);
+            return Token(TokenType.IntegerLiteral, number);
         }
 
         public static Token TokenFloat(string number)
         {
-            return Token(TokenType.Double, number);
+            return Token(TokenType.DecimalLiteral, number);
         }
 
         public static Token TokenHexInt(string number)
         {
-            return Token(TokenType.HexInt, number);
+            return Token(TokenType.HexIntLiteral, number);
         }
 
         public static Token TokenString(string text)
         {
-            return Token(TokenType.String, text);
+            return Token(TokenType.StringLiteral, text);
         }
 
         public static Token TokenBooleanTrue()
@@ -210,7 +207,7 @@ namespace GDDL.Tests
 
         public static Token TokenIdentifier(string text)
         {
-            return Token(TokenType.Ident, text);
+            return Token(TokenType.Identifier, text);
         }
 
         public static Token Token(TokenType name, string text)
@@ -220,13 +217,17 @@ namespace GDDL.Tests
 
         public static Token Token(TokenType name, string text, ParsingContext context)
         {
-            return Token(name, text, context, "");
+            return Token(name, text, context, "", "");
         }
 
         public static Token Token(TokenType name, string text, ParsingContext context, string comment)
         {
-            return new Token(name, text, context, comment);
+            return Token(name, text, context, comment, "");
         }
 
+        public static Token Token(TokenType name, string text, ParsingContext context, string comment, string whitespace)
+        {
+            return new Token(name, text, context, comment, whitespace);
+        }
     }
 }

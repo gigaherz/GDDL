@@ -126,7 +126,7 @@ namespace GDDL.Parsing
         private bool PrefixReference()
         {
             BeginPrefixScan();
-            var r = HasAny(TokenType.Colon) && HasAny(TokenType.Identifier);
+            var r = HasAny(TokenType.Colon, TokenType.Slash) && HasAny(TokenType.Identifier);
             EndPrefixScan();
 
             return r || PrefixIdentifier();

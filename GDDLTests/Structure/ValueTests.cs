@@ -153,7 +153,7 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            v.AsBoolean = false;
+            v.SetBool(false);
             Assert.IsFalse(v.IsNull);
             Assert.IsFalse(v.AsBoolean);
         }
@@ -163,7 +163,7 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            v.AsInteger = 1;
+            v.SetInt(1);
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1, v.AsInteger);
         }
@@ -173,7 +173,7 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            v.AsDouble = 1;
+            v.SetDouble(1);
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1, v.AsDouble, 1E-10);
         }
@@ -183,7 +183,7 @@ namespace GDDL.Tests.Structure
         {
             GddlValue v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            v.AsString = "a";
+            v.SetString("a");
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual("a", v.AsString);
         }

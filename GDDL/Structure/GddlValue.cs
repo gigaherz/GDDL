@@ -73,22 +73,22 @@ namespace GDDL.Structure
         public override bool IsString => data is string;
         public override string AsString => (string)Utility.RequireNotNull(data);
 
-        public void Set(string value)
+        public void SetString(string value)
         {
             data = Utility.RequireNotNull(value);
         }
 
-        public void Set(int value)
+        public void SetInt(long value)
         {
             data = value;
         }
 
-        public void Set(double value)
+        public void SetDouble(double value)
         {
             data = value;
         }
 
-        public void Set(bool value)
+        public void SetBool(bool value)
         {
             data = value;
         }

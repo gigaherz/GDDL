@@ -41,7 +41,7 @@ namespace GDDL.Tests.Structure
             GddlReference r = GddlReference.Relative("child");
             parent.Add("reference", r);
             r.Resolve(root);
-            Assert.AreEqual(absoluteChild, r.ResolvedValue);
+            Assert.AreEqual(relativeChild, r.ResolvedValue);
         }
 
         [TestMethod]
@@ -54,7 +54,7 @@ namespace GDDL.Tests.Structure
             GddlReference r = GddlReference.Relative("parent", "child");
             parent.Add("reference", r);
             r.Resolve(root);
-            Assert.AreEqual(absoluteChild, r.ResolvedValue);
+            Assert.AreEqual(relativeChild, r.ResolvedValue);
         }
     }
 }

@@ -247,7 +247,7 @@ namespace GDDL.Serialization
 
             public Builder AlwaysShowExponentSign(bool alwaysShowExponentSign)
             {
-                this._alwaysShowExponentSign = alwaysShowExponentSign;
+                this.alwaysShowExponentSign = alwaysShowExponentSign;
                 return this;
             }
 

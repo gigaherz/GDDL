@@ -455,9 +455,9 @@ namespace GDDL.Serialization
                     {
                         builder.Append('\n');
                     }
-                    else if (options.spacesBetweenElements > 0)
+                    else
                     {
-                        AppendMultiple(' ', options.spacesBetweenElements);
+                        AppendMultiple(' ', options.spacesAfterComma);
                     }
 
                     if (!oneElementPerLine)
@@ -518,7 +518,7 @@ namespace GDDL.Serialization
             PopIndent();
         }
 
-        protected void Formatlist(GddlList c, bool hasNext0)
+        protected void FormatList(GddlList c, bool hasNext0)
         {
             PushIndent();
 

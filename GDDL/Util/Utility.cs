@@ -325,5 +325,19 @@ namespace GDDL.Util
                 throw new NullReferenceException();
             return (T)obj;
         }
+
+        public static bool ListEquals<T>(List<T> a, List<T> b)
+        {
+            if (a.Count != b.Count)
+                return false;
+
+            for (int i = 0; i < a.Count; i++)
+            {
+                if (!Equals(a[i], b[i]))
+                    return false;
+            }
+
+            return true;
+        }
     }
 }
