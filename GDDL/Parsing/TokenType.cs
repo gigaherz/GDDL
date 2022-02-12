@@ -28,6 +28,7 @@ namespace GDDL.Parsing
         True,
         False,
 
+        // Type Identifiers
         Boolean,
         String,
         Integer,

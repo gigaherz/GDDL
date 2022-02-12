@@ -10,6 +10,8 @@ namespace GDDL.Parsing
         public readonly string Text;
         public ParsingContext ParsingContext { get; }
 
+        public Token Parent { get; set; }
+
         public Token(TokenType name, string text, IContextProvider context, string comment, string whitespace)
         {
             Comment = comment;
@@ -17,6 +19,11 @@ namespace GDDL.Parsing
             Type = name;
             Text = text;
             ParsingContext = context.ParsingContext;
+        }
+
+        public Token Specialize(TokenType child)
+        {
+            return new Token(child, Text, this, Comment, Whitespace) { Parent = this };
         }
 
         public override string ToString()
@@ -55,6 +62,11 @@ namespace GDDL.Parsing
         public override int GetHashCode()
         {
             return HashCode.Combine(Type, Text, ParsingContext, Comment);
+        }
+
+        public bool Is(TokenType tokenType)
+        {
+            return Type == tokenType || (Parent != null && Parent.Is(tokenType));
         }
     }
 }

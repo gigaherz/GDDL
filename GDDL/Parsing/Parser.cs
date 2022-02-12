@@ -61,6 +61,18 @@ namespace GDDL.Parsing
             throw new ParserException(this, $"Unexpected token {current}. Expected: {expected[0]}.");
         }
 
+        private Token PopExpectedWithParent(params TokenType[] expected)
+        {
+            var current = Lexer.PeekFull();
+            if (expected.Any(t => current.Is(t)))
+                return Lexer.Pop();
+
+            if (expected.Length != 1)
+                throw new ParserException(this, $"Unexpected token {current}. Expected one of: {string.Join(", ", expected)}.");
+
+            throw new ParserException(this, $"Unexpected token {current}. Expected: {expected[0]}.");
+        }
+
         public void BeginPrefixScan()
         {
             prefixStack.Push(prefixPos);
@@ -115,7 +127,7 @@ namespace GDDL.Parsing
             if (PrefixList()) return List();
             if (PrefixReference()) return Reference();
 
-            throw new ParserException(this, "Internal Error");
+            throw new ParserException(this, $"Internal Error: Token {Lexer.Peek()} did not correspond to any code path.");
         }
 
         private Token Name()
@@ -126,7 +138,7 @@ namespace GDDL.Parsing
         private bool PrefixReference()
         {
             BeginPrefixScan();
-            var r = HasAny(TokenType.Colon, TokenType.Slash) && HasAny(TokenType.Identifier);
+            var r = HasAny(TokenType.Colon, TokenType.Slash) && HasAny(TokenType.Identifier, TokenType.StringLiteral);
             EndPrefixScan();
 
             return r || PrefixIdentifier();
@@ -187,9 +199,9 @@ namespace GDDL.Parsing
             {
                 finishedWithRBrace = false;
 
-                var name = PopExpected(TokenType.Identifier, TokenType.StringLiteral);
+                var name = PopExpectedWithParent(TokenType.Identifier, TokenType.StringLiteral);
 
-                String n = name.Type == TokenType.Identifier ? name.Text : UnescapeString(name);
+                string n = name.Type == TokenType.StringLiteral ? UnescapeString(name) : name.Text;
 
                 PopExpected(TokenType.EqualSign, TokenType.Colon);
 

@@ -457,6 +457,11 @@ namespace GDDL.Tests
                 return Get(index).Type;
             }
 
+            public Token PeekFull()
+            {
+                return Get(index);
+            }
+
             public Token Pop()
             {
                 Token t = Get(0);

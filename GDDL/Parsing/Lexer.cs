@@ -29,6 +29,13 @@ namespace GDDL.Parsing
             return lookAhead[0].Type;
         }
 
+        public Token PeekFull()
+        {
+            Require(1);
+
+            return lookAhead[0];
+        }
+
         public Token Pop()
         {
             Require(2);
@@ -129,22 +136,14 @@ namespace GDDL.Parsing
 
                 var id = new Token(TokenType.Identifier, reader.Read(number), startContext, comment, whitespace);
 
-                if (id.Text.CompareOrdinalIgnoreCase("nil") == 0) 
-                    return new Token(TokenType.Nil, id.Text, id, comment, whitespace);
-                if (id.Text.CompareOrdinalIgnoreCase("null") == 0)
-                    return new Token(TokenType.Null, id.Text, id, comment, whitespace);
-                if (id.Text.CompareOrdinalIgnoreCase("true") == 0)
-                    return new Token(TokenType.True, id.Text, id, comment, whitespace);
-                if (id.Text.CompareOrdinalIgnoreCase("false") == 0)
-                    return new Token(TokenType.False, id.Text, id, comment, whitespace);
-                if (id.Text.CompareOrdinalIgnoreCase("boolean") == 0)
-                    return new Token(TokenType.Boolean, id.Text, id, comment, whitespace);
-                if (id.Text.CompareOrdinalIgnoreCase("string") == 0)
-                    return new Token(TokenType.String, id.Text, id, comment, whitespace);
-                if (id.Text.CompareOrdinalIgnoreCase("integer") == 0)
-                    return new Token(TokenType.Integer, id.Text, id, comment, whitespace);
-                if (id.Text.CompareOrdinalIgnoreCase("decimal") == 0)
-                    return new Token(TokenType.Decimal, id.Text, id, comment, whitespace);
+                if (id.Text.CompareOrdinalIgnoreCase("nil") == 0) return id.Specialize(TokenType.Nil);
+                if (id.Text.CompareOrdinalIgnoreCase("null") == 0) return id.Specialize(TokenType.Null);
+                if (id.Text.CompareOrdinalIgnoreCase("true") == 0) return id.Specialize(TokenType.True);
+                if (id.Text.CompareOrdinalIgnoreCase("false") == 0) return id.Specialize(TokenType.False);
+                if (id.Text.CompareOrdinalIgnoreCase("boolean") == 0) return id.Specialize(TokenType.Boolean);
+                if (id.Text.CompareOrdinalIgnoreCase("string") == 0) return id.Specialize(TokenType.String);
+                if (id.Text.CompareOrdinalIgnoreCase("integer") == 0) return id.Specialize(TokenType.Integer);
+                if (id.Text.CompareOrdinalIgnoreCase("decimal") == 0) return id.Specialize(TokenType.Decimal);
 
                 return id;
             }

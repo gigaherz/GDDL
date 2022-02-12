@@ -1,68 +1,96 @@
-﻿RootSetName = typeNameHere {
+﻿typeNameHere {
 
-    # Basic elements
+    "Basic elements" = [
+        null, nil,
+        false, true,
+        12345,
+        0x12345,
+        123.45,
+        123e+45,
+        .23,
+        .23e45,
+        12.34e-5,
+        -12345,
+        -123.45,
+        -123e+45,
+        -.23,
+        -.23e45,
+        -12.34e-5,
+        .NaN,
+        .Inf,
+        -.Inf,
+        +.Inf,
+        "This is a string literal",
+        "Testing \t\f\b\r\n escape\x20codes\u1234",
+        'Strings can also be single-quoted.',
+        "unicode !ℝ   ∞    -∞    +∞",
+    
+        # Lists
+        [],
+        [ null ],
+        [ false ],
+        [ 12345 ],
+        [ 0x12345 ],
+        [ 123.45 ],
+        [ 123e+45 ],
+        [ .23 ],
+        [ .23e45 ],
+        [ 12.34e-5 ],
+        [ "This is a string literal" ],
+        [ "Testing \t\f\b\r\n escape\x20codes\u1234" ],
+        [ 'Strings can also be single-quoted.' ],
+    
+        # The comma is optional after a closing brace
+        [ 1,2,3,4,5 ]
+    
+        # Special cases
+        [],
+        [[]],
+        [[], []],
+        [[] []],
 
-    null, nil,
-    false, true,
-    12345,
-    -12345,
-    0x12345,
-    -0x12345,
-    123.45,
-    123e+45,
-    .23,
-    .23e45,
-    12.34e-5,
-    -12.34e+5,
-    "This is a string literal",
-    "Testing \t\f\b\r\n escape\x20codes\u1234",
-    'Strings can also be single-quoted.',
+        # Maps
+        { value = null },
+        { value = false },
+        { value = 12345 },
+        { value = 0x12345 },
+        { value = 123.45 },
+        { value = 123e+45 },
+        { value = .23 },
+        { value = .23e45 },
+        { value = 12.34e-5 },
+        { value = "This is a string literal" },
+        { value = "Testing \t\f\b\r\n escape\x20codes\u1234" },
+        { value = 'Strings can also be single-quoted.' },
 
-    # Sets
-    {},
-    { null },
-    { false },
-    { 12345 },
-    { 0x12345 },
-    { 123.45 },
-    { 123e+45 },
-    { .23 },
-    { .23e45 },
-    { 12.34e-5 },
-    { "This is a string literal" },
-    { "Testing \t\f\b\r\n escape\x20codes\u1234" },
-    { 'Strings can also be single-quoted.' },
+        { }
+        { v = {} }
+        { v = { }, v2 = { } }
+        { v = { } v2 = { } }
 
-    # The comma is optional after a closing brace
-    { 1,2,3,4,5 }
-
-    # Special cases
-    {},
-    {{}},
-    {{}, {}},
-    {{} {}},
-
-    # Typed Sets
-    typeName { null },
-    typeName { false },
-    typeName { 12345 },
-    typeName { 0x12345 },
-    typeName { 123.45 },
-    typeName { 123e+45 },
-    typeName { .23 },
-    typeName { .23e45 },
-    typeName { 12.34e-5 },
-    typeName { "This is a string literal" },
-    typeName { "Testing \t\f\b\r\n escape\x20codes\u1234" },
-    typeName { 'Strings can also be single-quoted.' },
-
-    typeName { }
-    typeName { {} }
-    { typeName { } }
+        # Typed Maps (Objects)
+        typeName { value = null },
+        typeName { value = false },
+        typeName { value = 12345 },
+        typeName { value = 0x12345 },
+        typeName { value = 123.45 },
+        typeName { value = 123e+45 },
+        typeName { value = .23 },
+        typeName { value = .23e45 },
+        typeName { value = 12.34e-5 },
+        typeName { value = "This is a string literal" },
+        typeName { value = "Testing \t\f\b\r\n escape\x20codes\u1234" },
+        typeName { value = 'Strings can also be single-quoted.' },
+    
+        typeName { }
+        typeName { v = {} }
+        [ typeName { } ]
+        { v = typeName { } }
+    ]
 
     # Named elements
-    nullValue = null,
-    booleanValue = false,
+    null = null,
+    boolean = false,
     integer = 12345,
     hex = 0x12345,
     decimal = 123.45,
@@ -74,12 +102,15 @@
     singleQuoted = 'Strings can also be single-quoted.',
     "-∞" = -.Inf,
 
-    "named set" = { "a", { 1 }, 0x345 },
-    namedTypedSet = set_with_a_type { "\u0001" }
+    "named list" = [ "a", [ 1 ], 0x345 ],
+    namedTypedMap = map_with_a_type { value = "\u0001" }
     
     # References
     
-    replace_this_with = RootSetName:namedNumber,
+    replace_this_with = stringLiteral,
+    slash_reference = /namedTypedMap/value,
+    # NOT YET IMPLEMENTED
+    #array_reference = /"named list"/[1..2],
 
     # The comma in the last element is optional but allowed.
 }

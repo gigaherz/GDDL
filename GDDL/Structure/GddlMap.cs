@@ -220,7 +220,7 @@ namespace GDDL.Structure
 
         public override GddlElement Simplify()
         {
-            foreach (var name in contents.Keys)
+            foreach (var name in contents.Keys.ToList())
             {
                 contents[name] = contents[name].Simplify();
             }
