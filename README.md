@@ -10,40 +10,39 @@ A complete example
 --------------------
 
 ```
-RootSetName = typeNameHere {
+typedMap {
 
-    # Basic elements
+    "Basic elements" = [
+        null, nil,
+        false, true,
+        12345,
+        0x12345,
+        123.45,
+        123e+45,
+        .23,
+        .23e45,
+        12.34e-5,
+        "This is a string literal",
+        "Testing \t\f\b\r\n escape\x20codes\u1234",
+        'Strings can also be single-quoted.'
+    ],
 
-    null, nil,
-    false, true,
-    12345,
-    0x12345,
-    123.45,
-    123e+45,
-    .23,
-    .23e45,
-    12.34e-5,
-    "This is a string literal",
-    "Testing \t\f\b\r\n escape\x20codes\u1234",
-    'Strings can also be single-quoted.',
+    [ 1,2,3,4,5 ] # the comma is optional after a closing brace/bracket
 
-    { 1,2,3,4,5 } # the comma is optional after a closing brace
+    "Named elements" = {  
+        namedNumber = 12345,
+        namedString = "12345",
+    
+        # Named sets
+    
+        "named collection" = [ "a", { 1 }, 0x345 ],
+        namedTypedSet = set_with_a_type { a = "\u0001" }
+    
+        # References
 
-    # Named elements
-
-    namedNumber = 12345,
-    namedString = "12345",
-
-    # Named sets
-
-    "named collection" = { "a", { 1 }, 0x345 },
-    namedTypedSet = set_with_a_type { "\u0001" }
-
-    # References
-
-    replace_this_with = RootSetName:namedNumber,
-
-    # The comma in the last element is optional but allowed.
+        # The comma in the last element is optional but allowed.
+        replace_this_with = RootSetName:namedNumber,
+    }
 }
 
 ```
@@ -51,51 +50,66 @@ RootSetName = typeNameHere {
 Syntax
 -------
 
-Literals:
+Because eBNF has an infinity of established conventions, here's mine:
+* The `grammar` rule defines the start point
+* Equals sign (`=`) declares a rule
+* The vertical bar (`|`) defines alternatives
+* Square brackets (`[]`) define optional sections
+* Square brackets (`{}}`) define repeats (0 or more)
+* Parentheses (`()`) define groups
+* Double quotes (`""`) define a terminal string
+* Backticks ( ` ) define a regex terminal
+* `#` starts a comment
 
-* nil: ```nil``` or ```null```
-* boolean: ```true``` and ```false```
-* identifier: ```[a-zA-Z_][a-zA-Z_0-9]*```
-* integer: ```[0-9]+```
-* hex-integer: ```0x[0-9a-fA-F]*```
-* decimal: ```[0-9]*.[0-9]+```
-* scientific(1): ```[0-9]*.[0-9]+e[+-]?[0-9]+```
-* scientific(2): ```[0-9]+e[+-]?[0-9]+```
-* string(1): ```\"([^"\\]|(\\[tbrn])|(\\x[0-9a-fA-F]{1,4}))*\"```
-* string(2): ```\'([^'\\]|(\\[tbrn])|(\\x[0-9a-fA-F]{1,4}))*\'```
-
-eBNF rules:
+### eBNF grammar (as defined above)
 
 ```ebnf
-root = element ;
 
-element = named-element
-        | basic-element  
-        ;
+grammar = element ;
 
-name = identifier | string ;
+# Rules 
+element         = value | map | list | reference ;
 
-named-element = name, '=', basic-element ;
+value           = nil | boolean | integer | hex_integer | decimal | scientific | string ;
 
-basic-element = value | collection | reference ;
+map             = [ identifier ] "{" [ key_value_list ] "}" ;
 
-reference = identifier-list
-          | ':' identifier-list
-          ;
+key_value_list  = (identifier | string) "="
+                ( element [ "," ]     
+                | element "," key_value_list
+                | list key_value_list
+                | map key_value_list
+                ) ;
 
-identifier-list = identifier
-                | identifier ':' identifier-list
+name            = (identifier | string) "=";
+
+list            = "[" [ element_list ] "]" ;
+
+element_list    = element [ "," ]
+                | element "," element_list
+                | list element_list
+                | map element_list
                 ;
 
-collection = [ identifier ], '{', element-list, '}' ;
+reference       = nonstring_part | colon_path | slash_path ;
+colon_path      = [ path_part ] ":" path_part { ":" path_part } ;
+slash_path      = [ path_part ] "/" path_part { "/" path_part } ;
+path_part       = nonstring_part | string;
+nonstring_part  = "." | ".." | identifier | string;
 
-element-list = element, [ ',' ]
-             | element, ',', element-list
-             | collection, element-list
-             ;
-
-value = integer | hex-integer | decimal | scientific | string ;
-
+# Terminals
+nil             = "nil" | "null" ;
+boolean         = "true" | "false" ;
+integer         = `[0-9]+` ;
+hex_integer     = `0x[0-9a-fA-F]*` ;
+decimal         = `[0-9]*.[0-9]+` ;
+scientific      = `[0-9]*.[0-9]+e[+-]?[0-9]+`
+                | `[0-9]+e[+-]?[0-9]+`
+                ;
+string          = `\"([^"\\]|(\\[tbrn])|(\\x[0-9a-fA-F]{1,4}))*\"`
+                | `\'([^'\\]|(\\[tbrn])|(\\x[0-9a-fA-F]{1,4}))*\'`
+                ;
+identifier      = `[a-zA-Z_][a-zA-Z_0-9]*` ;
 ```
 
 "What did I just read?", or, "Syntax the nice and easy way"

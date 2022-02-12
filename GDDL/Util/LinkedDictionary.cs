@@ -9,8 +9,6 @@ namespace GDDL.Util
     {
         public LinkedDictionary()
         {
-            Keys = new KeyView(this);
-            Values = new ValueView(this);
         }
 
         public LinkedDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values)
@@ -38,8 +36,11 @@ namespace GDDL.Util
             }
         }
 
-        public ICollection<TKey> Keys { get; }
-        public ICollection<TValue> Values { get; }
+        private KeyView _keys;
+        public ICollection<TKey> Keys => _keys ??= new KeyView(this);
+
+        private ValueView _values;
+        public ICollection<TValue> Values => _values ??= new ValueView(this);
 
         public void Add(TKey key, TValue value)
         {
