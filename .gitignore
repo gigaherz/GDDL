@@ -10,3 +10,7 @@
 *.user
 *.suo
 *.nupkg
+
+/Make Package.cmd
+/Output-Build.txt
+/nuget.exe
