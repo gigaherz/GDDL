@@ -438,7 +438,7 @@ namespace GDDL.Serialization
 
             bool first = true;
             List<string> keys = new List<string>(c.Keys);
-            keys.Sort(string.Compare);
+            if (options.sortMapKeys) keys.Sort(string.Compare);
             for (int i = 0; i < keys.Count; i++)
             {
                 string key = keys[i];

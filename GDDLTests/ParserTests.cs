@@ -429,7 +429,7 @@ namespace GDDL.Tests
         private sealed class MockLexer : ITokenProvider
         {
             public readonly IReadOnlyList<Token> preparedTokens;
-            public int index = 0;
+            public int current = 0;
             public bool closed = false;
 
             public MockLexer(IReadOnlyList<Token> preparedTokens)
@@ -441,7 +441,7 @@ namespace GDDL.Tests
             {
                 if (closed)
                     throw new InvalidOperationException("The ITokenProvider is closed.");
-                int idx = this.index + index;
+                int idx = this.current + index;
                 if (idx >= preparedTokens.Count)
                     idx = preparedTokens.Count - 1;
                 return preparedTokens[idx];
@@ -459,13 +459,13 @@ namespace GDDL.Tests
 
             public Token PeekFull()
             {
-                return Get(index);
+                return Get(0);
             }
 
             public Token Pop()
             {
                 Token t = Get(0);
-                index++;
+                current++;
                 return t;
             }
 
@@ -477,7 +477,7 @@ namespace GDDL.Tests
                 {
                     if (closed)
                         throw new InvalidOperationException("The ITokenProvider is closed.");
-                    return preparedTokens[Math.Min(index, preparedTokens.Count - 1)].ParsingContext;
+                    return preparedTokens[Math.Min(current, preparedTokens.Count - 1)].ParsingContext;
                 }
             }
 

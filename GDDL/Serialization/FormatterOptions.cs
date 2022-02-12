@@ -42,6 +42,7 @@ namespace GDDL.Serialization
         public readonly int spacesInEmptyCollection;
         public readonly int oneElementPerLineThreshold;
         public readonly bool omitCommaAfterClosingBrace;
+        public readonly bool sortMapKeys;
 
         // Values
         public readonly int lineBreaksAfterValues;
@@ -82,6 +83,7 @@ namespace GDDL.Serialization
             spacesInEmptyCollection = builder.spacesInEmptyCollection;
             oneElementPerLineThreshold = builder.oneElementPerLineThreshold;
             omitCommaAfterClosingBrace = builder.omitCommaAfterClosingBrace;
+            sortMapKeys = builder.sortMapKeys;
             lineBreaksAfterValues = builder.lineBreaksAfterValues;
             floatFormattingStyle = builder.floatFormattingStyle;
             alwaysShowNumberSign = builder.alwaysShowNumberSign;
@@ -115,6 +117,7 @@ namespace GDDL.Serialization
             protected internal int spacesInEmptyCollection = 0;
             protected internal int oneElementPerLineThreshold = int.MaxValue;
             protected internal bool omitCommaAfterClosingBrace = false;
+            protected internal bool sortMapKeys;
 
             // Values
             protected internal int lineBreaksAfterValues = 0;
@@ -224,6 +227,12 @@ namespace GDDL.Serialization
             public Builder OmitCommaAfterClosingBrace(bool omitCommaAfterClosingBrace)
             {
                 this.omitCommaAfterClosingBrace = omitCommaAfterClosingBrace;
+                return this;
+            }
+
+            public Builder SortMapKeys(bool sortMapKeys)
+            {
+                this.sortMapKeys = sortMapKeys;
                 return this;
             }
 

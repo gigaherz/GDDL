@@ -2,7 +2,7 @@
   "profiles": {
     "GDDL.Demo": {
       "commandName": "Project",
-      "workingDirectory": "D:\\Projects\\GDDL\\Samples"
+      "workingDirectory": "D:\\Projects\\GDDL.NET\\Samples"
     }
   }
 }

@@ -1,8 +1,8 @@
+using GDDL.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using GDDL.Util;
 
 namespace GDDL.Structure
 {
@@ -119,7 +119,7 @@ namespace GDDL.Structure
         #endregion
 
         #region Implementation
-        private readonly Dictionary<string, GddlElement> contents = new Dictionary<string, GddlElement>();
+        private readonly LinkedDictionary<string, GddlElement> contents = new LinkedDictionary<string, GddlElement>();
 
         private string typeName;
 
