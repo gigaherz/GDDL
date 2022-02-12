@@ -7,8 +7,17 @@ namespace GDDL.Util
 {
     internal class LinkedDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
-        private readonly LinkedList<KeyValuePair<TKey, TValue>> entries = new LinkedList<KeyValuePair<TKey, TValue>>();
-        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> table = new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
+        public LinkedDictionary()
+        {
+            Keys = new KeyView(this);
+            Values = new ValueView(this);
+        }
+
+        public LinkedDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values)
+            : this()
+        {
+            AddRange(values);
+        }
 
         public int Count => entries.Count;
         public bool IsReadOnly => false;
@@ -29,8 +38,8 @@ namespace GDDL.Util
             }
         }
 
-        public ICollection<TKey> Keys => new KeyView(this);
-        public ICollection<TValue> Values => new ValueView(this);
+        public ICollection<TKey> Keys { get; }
+        public ICollection<TValue> Values { get; }
 
         public void Add(TKey key, TValue value)
         {
@@ -40,6 +49,14 @@ namespace GDDL.Util
             table.Add(key, node);
         }
 
+        public void AddRange(IEnumerable<KeyValuePair<TKey, TValue>> values)
+        {
+            foreach (var kv in values)
+            {
+                Add(kv);
+            }
+        }
+
         public bool ContainsKey(TKey key)
         {
             return table.ContainsKey(key);
@@ -47,7 +64,11 @@ namespace GDDL.Util
 
         public bool ContainsValue(TValue value)
         {
-            return entries.Any(e => Equals(e.Value, value));
+            foreach (var e in entries)
+            {
+                if (Equals(e.Value, value)) return true;
+            }
+            return false;
         }
 
         public bool Remove(TKey key)
@@ -117,8 +138,11 @@ namespace GDDL.Util
             }
             return false;
         }
-        
-        private class KeyView : ICollection<TKey>
+
+        private readonly LinkedList<KeyValuePair<TKey, TValue>> entries = new LinkedList<KeyValuePair<TKey, TValue>>();
+        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> table = new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
+
+        private class KeyView : ICollection<TKey>, IReadOnlyCollection<TKey>
         {
             private readonly LinkedDictionary<TKey, TValue> owner;
 
@@ -147,7 +171,7 @@ namespace GDDL.Util
 
             public void Clear()
             {
-                throw new NotSupportedException("Cannot modify this collection");
+                owner.Clear();
             }
 
             public bool Contains(TKey item)
@@ -169,11 +193,11 @@ namespace GDDL.Util
 
             public bool Remove(TKey item)
             {
-                return owner.Remove(item);
+                return item != null && owner.Remove(item);
             }
         }
 
-        private class ValueView : ICollection<TValue>
+        private class ValueView : ICollection<TValue>, IReadOnlyCollection<TValue>
         {
             private readonly LinkedDictionary<TKey, TValue> owner;
 
