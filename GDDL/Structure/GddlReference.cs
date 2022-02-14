@@ -5,70 +5,33 @@ using GDDL.Util;
 
 namespace GDDL.Structure
 {
-    public sealed class GddlReference : GddlElement<GddlReference>, IEquatable<GddlReference>
+    public sealed class GddlReference : GddlElement<GddlReference>
     {
         #region API
 
-        /**
-         * Constructs an absolute reference to the given path.
-         * @param parts The target, as an array of names of each element along the path
-         * @return A Reference set to the given path
-         */
-        public static GddlReference Absolute(params string[] parts)
+        public static GddlReference Of(QueryPath queryPath)
         {
-            return new GddlReference(true, parts);
-        }
-
-        /**
-         * Constructs a relative reference to the given path.
-         * @param parts The target, as an array of names of each element along the path
-         * @return A Reference set to the given path
-         */
-        public static GddlReference Relative(params string[] parts)
-        {
-            return new GddlReference(false, parts);
+            return new GddlReference(queryPath);
         }
 
         public override bool IsReference => true;
         public override GddlReference AsReference => this;
-
-        public bool Rooted { get; }
-
+        
         public override bool IsResolved => resolved;
         public override GddlElement ResolvedValue => resolvedValue;
 
-        public GddlReference(bool rooted, params string[] parts)
+        public GddlReference(QueryPath path)
         {
-            Rooted = rooted;
-            nameParts.AddRange(parts);
+            this.path = path;
         }
 
-        /**
-         * @return The current path of this reference
-         */
-        public IList<string> NameParts => nameParts.AsReadOnly();
+        public bool IsAbsolute => path.IsAbsolute;
 
-        /**
-         * Adds a new name to the path this Reference represents
-         * @param name The name of a named element
-         */
-        public void Add(string name)
-        {
-            nameParts.Add(name);
-        }
-
-        /**
-         * Appends the given collection of names to the path this Reference represents
-         * @param names The collection of names
-         */
-        public void AddRange(IEnumerable<string> names)
-        {
-            nameParts.AddRange(names);
-        }
+        public IReadOnlyList<QueryComponent> NameParts => path.PathComponents;
         #endregion
 
         #region Implementation
-        private readonly List<string> nameParts = new List<string>();
+        private readonly QueryPath path;
 
         private bool resolved;
         private GddlElement resolvedValue;
@@ -78,7 +41,7 @@ namespace GDDL.Structure
 
         public override GddlReference CopyInternal()
         {
-            var reference = new GddlReference(Rooted);
+            var reference = new GddlReference(path.Copy());
             CopyTo(reference);
             return reference;
         }
@@ -86,7 +49,7 @@ namespace GDDL.Structure
         protected override void CopyTo(GddlReference other)
         {
             base.CopyTo(other);
-            other.AddRange(nameParts);
+            path.CopyTo(other.path);
         }
 
         public override void Resolve(GddlElement root)
@@ -94,7 +57,7 @@ namespace GDDL.Structure
             if (IsResolved)
                 return;
 
-            resolved = TryResolve(root, !Rooted);
+            resolved = TryResolve(root, !IsAbsolute);
         }
 
         private bool TryResolve(GddlElement root, bool relative)
@@ -104,44 +67,21 @@ namespace GDDL.Structure
             GddlElement target;
             if (relative)
             {
-                target = parent;
-                if (target == null) // In case this element is itself the root.
-                    target = this;
+                target = parent ?? this;
             }
             else
             {
                 target = root;
             }
 
-            bool parentRoot = false;
+            var result = new Query(target);
 
-            if (target.Parent != null)
+            foreach (var part in NameParts)
             {
-                var targetParent = target.Parent;
-                if (targetParent.IsMap)
-                {
-                    parentRoot = targetParent.AsMap.KeysOf(target).Any(key => Equals(key,nameParts[0]));
-                }
+                result = part.Filter(result);
             }
 
-            for (int i = parentRoot ? 1 : 0; i < nameParts.Count; i++)
-            {
-                string part = nameParts[i];
-
-                if (!target.IsMap)
-                    continue;
-
-                var s = target.AsMap;
-
-                if (s.TryGetValue(part, out var ne))
-                {
-                    target = ne;
-                    continue;
-                }
-
-                resolvedValue = null;
-                return false;
-            }
+            target = result.Targets.Single();
 
             if (!target.IsResolved)
                 target.Resolve(root);
@@ -190,8 +130,7 @@ namespace GDDL.Structure
         private bool EqualsImpl(GddlReference other)
         {
             return base.EqualsImpl(other) &&
-                Rooted == other.Rooted &&
-                Utility.ListEquals(nameParts, other.nameParts) &&
+                Equals(path, other.path) &&
                 (IsResolved
                     ? other.IsResolved && Equals(ResolvedValue, other.ResolvedValue)
                     : !other.IsResolved);
@@ -199,7 +138,7 @@ namespace GDDL.Structure
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(base.GetHashCode(), nameParts, IsResolved, ResolvedValue, Rooted);
+            return HashCode.Combine(base.GetHashCode(), IsResolved, ResolvedValue, path);
         }
         #endregion
     }

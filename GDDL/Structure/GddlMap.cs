@@ -30,17 +30,8 @@ namespace GDDL.Structure
         public string TrailingComment { get; set; }
         public bool HasTrailingComment => !string.IsNullOrEmpty(TrailingComment);
 
-        public bool HasTypeName => !string.IsNullOrEmpty(typeName);
-        public string TypeName
-        {
-            get => typeName;
-            set
-            {
-                if (!Utility.IsValidIdentifier(value))
-                    throw new ArgumentException("Type value must be a valid identifier");
-                typeName = value;
-            }
-        }
+        public bool HasTypeName => !string.IsNullOrEmpty(TypeName);
+        public string TypeName { get; set; }
 
         public int Count => contents.Count;
 
@@ -120,8 +111,6 @@ namespace GDDL.Structure
 
         #region Implementation
         private readonly LinkedDictionary<string, GddlElement> contents = new LinkedDictionary<string, GddlElement>();
-
-        private string typeName;
 
         private void OnAdd(GddlElement e)
         {
@@ -249,7 +238,7 @@ namespace GDDL.Structure
             if (!base.EqualsImpl(other))
                 return false;
 
-            if (!Equals(typeName, other.typeName))
+            if (!Equals(TypeName, other.TypeName))
                 return false;
 
             if (contents.Count != other.contents.Count)
@@ -269,7 +258,7 @@ namespace GDDL.Structure
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(base.GetHashCode(), contents, typeName);
+            return HashCode.Combine(base.GetHashCode(), contents, TypeName);
         }
         #endregion
     }

@@ -124,7 +124,6 @@ namespace GDDL.Structure
         {
             e.Parent = null;
         }
-
         #endregion
 
         #region IList Extras

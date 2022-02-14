@@ -9,11 +9,13 @@ namespace GDDL.Parsing
         Slash,
         Dot,
         DoubleDot,
+        TripleDot,
         LBrace,
         RBrace,
         LBracket,
         RBracket,
         Percent,
+        Caret,
 
         HexIntLiteral,
         IntegerLiteral,

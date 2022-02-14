@@ -55,7 +55,7 @@ Because eBNF has an infinity of established conventions, here's mine:
 * Equals sign (`=`) declares a rule
 * The vertical bar (`|`) defines alternatives
 * Square brackets (`[]`) define optional sections
-* Square brackets (`{}}`) define repeats (0 or more)
+* Square brackets (`{}`) define repeats (0 or more)
 * Parentheses (`()`) define groups
 * Double quotes (`""`) define a terminal string
 * Backticks ( ` ) define a regex terminal
@@ -74,7 +74,7 @@ value           = nil | boolean | integer | hex_integer | decimal | scientific |
 
 map             = [ identifier ] "{" [ key_value_list ] "}" ;
 
-key_value_list  = (identifier | string) "="
+key_value_list  = (identifier | string) ("="|":")
                 ( element [ "," ]     
                 | element "," key_value_list
                 | list key_value_list

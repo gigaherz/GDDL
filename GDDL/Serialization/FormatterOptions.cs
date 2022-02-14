@@ -17,14 +17,17 @@ namespace GDDL.Serialization
                 .SpacesAfterClosingBrace(0)
                 .SpacesInEmptyCollection(1)
                 .SpacesAfterComma(1)
-                .SpacesBeforeEquals(0)
+                .SpacesBeforeEquals(1)
                 .SpacesAfterEquals(1)
                 .SpacesInEmptyCollection(1)
                 .OneElementPerLineThreshold(10)
                 .SpacesPerIndent(4)
                 .BlankLinesBeforeComment(1)
-                .PreferJsonStyle(true)
                 .Build();
+        public static readonly FormatterOptions CompactJson = new Builder(Compact).AlwaysUseStringLiterals(true).UseJsonDelimiters(true).Build();
+        public static readonly FormatterOptions NiceJson = new Builder(Nice).SpacesBeforeEquals(0).AlwaysUseStringLiterals(true).UseJsonDelimiters(true).Build();
+        public static readonly FormatterOptions CompactJson5 = new Builder(CompactJson).AlwaysUseStringLiterals(false).Build();
+        public static readonly FormatterOptions NiceJson5 = new Builder(NiceJson).AlwaysUseStringLiterals(false).Build();
 
         // Collections
         public readonly int lineBreaksBeforeOpeningBrace;
@@ -43,6 +46,7 @@ namespace GDDL.Serialization
         public readonly int oneElementPerLineThreshold;
         public readonly bool omitCommaAfterClosingBrace;
         public readonly bool sortMapKeys;
+        public readonly bool alwaysUseStringLiterals;
 
         // Values
         public readonly int lineBreaksAfterValues;
@@ -63,7 +67,7 @@ namespace GDDL.Serialization
         public readonly bool trimCommentLines;
 
         // Other
-        public readonly bool preferJsonStyle;
+        public readonly bool useJsonDelimiters;
 
         // Internal Constructor
         private FormatterOptions(Builder builder)
@@ -96,7 +100,8 @@ namespace GDDL.Serialization
             writeComments = builder.writeComments;
             blankLinesBeforeComment = builder.blankLinesBeforeComment;
             trimCommentLines = builder.trimCommentLines;
-            preferJsonStyle = builder.preferJsonStyle;
+            useJsonDelimiters = builder.useJsonDelimiters;
+            alwaysUseStringLiterals = builder.alwaysUseStringLiterals;
         }
 
         public class Builder
@@ -117,7 +122,8 @@ namespace GDDL.Serialization
             protected internal int spacesInEmptyCollection = 0;
             protected internal int oneElementPerLineThreshold = int.MaxValue;
             protected internal bool omitCommaAfterClosingBrace = false;
-            protected internal bool sortMapKeys;
+            protected internal bool sortMapKeys = false;
+            protected internal bool alwaysUseStringLiterals = false;
 
             // Values
             protected internal int lineBreaksAfterValues = 0;
@@ -138,7 +144,44 @@ namespace GDDL.Serialization
             protected internal bool trimCommentLines = true;
 
             // Other
-            protected internal bool preferJsonStyle = false;
+            protected internal bool useJsonDelimiters = false;
+
+            public Builder()
+            {
+            }
+
+            public Builder(FormatterOptions copyFrom)
+            {
+                lineBreaksBeforeOpeningBrace = copyFrom.lineBreaksBeforeOpeningBrace;
+                lineBreaksAfterOpeningBrace = copyFrom.lineBreaksAfterOpeningBrace;
+                lineBreaksBeforeClosingBrace = copyFrom.lineBreaksBeforeClosingBrace;
+                lineBreaksAfterClosingBrace = copyFrom.lineBreaksAfterClosingBrace;
+                spacesBeforeOpeningBrace = copyFrom.spacesBeforeOpeningBrace;
+                spacesAfterOpeningBrace = copyFrom.spacesAfterOpeningBrace;
+                spacesBeforeClosingBrace = copyFrom.spacesBeforeClosingBrace;
+                spacesAfterClosingBrace = copyFrom.spacesAfterClosingBrace;
+                spacesBeforeComma = copyFrom.spacesBeforeComma;
+                spacesAfterComma = copyFrom.spacesAfterComma;
+                spacesBeforeEquals = copyFrom.spacesBeforeEquals;
+                spacesAfterEquals = copyFrom.spacesAfterEquals;
+                spacesInEmptyCollection = copyFrom.spacesInEmptyCollection;
+                oneElementPerLineThreshold = copyFrom.oneElementPerLineThreshold;
+                omitCommaAfterClosingBrace = copyFrom.omitCommaAfterClosingBrace;
+                sortMapKeys = copyFrom.sortMapKeys;
+                lineBreaksAfterValues = copyFrom.lineBreaksAfterValues;
+                floatFormattingStyle = copyFrom.floatFormattingStyle;
+                alwaysShowNumberSign = copyFrom.alwaysShowNumberSign;
+                alwaysShowExponentSign = copyFrom.alwaysShowExponentSign;
+                autoScientificNotationUpper = copyFrom.autoScientificNotationUpper;
+                autoScientificNotationLower = copyFrom.autoScientificNotationLower;
+                floatSignificantFigures = copyFrom.floatSignificantFigures;
+                indentUsingTabs = copyFrom.indentUsingTabs;
+                spacesPerIndent = copyFrom.spacesPerIndent;
+                writeComments = copyFrom.writeComments;
+                blankLinesBeforeComment = copyFrom.blankLinesBeforeComment;
+                trimCommentLines = copyFrom.trimCommentLines;
+                useJsonDelimiters = copyFrom.useJsonDelimiters;
+            }
 
             public Builder LineBreaksBeforeOpeningBrace(int lineBreaksBeforeOpeningBrace)
             {
@@ -308,9 +351,15 @@ namespace GDDL.Serialization
                 return this;
             }
 
-            public Builder PreferJsonStyle(bool prefer)
+            public Builder UseJsonDelimiters(bool useJsonDelimiters)
             {
-                this.preferJsonStyle = prefer;
+                this.useJsonDelimiters = useJsonDelimiters;
+                return this;
+            }
+
+            public Builder AlwaysUseStringLiterals(bool alwaysUseStringLiterals)
+            {
+                this.alwaysUseStringLiterals = alwaysUseStringLiterals;
                 return this;
             }
 

@@ -97,22 +97,7 @@ namespace GDDL.Parsing
                 case '/': return new Token(TokenType.Slash, reader.Read(1), startContext, comment, whitespace);
                 case '=': return new Token(TokenType.EqualSign, reader.Read(1), startContext, comment, whitespace);
                 case '%': return new Token(TokenType.Percent, reader.Read(1), startContext, comment, whitespace);
-            }
-
-            if (ich == '.')
-            {
-                ich = reader.Peek(1);
-                if (ich == '.')
-                {
-                    return new Token(TokenType.DoubleDot, reader.Read(1), startContext, comment, whitespace);
-                }
-
-                if (!Utility.IsDigit(ich) && (ich != 'I') && (ich != 'N'))
-                {
-                    return new Token(TokenType.Dot, reader.Read(2), startContext, comment, whitespace);
-                }
-
-                ich = reader.Peek();
+                case '^': return new Token(TokenType.Caret, reader.Read(1), startContext, comment, whitespace);
             }
 
             if (Utility.IsLetter(ich) || ich == '_')
@@ -192,6 +177,28 @@ namespace GDDL.Parsing
                 int number = 0;
                 bool fractional = false;
 
+                if (ich == '.')
+                {
+                    ich = reader.Peek(1);
+                    if (ich == '.')
+                    {
+                        ich = reader.Peek(2);
+                        if (ich == '.')
+                        {
+                            return new Token(TokenType.TripleDot, reader.Read(3), startContext, comment, whitespace);
+                        }
+
+                        return new Token(TokenType.DoubleDot, reader.Read(2), startContext, comment, whitespace);
+                    }
+
+                    if (!Utility.IsDigit(ich) && (ich != 'I') && (ich != 'N'))
+                    {
+                        return new Token(TokenType.Dot, reader.Read(1), startContext, comment, whitespace);
+                    }
+
+                    ich = reader.Peek();
+                }
+
                 if (ich == '.' && reader.Peek(number + 1) == 'N' && reader.Peek(number + 2) == 'a' && reader.Peek(number + 3) == 'N')
                 {
                     return new Token(TokenType.DecimalLiteral, reader.Read(number + 4), startContext, comment, whitespace);
@@ -236,24 +243,32 @@ namespace GDDL.Parsing
                     }
                 }
 
+                bool doubleDot = false;
                 if (ich == '.')
                 {
-                    fractional = true;
-
-                    // Skip the '.'
-                    number++;
-
-                    ich = reader.Peek(number);
-
-                    while (Utility.IsDigit(ich))
+                    if (reader.Peek(number + 1) == '.') // double-dot
                     {
+                        doubleDot = true;
+                    }
+                    else
+                    {
+                        fractional = true;
+
+                        // Skip the '.'
                         number++;
 
                         ich = reader.Peek(number);
+
+                        while (Utility.IsDigit(ich))
+                        {
+                            number++;
+
+                            ich = reader.Peek(number);
+                        }
                     }
                 }
 
-                if (ich == 'e' || ich == 'E')
+                if (!doubleDot && (ich == 'e' || ich == 'E'))
                 {
                     fractional = true;
 

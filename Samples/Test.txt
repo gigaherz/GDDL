@@ -109,8 +109,7 @@
     
     replace_this_with = stringLiteral,
     slash_reference = /namedTypedMap/value,
-    # NOT YET IMPLEMENTED
-    #array_reference = /"named list"/[1..2],
+    array_reference = /"named list"/[1..2],
 
     # The comma in the last element is optional but allowed.
 }

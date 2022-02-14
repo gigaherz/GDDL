@@ -19,7 +19,7 @@ namespace GDDL.Parsing
         private WhitespaceMode WhitespaceMode { get; set; }
 
         public ITokenProvider Lexer { get; }
-        
+
         /**
          * Parses the whole file and returns the resulting root element.
          * @param simplify If true, the structure
@@ -41,6 +41,11 @@ namespace GDDL.Parsing
             };
 
             return doc;
+        }
+
+        public QueryPath ParseQuery()
+        {
+            return QueryPath().path;
         }
         #endregion
 
@@ -138,7 +143,7 @@ namespace GDDL.Parsing
         private bool PrefixReference()
         {
             BeginPrefixScan();
-            var r = HasAny(TokenType.Colon, TokenType.Slash) && HasAny(TokenType.Identifier, TokenType.StringLiteral);
+            var r = HasAny(TokenType.Colon, TokenType.Slash) && HasAny(TokenType.Identifier, TokenType.StringLiteral, TokenType.LBracket);
             EndPrefixScan();
 
             return r || PrefixIdentifier();
@@ -146,38 +151,100 @@ namespace GDDL.Parsing
 
         private GddlReference Reference()
         {
-            var rooted = false;
+            var (token, path) = QueryPath();
 
-
-            TokenType? firstDelimiter = null;
-            if (Lexer.Peek() == TokenType.Colon || Lexer.Peek() == TokenType.Slash)
-            {
-                firstDelimiter = PopExpected(TokenType.Colon, TokenType.Slash).Type;
-                rooted = true;
-            }
-
-            Token component = PathComponent();
-            var b = rooted ? GddlReference.Absolute(component.Text) : GddlReference.Relative(component.Text);
-            b.Comment = component.Comment;
-            
-            while (Lexer.Peek() == TokenType.Colon || Lexer.Peek() == TokenType.Slash)
-            {
-                if (firstDelimiter.HasValue && Lexer.Peek() != firstDelimiter)
-                    throw new ParserException(this, $"References must use consistent delimiters, expected {firstDelimiter}, found {Lexer.Peek()} instead");
-
-                firstDelimiter = PopExpected(TokenType.Colon, TokenType.Slash).Type;
-
-                component = PathComponent();
-
-                b.Add(component.Text);
-            }
+            var b = GddlReference.Of(path);
+            b.Comment = token.Comment;
 
             return b;
         }
 
-        private Token PathComponent()
+        private (Token token, QueryPath path) QueryPath()
         {
-            return PopExpected(TokenType.Identifier, TokenType.StringLiteral, TokenType.Dot, TokenType.DoubleDot);
+            var path = new QueryPath();
+
+            Token firstToken = null;
+
+            TokenType? firstDelimiter = null;
+            if (Lexer.Peek() == TokenType.Colon || Lexer.Peek() == TokenType.Slash)
+            {
+                firstToken = PopExpected(TokenType.Colon, TokenType.Slash);
+                firstDelimiter = firstToken.Type;
+                path = path.Absolute();
+            }
+
+            var pathToken = PathComponent(ref path);
+            firstToken ??= pathToken;
+
+            while (Lexer.Peek() == TokenType.Colon || Lexer.Peek() == TokenType.Slash)
+            {
+                if (firstDelimiter.HasValue && Lexer.Peek() != firstDelimiter)
+                    throw new ParserException(this, $"Query must use consistent delimiters, expected {firstDelimiter}, found {Lexer.Peek()} instead");
+
+                firstDelimiter = PopExpected(TokenType.Colon, TokenType.Slash).Type;
+
+                PathComponent(ref path);
+            }
+
+            return (firstToken, path);
+        }
+
+        private Token PathComponent(ref QueryPath path)
+        {
+            var token = PopExpected(TokenType.Identifier, TokenType.StringLiteral, TokenType.Dot, TokenType.DoubleDot, TokenType.LBracket);
+            switch (token.Type)
+            {
+                case TokenType.Identifier:
+                    path = path.ByKey(token.Text);
+                    break;
+                case TokenType.StringLiteral:
+                    path = path.ByKey(UnescapeString(token));
+                    break;
+                case TokenType.Dot:
+                    path = path.Self();
+                    break;
+                case TokenType.DoubleDot:
+                    path = path.Parent();
+                    break;
+                case TokenType.LBracket:
+                {
+                    var start = Index.FromStart(0);
+
+                    if (Lexer.Peek() == TokenType.IntegerLiteral)
+                    {
+                        start = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
+
+                        if (Lexer.Peek() == TokenType.RBracket)
+                        {
+                            path = path.ByRange(new Range(start, start.Value + 1));
+                        }
+                    }
+
+                    var inclusive = PopExpected(TokenType.DoubleDot, TokenType.TripleDot);
+                    
+                    var end = Index.FromEnd(0);
+
+                    if (Lexer.Peek() == TokenType.Caret)
+                    {
+                        PopExpected(TokenType.Caret);
+                        end =Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
+                    }
+                    else if (Lexer.Peek() == TokenType.IntegerLiteral)
+                    {
+                        end = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
+                        if (inclusive.Type == TokenType.TripleDot)
+                            end = end.Value + 1;
+                    }
+
+                    PopExpected(TokenType.RBracket);
+
+                    path = path.ByRange(new Range(start, end));
+                    break;
+                }
+                default:
+                    throw new ParserException(Lexer, $"Internal Error: Unexpected token {token} found when parsing Reference path component");
+            }
+            return token;
         }
 
         private bool PrefixMap()

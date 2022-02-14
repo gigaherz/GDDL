@@ -13,7 +13,7 @@ namespace GDDL.Tests.Structure
         public void ReferenceResolvesToElement()
         {
             GddlMap root = new GddlMap() { { "child", GddlValue.Of("child") } };
-            GddlReference r = GddlReference.Absolute();
+            GddlReference r = GddlReference.Of(new QueryPath().Absolute());
             r.Resolve(root);
             Assert.AreEqual(root, r.ResolvedValue);
         }
@@ -25,7 +25,7 @@ namespace GDDL.Tests.Structure
             var absoluteChild = GddlValue.Of("Absolute child");
             GddlMap parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
             GddlMap root = new GddlMap() { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
-            GddlReference r = GddlReference.Absolute("child");
+            GddlReference r = GddlReference.Of(new QueryPath().Absolute().ByKey("child"));
             parent.Add("reference", r);
             r.Resolve(root);
             Assert.AreEqual(absoluteChild, r.ResolvedValue);
@@ -38,7 +38,7 @@ namespace GDDL.Tests.Structure
             var absoluteChild = GddlValue.Of("Absolute child");
             GddlMap parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
             GddlMap root = new GddlMap() { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
-            GddlReference r = GddlReference.Relative("child");
+            GddlReference r = GddlReference.Of(new QueryPath().ByKey("child"));
             parent.Add("reference", r);
             r.Resolve(root);
             Assert.AreEqual(relativeChild, r.ResolvedValue);
@@ -51,7 +51,7 @@ namespace GDDL.Tests.Structure
             var absoluteChild = GddlValue.Of("Absolute child");
             GddlMap parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
             GddlMap root = new GddlMap() { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
-            GddlReference r = GddlReference.Relative("parent", "child");
+            GddlReference r = GddlReference.Of(new QueryPath().ByKey("parent").ByKey("child"));
             parent.Add("reference", r);
             r.Resolve(root);
             Assert.AreEqual(relativeChild, r.ResolvedValue);
