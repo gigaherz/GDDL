@@ -8,98 +8,121 @@ using GDDL.Serialization;
 using GDDL.Structure;
 using GDDL.Util;
 
-namespace GDDL
+namespace GDDL.Queries
 {
-    public class Query
+    public class Query : IEquatable<Query>
     {
-        public IEnumerable<GddlElement> Targets { get; }
-
-        public Query(params GddlElement[] targets)
-        {
-            Targets = targets;
-        }
-
-        public Query(IEnumerable<GddlElement> targets)
-        {
-            Targets = targets;
-        }
-    }
-
-    public static class QueryParser
-    {
-        public static QueryPath ParsePath(string pathExpression)
+        public static Query FromString(string pathExpression)
         {
             var reader = new Reader(new StringReader(pathExpression), "QueryParser.ParsePath(string)");
             var lexer = new Lexer(reader);
             var parser = new Parser(lexer);
             return parser.ParseQuery();
         }
-    }
 
-    public class QueryPath
-    {
         private bool absolute = false;
-        private readonly List<QueryComponent> pathComponents = new List<QueryComponent>();
+        private readonly List<QueryComponent> pathComponents = new();
 
         public bool IsAbsolute => absolute;
         public IReadOnlyList<QueryComponent> PathComponents => pathComponents.AsReadOnly();
 
-        public QueryPath Absolute()
+        public Query Absolute()
         {
+            if (PathComponents.Count > 0) throw new InvalidOperationException("Cannot set Absolute after path components have been added.");
             absolute = true;
             return this;
         }
 
-        public QueryPath ByKey(string name)
+        public Query ByKey(string name)
         {
             pathComponents.Add(new MapQueryComponent(name));
             return this;
         }
 
-        public QueryPath ByRange(Range range)
+        public Query ByRange(Range range)
         {
             pathComponents.Add(new ListQueryComponent(range));
             return this;
         }
 
-        public QueryPath Self()
+        public Query Self()
         {
             pathComponents.Add(SelfQueryComponent.Instance);
             return this;
         }
 
-        public QueryPath Parent()
+        public Query Parent()
         {
             pathComponents.Add(ParentQueryComponent.Instance);
             return this;
         }
 
-        public QueryPath Copy()
+        public IEnumerable<GddlElement> Apply(GddlElement target)
         {
-            var path = new QueryPath();
+            var result = Enumerable.Repeat(target, 1);
+
+            foreach (var part in pathComponents)
+            {
+                result = part.Filter(result);
+            }
+
+            return result;
+        }
+
+        public Query Copy()
+        {
+            var path = new Query();
             CopyTo(path);
             return path;
         }
 
-        public void CopyTo(QueryPath otherPath)
+        public void CopyTo(Query other)
         {
             foreach(var component in pathComponents)
             {
-                otherPath.pathComponents.Add(component.Copy());
+                other.pathComponents.Add(component.Copy());
             }
+        }
+
+        public override bool Equals(object other)
+        {
+            if (ReferenceEquals(this, other)) return true;
+            if (other == null || GetType() != other.GetType()) return false;
+            return EqualsImpl((Query)other);
+        }
+
+        public bool Equals(Query other)
+        {
+            if (ReferenceEquals(this, other)) return true;
+            if (other == null) return false;
+            return EqualsImpl(other);
+        }
+
+        private bool EqualsImpl(Query other)
+        {
+            return absolute == other.absolute && Utility.ListEquals(pathComponents, other.pathComponents);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(absolute, pathComponents);
         }
     }
 
     public abstract class QueryComponent
     {
-        public abstract Query Filter(Query input);
+        public abstract IEnumerable<GddlElement> Filter(IEnumerable<GddlElement> input);
         
         public abstract string ToString(Formatter formatter);
 
         public abstract QueryComponent Copy();
+
+        public abstract override bool Equals(object other);
+
+        public abstract override int GetHashCode();
     }
 
-    public class MapQueryComponent : QueryComponent
+    public class MapQueryComponent : QueryComponent, IEquatable<MapQueryComponent>
     {
         public string Name { get; }
 
@@ -108,12 +131,12 @@ namespace GDDL
             Name = name;
         }
 
-        public override Query Filter(Query input)
+        public override IEnumerable<GddlElement> Filter(IEnumerable<GddlElement> input)
         {
-            return new Query(input.Targets
+            return input
                 .OfType<GddlMap>()
                 .Where(m => m.ContainsKey(Name))
-                .Select(m => m[Name]));
+                .Select(m => m[Name]);
         }
 
         public override string ToString(Formatter formatter)
@@ -128,9 +151,33 @@ namespace GDDL
         {
             return new MapQueryComponent(Name);
         }
+
+        public override bool Equals(object other)
+        {
+            if (ReferenceEquals(other, this)) return true;
+            if (other == null || GetType() != other.GetType()) return false;
+            return EqualsImpl((MapQueryComponent)other);
+        }
+
+        public bool Equals(MapQueryComponent other)
+        {
+            if (ReferenceEquals(other, this)) return true;
+            if (other == null) return false;
+            return EqualsImpl(other);
+        }
+
+        private bool EqualsImpl(MapQueryComponent other)
+        {
+            return Name == other.Name;
+        }
+
+        public override int GetHashCode()
+        {
+            return (Name != null ? Name.GetHashCode() : 0);
+        }
     }
 
-    public class ListQueryComponent : QueryComponent
+    public class ListQueryComponent : QueryComponent, IEquatable<ListQueryComponent>
     {
         private readonly Range range;
 
@@ -144,9 +191,9 @@ namespace GDDL
             this.range = range;
         }
 
-        public override Query Filter(Query input)
+        public override IEnumerable<GddlElement> Filter(IEnumerable<GddlElement> input)
         {
-            return new Query(input.Targets
+            return input
                 .OfType<GddlList>()
                 .SelectMany(m =>
                 {
@@ -155,7 +202,7 @@ namespace GDDL
                     if (range.Start.IsFromEnd) start = m.Count - start;
                     if (range.End.IsFromEnd) end = m.Count - end;
                     return m.Skip(start).Take(end-start);
-                }));
+                });
         }
 
         public override string ToString(Formatter formatter)
@@ -191,17 +238,41 @@ namespace GDDL
         {
             return new ListQueryComponent(range);
         }
+
+        public override bool Equals(object other)
+        {
+            if (ReferenceEquals(other, this)) return true;
+            if (other == null || GetType() != other.GetType()) return false;
+            return EqualsImpl((ListQueryComponent)other);
+        }
+
+        public bool Equals(ListQueryComponent other)
+        {
+            if (ReferenceEquals(other, this)) return true;
+            if (other == null) return false;
+            return EqualsImpl(other);
+        }
+
+        private bool EqualsImpl(ListQueryComponent other)
+        {
+            return range.Equals(other.range);
+        }
+
+        public override int GetHashCode()
+        {
+            return range.GetHashCode();
+        }
     }
     
     public class SelfQueryComponent : QueryComponent
     {
-        public static SelfQueryComponent Instance { get; } = new SelfQueryComponent();
+        public static SelfQueryComponent Instance { get; } = new();
 
         private SelfQueryComponent()
         {
         }
 
-        public override Query Filter(Query input)
+        public override IEnumerable<GddlElement> Filter(IEnumerable<GddlElement> input)
         {
             return input;
         }
@@ -215,21 +286,31 @@ namespace GDDL
         {
             return this;
         }
+
+        public override bool Equals(object other)
+        {
+            return other != null && GetType() == other.GetType();
+        }
+
+        public override int GetHashCode()
+        {
+            return 0;
+        }
     }
 
     public class ParentQueryComponent : QueryComponent
     {
-        public static ParentQueryComponent Instance { get; } = new ParentQueryComponent();
+        public static ParentQueryComponent Instance { get; } = new();
 
         private ParentQueryComponent()
         {
         }
 
-        public override Query Filter(Query input)
+        public override IEnumerable<GddlElement> Filter(IEnumerable<GddlElement> input)
         {
-            return new Query(input.Targets
+            return input
                 .Where(t => t.Parent != null)
-                .Select(t => t.Parent));
+                .Select(t => t.Parent);
         }
 
         public override string ToString(Formatter formatter)
@@ -240,6 +321,16 @@ namespace GDDL
         public override QueryComponent Copy()
         {
             return this;
+        }
+
+        public override bool Equals(object other)
+        {
+            return other != null && GetType() == other.GetType();
+        }
+
+        public override int GetHashCode()
+        {
+            return 0;
         }
     }
 }

@@ -44,7 +44,7 @@ namespace GDDL.Structure
 
         public ICollection<GddlElement> Values => contents.Values;
 
-        public GddlElement this[string name]
+        public override GddlElement this[string name]
         {
             get => contents[name];
             set
@@ -110,7 +110,7 @@ namespace GDDL.Structure
         #endregion
 
         #region Implementation
-        private readonly LinkedDictionary<string, GddlElement> contents = new LinkedDictionary<string, GddlElement>();
+        private readonly LinkedDictionary<string, GddlElement> contents = new();
 
         private void OnAdd(GddlElement e)
         {
@@ -123,7 +123,7 @@ namespace GDDL.Structure
             e.Parent = null;
         }
 
-        protected internal IEnumerable<string> KeysOf(GddlElement value)
+        public IEnumerable<string> KeysOf(GddlElement value)
         {
             return contents.Where(kv => ReferenceEquals(kv.Value, value)).Select(kv => kv.Key);
         }

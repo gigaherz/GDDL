@@ -46,9 +46,9 @@ namespace GDDL.Parsing
         #endregion
 
         #region Implementation
-        private readonly ArrayQueue<Token> lookAhead = new ArrayQueue<Token>();
-        private readonly StringBuilder whitespaceBuilder = new StringBuilder();
-        private readonly StringBuilder commentBuilder = new StringBuilder();
+        private readonly ArrayQueue<Token> lookAhead = new();
+        private readonly StringBuilder whitespaceBuilder = new();
+        private readonly StringBuilder commentBuilder = new();
 
         private readonly Reader reader;
 

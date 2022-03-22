@@ -12,6 +12,9 @@ namespace GDDL.Demo
             var text = Formatter.Format(parsedData, FormatterOptions.Nice);
             //File.WriteAllText("Output.txt", text);
 
+            var v2 = parsedData.Root["named list"][2..3][..^1];
+            var v3 = parsedData.Root.Query("'named list'/[2..3]/[..^1]");
+            
             Console.OutputEncoding = System.Text.Encoding.Unicode;
             Console.Write(text);
             Console.Out.Flush();

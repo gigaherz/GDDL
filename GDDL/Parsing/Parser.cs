@@ -43,7 +43,7 @@ namespace GDDL.Parsing
             return doc;
         }
 
-        public QueryPath ParseQuery()
+        public Queries.Query ParseQuery()
         {
             return QueryPath().path;
         }
@@ -51,7 +51,7 @@ namespace GDDL.Parsing
 
         #region Implementation
         int prefixPos = -1;
-        readonly Stack<int> prefixStack = new Stack<int>();
+        readonly Stack<int> prefixStack = new();
         private bool finishedWithRBrace;
 
         private Token PopExpected(params TokenType[] expected)
@@ -159,9 +159,9 @@ namespace GDDL.Parsing
             return b;
         }
 
-        private (Token token, QueryPath path) QueryPath()
+        private (Token token, Queries.Query path) QueryPath()
         {
-            var path = new QueryPath();
+            var path = new Queries.Query();
 
             Token firstToken = null;
 
@@ -189,7 +189,7 @@ namespace GDDL.Parsing
             return (firstToken, path);
         }
 
-        private Token PathComponent(ref QueryPath path)
+        private Token PathComponent(ref Queries.Query path)
         {
             var token = PopExpected(TokenType.Identifier, TokenType.StringLiteral, TokenType.Dot, TokenType.DoubleDot, TokenType.LBracket);
             switch (token.Type)

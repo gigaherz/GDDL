@@ -72,7 +72,7 @@ namespace GDDL.Parsing
         #endregion
 
         #region Implementation
-        private readonly ArrayQueue<int> unreadBuffer = new ArrayQueue<int>();
+        private readonly ArrayQueue<int> unreadBuffer = new();
 
         private readonly TextReader dataSource;
         private readonly string sourceName;
@@ -142,7 +142,7 @@ namespace GDDL.Parsing
         #endregion
 
         #region IContextProvider
-        public ParsingContext ParsingContext => new ParsingContext(sourceName, line, column);
+        public ParsingContext ParsingContext => new(sourceName, line, column);
         #endregion
 
         #region IDisposable

@@ -37,7 +37,7 @@ namespace GDDL.Structure
 
         public bool IsSimple => !contents.Any(a => a is GddlMap || a is GddlList);
 
-        public GddlElement this[int index]
+        public override GddlElement this[int index]
         {
             get => contents[index];
             set {
@@ -49,6 +49,30 @@ namespace GDDL.Structure
                     OnAdd(value);
                 }
             }
+        }
+
+        public override GddlElement this[Index index]
+        {
+            get => contents[index];
+            set
+            {
+                var prev = contents[index];
+                if (!ReferenceEquals(prev, value))
+                {
+                    contents[index] = value;
+                    OnRemove(prev);
+                    OnAdd(value);
+                }
+            }
+        }
+
+        public override SubList<GddlElement> this[Range range]
+        {
+            get {
+                var (start, length) = range.GetOffsetAndLength(contents.Count);
+                return new SubList<GddlElement>(contents, start, length);
+            }
+            set => throw new NotSupportedException();
         }
 
         public GddlList()
@@ -112,7 +136,7 @@ namespace GDDL.Structure
         #endregion
 
         #region Implementation
-        private readonly List<GddlElement> contents = new List<GddlElement>();
+        private readonly List<GddlElement> contents = new();
 
         private void OnAdd(GddlElement e)
         {

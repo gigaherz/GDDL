@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GDDL.Util;
+using GDDL.Exceptions;
+using GDDL.Queries;
 
 namespace GDDL.Structure
 {
@@ -9,18 +10,18 @@ namespace GDDL.Structure
     {
         #region API
 
-        public static GddlReference Of(QueryPath queryPath)
+        public static GddlReference Of(Queries.Query query)
         {
-            return new GddlReference(queryPath);
+            return new GddlReference(query);
         }
 
         public override bool IsReference => true;
         public override GddlReference AsReference => this;
         
-        public override bool IsResolved => resolved;
+        public override bool IsResolved => resolvedValue != null;
         public override GddlElement ResolvedValue => resolvedValue;
 
-        public GddlReference(QueryPath path)
+        public GddlReference(Queries.Query path)
         {
             this.path = path;
         }
@@ -31,9 +32,8 @@ namespace GDDL.Structure
         #endregion
 
         #region Implementation
-        private readonly QueryPath path;
+        private readonly Queries.Query path;
 
-        private bool resolved;
         private GddlElement resolvedValue;
         #endregion
 
@@ -57,53 +57,57 @@ namespace GDDL.Structure
             if (IsResolved)
                 return;
 
-            resolved = TryResolve(root, !IsAbsolute);
+            TryResolve(root, !IsAbsolute);
         }
 
-        private bool TryResolve(GddlElement root, bool relative)
+        private void TryResolve(GddlElement root, bool relative)
         {
-            var parent = Parent;
-
-            GddlElement target;
-            if (relative)
+            try
             {
-                target = parent ?? this;
+                var parent = Parent;
+
+                GddlElement target;
+                if (relative)
+                {
+                    target = parent ?? this;
+                }
+                else
+                {
+                    target = root;
+                }
+
+                target = path.Apply(target).SingleOrDefault();
+
+                if (target != null)
+                {
+                    if (!target.IsResolved)
+                        target.Resolve(root);
+
+                    resolvedValue = target.ResolvedValue;
+
+                    if (resolvedValue != null)
+                    {
+                        if (ReferenceEquals(resolvedValue, this))
+                            throw new InvalidOperationException("Invalid cyclic reference: Reference resolves to itself.");
+
+                        while (parent != null)
+                        {
+                            if (ReferenceEquals(resolvedValue, parent))
+                                throw new InvalidOperationException("Invalid cyclic reference: Reference resolves to a parent of the current element.");
+                            parent = parent.Parent;
+                        }
+                    }
+                }
             }
-            else
+            catch(Exception ex)
             {
-                target = root;
+                throw new ResolutionException("Error resolving reference '" + this + "'", ex);
             }
-
-            var result = new Query(target);
-
-            foreach (var part in NameParts)
-            {
-                result = part.Filter(result);
-            }
-
-            target = result.Targets.Single();
-
-            if (!target.IsResolved)
-                target.Resolve(root);
-
-            resolvedValue = target.ResolvedValue;
-
-            if (ReferenceEquals(resolvedValue, this))
-                throw new InvalidOperationException("Invalid cyclic reference: Reference resolves to itself.");
-
-            while (parent != null)
-            {
-                if (ReferenceEquals(resolvedValue, parent))
-                    throw new InvalidOperationException("Invalid cyclic reference: Reference resolves to a parent of the current element.");
-                parent = parent.Parent;
-            }
-
-            return resolvedValue != null;
         }
 
         public override GddlElement Simplify()
         {
-            if (resolved && resolvedValue != null)
+            if (resolvedValue != null)
                 return resolvedValue.Copy();
 
             return this;
@@ -130,10 +134,10 @@ namespace GDDL.Structure
         private bool EqualsImpl(GddlReference other)
         {
             return base.EqualsImpl(other) &&
-                Equals(path, other.path) &&
+                Equals(path, other.path) /*&&
                 (IsResolved
                     ? other.IsResolved && Equals(ResolvedValue, other.ResolvedValue)
-                    : !other.IsResolved);
+                    : !other.IsResolved)*/;
         }
 
         public override int GetHashCode()

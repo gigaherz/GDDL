@@ -71,9 +71,9 @@ namespace GDDL.Serialization
         }
         #endregion
         #region Implementation
-        private static readonly Regex CommentLineSplitter = new Regex("(?:(?:\n)|(?:\r\n))");
+        private static readonly Regex CommentLineSplitter = new("(?:(?:\n)|(?:\r\n))");
 
-        private readonly Stack<int> indentLevels = new Stack<int>();
+        private readonly Stack<int> indentLevels = new();
         private readonly StringBuilder builder;
 
         private int indentLevel = 0;

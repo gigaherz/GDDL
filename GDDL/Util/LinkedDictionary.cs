@@ -140,8 +140,8 @@ namespace GDDL.Util
             return false;
         }
 
-        private readonly LinkedList<KeyValuePair<TKey, TValue>> entries = new LinkedList<KeyValuePair<TKey, TValue>>();
-        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> table = new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
+        private readonly LinkedList<KeyValuePair<TKey, TValue>> entries = new();
+        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> table = new();
 
         private class KeyView : ICollection<TKey>, IReadOnlyCollection<TKey>
         {

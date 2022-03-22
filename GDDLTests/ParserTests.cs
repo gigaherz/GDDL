@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using GDDL.Exceptions;
 using GDDL.Parsing;
+using GDDL.Queries;
 using GDDL.Structure;
 
 namespace GDDL.Tests
@@ -252,7 +253,7 @@ namespace GDDL.Tests
         {
             var provider = LexerBuilder().AddLBracket().AddIdentifier("a").AddColon().AddIdentifier("b").AddRBracket().Build();
             Parser parser = Gddl.FromProvider(provider);
-            GddlList expected = GddlList.Of(GddlReference.Of(new QueryPath().ByKey("a").ByKey("b")));
+            GddlList expected = GddlList.Of(GddlReference.Of(new Query().ByKey("a").ByKey("b")));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 
@@ -261,7 +262,7 @@ namespace GDDL.Tests
         {
             var provider = LexerBuilder().AddLBracket().AddColon().AddIdentifier("a").AddColon().AddIdentifier("b").AddRBracket().Build();
             Parser parser = Gddl.FromProvider(provider);
-            GddlList expected = GddlList.Of(GddlReference.Of(new QueryPath().Absolute().ByKey("a").ByKey("b")));
+            GddlList expected = GddlList.Of(GddlReference.Of(new Query().Absolute().ByKey("a").ByKey("b")));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 
@@ -278,7 +279,7 @@ namespace GDDL.Tests
         {
             var provider = LexerBuilder().AddLBracket().AddSlash().AddIdentifier("a").AddSlash().AddIdentifier("b").AddRBracket().Build();
             Parser parser = Gddl.FromProvider(provider);
-            GddlList expected = GddlList.Of(GddlReference.Of(new QueryPath().Absolute().ByKey("a").ByKey("b")));
+            GddlList expected = GddlList.Of(GddlReference.Of(new Queries.Query().Absolute().ByKey("a").ByKey("b")));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 

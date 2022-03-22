@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace GDDL.Serialization
 {
     public class FormatterOptions

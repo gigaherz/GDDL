@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ProjectGuid>{9DD360AB-54A0-4403-825D-8D71B11D17EA}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

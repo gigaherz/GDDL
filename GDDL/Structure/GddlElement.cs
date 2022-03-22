@@ -1,10 +1,13 @@
 using GDDL.Serialization;
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
+using GDDL.Util;
 
 namespace GDDL.Structure
 {
-    public abstract class GddlElement
+    public abstract class GddlElement : DynamicObject
     {
         #region API
         public string Comment { get; set; }
@@ -46,6 +49,30 @@ namespace GDDL.Structure
 
         public GddlElement Parent { get; protected internal set; }
 
+        public virtual GddlElement this[int index]
+        {
+            get => throw new InvalidCastException("This element is not a List.");
+            set => throw new InvalidCastException("This element is not a List.");
+        }
+
+        public virtual GddlElement this[Index index]
+        {
+            get => throw new InvalidCastException("This element is not a List.");
+            set => throw new InvalidCastException("This element is not a List.");
+        }
+
+        public virtual SubList<GddlElement> this[Range range]
+        {
+            get => throw new InvalidCastException("This element is not a List.");
+            set => throw new InvalidCastException("This element is not a List.");
+        }
+
+        public virtual GddlElement this[string key]
+        {
+            get => throw new InvalidCastException("This element is not a Map.");
+            set => throw new InvalidCastException("This element is not a Map.");
+        }
+
         public virtual GddlElement Simplify()
         {
             return this;
@@ -53,6 +80,11 @@ namespace GDDL.Structure
 
         public virtual void Resolve(GddlElement root)
         {
+        }
+
+        public IEnumerable<GddlElement> Query(string query)
+        {
+            return Queries.Query.FromString(query).Apply(this);
         }
 
         public GddlElement Copy()
@@ -64,6 +96,69 @@ namespace GDDL.Structure
         {
             return 1;
         }
+        #endregion
+
+        #region Dynamic
+
+        public override IEnumerable<string> GetDynamicMemberNames()
+        {
+            return IsMap ? Enumerable.Empty<string>() : AsMap.Keys;
+        }
+
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        {
+            if (IsMap)
+            {
+                result = AsMap[binder.Name];
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+
+        public override bool TrySetMember(SetMemberBinder binder, object value)
+        {
+            if (IsMap)
+            {
+                AsMap[binder.Name] = (GddlElement)value;
+                return true;
+            }
+
+            return false;
+        }
+
+        public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
+        {
+            if (indexes.Length == 1 && IsList && indexes[0] is int i)
+            {
+                result = AsList[i];
+                return true;
+            }
+            else if (indexes.Length == 1 && IsMap && indexes[0] is string s)
+            {
+                result = AsMap[s];
+                return true;
+            }
+            result = null;
+            return false;
+        }
+
+        public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
+        {
+            if (indexes.Length == 1 && IsList && indexes[0] is int i)
+            {
+                AsList[i] = (GddlElement)value;
+                return true;
+            }
+            else if (indexes.Length == 1 && IsMap && indexes[0] is string s)
+            {
+                AsMap[s] = (GddlElement)value;
+                return true;
+            }
+            return false;
+        }
+
         #endregion
 
         #region ToString
