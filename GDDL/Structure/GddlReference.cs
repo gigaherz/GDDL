@@ -142,7 +142,7 @@ namespace GDDL.Structure
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(base.GetHashCode(), IsResolved, ResolvedValue, path);
+            return HashCode.Combine(base.GetHashCode(), path);
         }
         #endregion
     }

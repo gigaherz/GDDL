@@ -22,10 +22,10 @@ namespace GDDL.Parsing
 
         /**
          * Parses the whole file and returns the resulting root element.
-         * @param simplify If true, the structure
+         * @param simplify If true, queries are resolved and values are simplified.
          * @return The root element
          */
-        public GddlDocument Parse(bool simplify = true)
+        public GddlDocument Parse(bool simplify = false)
         {
             var (ret, danglingComment) = Root();
 
@@ -208,16 +208,26 @@ namespace GDDL.Parsing
                     break;
                 case TokenType.LBracket:
                 {
+                    var hasStart = false;
                     var start = Index.FromStart(0);
 
-                    if (Lexer.Peek() == TokenType.IntegerLiteral)
+                    if (Lexer.Peek() == TokenType.Caret)
+                    {
+                        PopExpected(TokenType.Caret);
+                        start = Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
+                        hasStart = true;
+                    }
+                    else if (Lexer.Peek() == TokenType.IntegerLiteral)
                     {
                         start = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
+                        hasStart = true;
+                    }
 
-                        if (Lexer.Peek() == TokenType.RBracket)
-                        {
-                            path = path.ByRange(new Range(start, start.Value + 1));
-                        }
+                    if (hasStart && Lexer.Peek() == TokenType.RBracket)
+                    {
+                        PopExpected(TokenType.RBracket);
+                        path = path.ByRange(new Range(start, start.Value + 1));
+                        break;
                     }
 
                     var inclusive = PopExpected(TokenType.DoubleDot, TokenType.TripleDot);

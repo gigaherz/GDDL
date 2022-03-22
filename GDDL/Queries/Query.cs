@@ -289,7 +289,7 @@ namespace GDDL.Queries
 
         public override bool Equals(object other)
         {
-            return other != null && GetType() == other.GetType();
+            return other == this;
         }
 
         public override int GetHashCode()
@@ -325,7 +325,7 @@ namespace GDDL.Queries
 
         public override bool Equals(object other)
         {
-            return other != null && GetType() == other.GetType();
+            return other == this;
         }
 
         public override int GetHashCode()
