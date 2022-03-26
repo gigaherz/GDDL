@@ -6,6 +6,17 @@ namespace GDDL.Structure
     public sealed class GddlDocument : IEquatable<GddlDocument>
     {
         #region API
+
+        public static GddlDocument Create()
+        {
+            return new GddlDocument();
+        }
+
+        public static GddlDocument Create(GddlElement root)
+        {
+            return new GddlDocument(root);
+        }
+
         /// <summary>
         /// The root element of this document.
         /// </summary>
@@ -15,26 +26,36 @@ namespace GDDL.Structure
         /// Comment data present after the root element.
         /// </summary>
         public string DanglingComment { get; set; }
+
         public bool HasDanglingComment => !string.IsNullOrEmpty(DanglingComment);
 
-        public GddlDocument()
+        #endregion
+
+        #region Implementation
+
+        private GddlDocument()
+            : this(GddlMap.Empty())
         {
         }
 
-        public GddlDocument(GddlElement root)
+        private GddlDocument(GddlElement root)
         {
             Root = root;
         }
+
         #endregion
 
         #region ToString
+
         public override string ToString()
         {
             return Formatter.FormatCompact(this);
         }
+
         #endregion
 
         #region Equality
+
         public override bool Equals(object other)
         {
             if (ReferenceEquals(other, this)) return true;
@@ -53,11 +74,12 @@ namespace GDDL.Structure
         {
             return Equals(Root, other.Root) && Equals(DanglingComment, other.DanglingComment);
         }
-        
+
         public override int GetHashCode()
         {
             return HashCode.Combine(Root, DanglingComment);
         }
+
         #endregion
     }
 }

@@ -10,8 +10,8 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void ReferenceResolvesToElement()
         {
-            GddlMap root = new GddlMap() { { "child", GddlValue.Of("child") } };
-            GddlReference r = GddlReference.Of(new Query().Absolute());
+            var root = new GddlMap() { { "child", GddlValue.Of("child") } };
+            var r = GddlReference.Of(new Query().Absolute());
             r.Resolve(root);
             Assert.AreEqual(root, r.ResolvedValue);
         }
@@ -21,9 +21,10 @@ namespace GDDL.Tests.Structure
         {
             var relativeChild = GddlValue.Of("Relative child");
             var absoluteChild = GddlValue.Of("Absolute child");
-            GddlMap parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
-            GddlMap root = new GddlMap() { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
-            GddlReference r = GddlReference.Of(new Query().Absolute().ByKey("child"));
+            var parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
+            var root = new GddlMap()
+                { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
+            var r = GddlReference.Of(new Query().Absolute().ByKey("child"));
             parent.Add("reference", r);
             r.Resolve(root);
             Assert.AreEqual(absoluteChild, r.ResolvedValue);
@@ -34,9 +35,10 @@ namespace GDDL.Tests.Structure
         {
             var relativeChild = GddlValue.Of("Relative child");
             var absoluteChild = GddlValue.Of("Absolute child");
-            GddlMap parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
-            GddlMap root = new GddlMap() { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
-            GddlReference r = GddlReference.Of(new Query().ByKey("child"));
+            var parent = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
+            var root = new GddlMap()
+                { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
+            var r = GddlReference.Of(new Query().ByKey("child"));
             parent.Add("reference", r);
             r.Resolve(root);
             Assert.AreEqual(relativeChild, r.ResolvedValue);
@@ -47,10 +49,11 @@ namespace GDDL.Tests.Structure
         {
             var relativeChild = GddlValue.Of("Relative child");
             var absoluteChild = GddlValue.Of("Absolute child");
-            GddlMap parent2 = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
-            GddlMap parent = new GddlMap() { { "parent", parent2 } };
-            GddlMap root = new GddlMap() { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
-            GddlReference r = GddlReference.Of(new Query().ByKey("parent").ByKey("child"));
+            var parent2 = new GddlMap() { { "parent", GddlValue.Of("parent") }, { "child", relativeChild } };
+            var parent = new GddlMap() { { "parent", parent2 } };
+            var root = new GddlMap()
+                { { "root", GddlValue.Of("root") }, { "child", absoluteChild }, { "parent", parent } };
+            var r = GddlReference.Of(new Query().ByKey("parent").ByKey("child"));
             parent.Add("reference", r);
             r.Resolve(root);
             Assert.AreEqual(relativeChild, r.ResolvedValue);

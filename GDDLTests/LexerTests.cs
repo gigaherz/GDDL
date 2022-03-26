@@ -74,8 +74,11 @@ namespace GDDL.Tests
             Assert.AreEqual(TokenString("'\\uF00F'"), LexSingle("'\\uF00F'"));
 
             // Unicode
-            Assert.AreEqual(TokenString("'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"),
-                    LexSingle("'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"));
+            Assert.AreEqual(
+                TokenString(
+                    "'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"),
+                LexSingle(
+                    "'\uD800\uDF3C\uD800\uDF30\uD800\uDF32 \uD800\uDF32\uD800\uDF3B\uD800\uDF34\uD800\uDF43 \uD800\uDF39̈\uD800\uDF44\uD800\uDF30\uD800\uDF3D, \uD800\uDF3D\uD800\uDF39 \uD800\uDF3C\uD800\uDF39\uD800\uDF43 \uD800\uDF45\uD800\uDF3F \uD800\uDF3D\uD800\uDF33\uD800\uDF30\uD800\uDF3D \uD800\uDF31\uD800\uDF42\uD800\uDF39\uD800\uDF32\uD800\uDF32\uD800\uDF39\uD800\uDF38.'"));
         }
 
         [TestMethod]
@@ -124,8 +127,8 @@ namespace GDDL.Tests
 
         public static Token LexSingle(string text)
         {
-            Lexer lexer = new Lexer(MakeReader(text));
-            Token token = lexer.Pop();
+            var lexer = new Lexer(MakeReader(text));
+            var token = lexer.Pop();
             Assert.AreEqual(TokenType.End, lexer.Peek(), $"Should find END after reading token {token}");
             return token;
         }
@@ -225,7 +228,8 @@ namespace GDDL.Tests
             return Token(name, text, context, comment, "");
         }
 
-        public static Token Token(TokenType name, string text, ParsingContext context, string comment, string whitespace)
+        public static Token Token(TokenType name, string text, ParsingContext context, string comment,
+            string whitespace)
         {
             return new Token(name, text, context, comment, whitespace);
         }

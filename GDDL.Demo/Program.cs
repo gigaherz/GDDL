@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GDDL.Serialization;
+using GDDL.Structure;
 
 namespace GDDL.Demo
 {

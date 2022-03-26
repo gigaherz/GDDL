@@ -9,6 +9,7 @@ namespace GDDL.Structure
     public sealed class GddlMap : GddlElement<GddlMap>, IDictionary<string, GddlElement>
     {
         #region API
+
         public static GddlMap Empty()
         {
             return new GddlMap();
@@ -94,6 +95,7 @@ namespace GDDL.Structure
             {
                 OnRemove(existing);
             }
+
             return contents.Remove(name);
         }
 
@@ -107,18 +109,21 @@ namespace GDDL.Structure
         {
             return 2 + contents.Values.Sum(e => e.GetFormattingComplexity());
         }
+
         #endregion
 
         #region Implementation
+
         private readonly LinkedDictionary<string, GddlElement> contents = new();
 
         private void OnAdd(GddlElement e)
         {
-            if (e.Parent != null) throw new InvalidOperationException("The element is already assigned to a collection.");
+            if (e.Parent != null)
+                throw new InvalidOperationException("The element is already assigned to a collection.");
             e.Parent = this;
         }
 
-        private void OnRemove(GddlElement e)
+        private static void OnRemove(GddlElement e)
         {
             e.Parent = null;
         }
@@ -131,6 +136,7 @@ namespace GDDL.Structure
         #endregion
 
         #region IDictionary Extras
+
         public IEnumerator<KeyValuePair<string, GddlElement>> GetEnumerator()
         {
             return contents.GetEnumerator();
@@ -167,7 +173,8 @@ namespace GDDL.Structure
             return contents.Contains(item);
         }
 
-        void ICollection<KeyValuePair<string, GddlElement>>.CopyTo(KeyValuePair<string, GddlElement>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<string, GddlElement>>.CopyTo(KeyValuePair<string, GddlElement>[] array,
+            int arrayIndex)
         {
             ((ICollection<KeyValuePair<string, GddlElement>>)contents).CopyTo(array, arrayIndex);
         }
@@ -178,12 +185,15 @@ namespace GDDL.Structure
             {
                 OnRemove(existing);
             }
+
             return ((ICollection<KeyValuePair<string, GddlElement>>)contents).Remove(item);
         }
+
         #endregion
 
         #region Element Implementation
-        public override GddlMap CopyInternal()
+
+        protected override GddlMap CopyInternal()
         {
             var collection = new GddlMap();
             CopyTo(collection);
@@ -193,7 +203,7 @@ namespace GDDL.Structure
         protected override void CopyTo(GddlMap other)
         {
             base.CopyTo(other);
-            foreach (var (name,e) in contents)
+            foreach (var (name, e) in contents)
             {
                 other.Add(name, e.Copy());
             }
@@ -216,9 +226,11 @@ namespace GDDL.Structure
 
             return this;
         }
+
         #endregion
 
         #region Equality
+
         public override bool Equals(object other)
         {
             if (ReferenceEquals(other, this)) return true;
@@ -244,7 +256,7 @@ namespace GDDL.Structure
             if (contents.Count != other.contents.Count)
                 return false;
 
-            foreach (var (k,v) in contents)
+            foreach (var (k, v) in contents)
             {
                 if (!other.contents.TryGetValue(k, out var v2))
                     return false;
@@ -260,6 +272,7 @@ namespace GDDL.Structure
         {
             return HashCode.Combine(base.GetHashCode(), contents, TypeName);
         }
+
         #endregion
     }
 }

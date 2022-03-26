@@ -9,10 +9,12 @@ namespace GDDL.Structure
     public sealed class GddlList : GddlElement<GddlList>, IList<GddlElement>
     {
         #region API
+
         public static GddlList Empty()
         {
             return new GddlList();
         }
+
         public static GddlList Of(params GddlElement[] initial)
         {
             return new GddlList(initial);
@@ -40,7 +42,8 @@ namespace GDDL.Structure
         public override GddlElement this[int index]
         {
             get => contents[index];
-            set {
+            set
+            {
                 var prev = contents[index];
                 if (!ReferenceEquals(prev, value))
                 {
@@ -68,7 +71,8 @@ namespace GDDL.Structure
 
         public override SubList<GddlElement> this[Range range]
         {
-            get {
+            get
+            {
                 var (start, length) = range.GetOffsetAndLength(contents.Count);
                 return new SubList<GddlElement>(contents, start, length);
             }
@@ -125,7 +129,7 @@ namespace GDDL.Structure
 
         public void Clear()
         {
-            foreach(var e in contents) OnRemove(e);
+            foreach (var e in contents) OnRemove(e);
             contents.Clear();
         }
 
@@ -133,24 +137,29 @@ namespace GDDL.Structure
         {
             return 2 + contents.Sum(e => e.GetFormattingComplexity());
         }
+
         #endregion
 
         #region Implementation
+
         private readonly List<GddlElement> contents = new();
 
         private void OnAdd(GddlElement e)
         {
-            if (e.Parent != null) throw new InvalidOperationException("The element is already assigned to a collection.");
+            if (e.Parent != null)
+                throw new InvalidOperationException("The element is already assigned to a collection.");
             e.Parent = this;
         }
 
-        private void OnRemove(GddlElement e)
+        private static void OnRemove(GddlElement e)
         {
             e.Parent = null;
         }
+
         #endregion
 
         #region IList Extras
+
         public IEnumerator<GddlElement> GetEnumerator()
         {
             return contents.GetEnumerator();
@@ -170,10 +179,12 @@ namespace GDDL.Structure
         {
             contents.CopyTo(array, arrayIndex);
         }
+
         #endregion
 
         #region Element Implementation
-        public override GddlList CopyInternal()
+
+        protected override GddlList CopyInternal()
         {
             var collection = new GddlList();
             CopyTo(collection);
@@ -206,14 +217,16 @@ namespace GDDL.Structure
 
             return this;
         }
-        
+
         public IEnumerable<GddlMap> ByType(string type)
         {
             return contents.OfType<GddlMap>().Where(e => e.TypeName == type);
         }
+
         #endregion
 
         #region Equality
+
         public override bool Equals(object other)
         {
             if (ReferenceEquals(other, this)) return true;
@@ -240,6 +253,7 @@ namespace GDDL.Structure
         {
             return HashCode.Combine(base.GetHashCode(), contents);
         }
+
         #endregion
     }
 }

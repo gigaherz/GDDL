@@ -1,15 +1,27 @@
+//#define DYNAMIC
+
 using GDDL.Serialization;
 using System;
 using System.Collections.Generic;
+#if DYNAMIC
 using System.Dynamic;
 using System.Linq;
+#endif
 using GDDL.Util;
 
 namespace GDDL.Structure
 {
-    public abstract class GddlElement : DynamicObject
+    public abstract class GddlElement
+#if DYNAMIC
+        : DynamicObject
+#endif
     {
         #region API
+
+#if DYNAMIC
+        public dynamic Dynamic => this;
+#endif
+
         public string Comment { get; set; }
         public bool HasComment => !string.IsNullOrEmpty(Comment);
 
@@ -96,9 +108,11 @@ namespace GDDL.Structure
         {
             return 1;
         }
+
         #endregion
 
-        #region Dynamic
+#if DYNAMIC
+#region Dynamic
 
         public override IEnumerable<string> GetDynamicMemberNames()
         {
@@ -159,16 +173,20 @@ namespace GDDL.Structure
             return false;
         }
 
-        #endregion
+#endregion
+#endif
 
         #region ToString
+
         public sealed override string ToString()
         {
             return Formatter.FormatCompact(this);
         }
+
         #endregion
 
         #region Equality
+
         public abstract override bool Equals(object obj);
 
         protected bool EqualsImpl(GddlElement other)
@@ -180,6 +198,7 @@ namespace GDDL.Structure
         {
             return HashCode.Combine(Comment);
         }
+
         #endregion
 
         #region Implementation
@@ -189,6 +208,7 @@ namespace GDDL.Structure
         }
 
         protected internal abstract GddlElement CopyBridge();
+
         #endregion
     }
 
@@ -196,14 +216,17 @@ namespace GDDL.Structure
         where T : GddlElement<T>
     {
         #region API
+
         public T WithComment(string comment)
         {
             Comment = comment;
             return (T)this;
         }
+
         #endregion
 
         #region Implementation
+
         protected internal GddlElement()
         {
         }
@@ -215,12 +238,12 @@ namespace GDDL.Structure
 
         public new T Copy()
         {
-            T copy = CopyInternal();
+            var copy = CopyInternal();
             copy.Resolve(this);
             return copy;
         }
 
-        public abstract T CopyInternal();
+        protected abstract T CopyInternal();
 
         protected virtual void CopyTo(T other)
         {
@@ -231,6 +254,7 @@ namespace GDDL.Structure
         }
 
         public abstract bool Equals(T other);
+
         #endregion
     }
 }

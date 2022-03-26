@@ -1,8 +1,8 @@
 {
-  "profiles": {
-    "GDDL.Demo": {
-      "commandName": "Project",
-      "workingDirectory": "D:\\Projects\\GDDL.NET\\Samples"
+    "profiles": {
+        "GDDL.Demo": {
+            "commandName": "Project",
+            "workingDirectory": "D:\\Projects\\GDDL.NET\\Samples"
+        }
     }
-  }
 }

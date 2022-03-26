@@ -30,13 +30,14 @@ namespace GDDL.Util
 
         public T this[int index] => Parent[Start + index];
 
-        public T this[Index index] => Parent[Start + (index.IsFromEnd ? Count-index.Value : index.Value)];
-        
+        public T this[Index index] => Parent[Start + (index.IsFromEnd ? Count - index.Value : index.Value)];
+
         public IReadOnlyList<T> this[Range range]
         {
-            get {
+            get
+            {
                 var (start, length) = range.GetOffsetAndLength(Count);
-                return new SubList<T>(Parent, Start+start, length);
+                return new SubList<T>(Parent, Start + start, length);
             }
         }
     }

@@ -14,7 +14,8 @@ namespace GDDL.Util
         {
         }
 
-        public MultiMap(Func<IDictionary<TKey, ICollection<TValue>>> storageFactory, Func<ICollection<TValue>> collectionFactory)
+        public MultiMap(Func<IDictionary<TKey, ICollection<TValue>>> storageFactory,
+            Func<ICollection<TValue>> collectionFactory)
         {
             storage = storageFactory();
             this.collectionFactory = collectionFactory;
@@ -26,6 +27,7 @@ namespace GDDL.Util
             {
                 return Optional<ICollection<TValue>>.Empty;
             }
+
             return Optional.Of(value);
         }
 
@@ -37,15 +39,13 @@ namespace GDDL.Util
                 value = collectionFactory();
                 storage.Add(key, value);
             }
+
             return value;
         }
 
         public ICollection<TValue> this[TKey key]
         {
-            get
-            {
-                return GetOrEmpty(key).OrElseGet(() => new List<TValue>());
-            }
+            get { return GetOrEmpty(key).OrElseGet(() => new List<TValue>()); }
         }
 
         private bool Contains(TKey key, TValue value)
@@ -86,5 +86,4 @@ namespace GDDL.Util
             return GetEnumerator();
         }
     }
-
 }

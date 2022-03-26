@@ -11,47 +11,60 @@ namespace GDDL.Tests
     [TestClass]
     public class ParserTests
     {
-
         [TestMethod]
         public void MockLexerWorks()
         {
             ITokenProvider provider = LexerBuilder()
-                    .AddInt()
-                    .AddNInt()
-                    .AddFloat()
-                    .AddNFloat()
-                    .AddNaN()
-                    .AddInf()
-                    .AddNInf()
-                    .AddHexInt()
-                    .AddString()
-                    .AddBooleanTrue()
-                    .AddBooleanFalse()
-                    .AddLBrace()
-                    .AddRBrace()
-                    .AddLBracket()
-                    .AddRBracket()
-                    .AddEquals()
-                    .AddColon()
-                    .AddSlash()
-                    .Build();
+                .AddInt()
+                .AddNInt()
+                .AddFloat()
+                .AddNFloat()
+                .AddNaN()
+                .AddInf()
+                .AddNInf()
+                .AddHexInt()
+                .AddString()
+                .AddBooleanTrue()
+                .AddBooleanFalse()
+                .AddLBrace()
+                .AddRBrace()
+                .AddLBracket()
+                .AddRBracket()
+                .AddEquals()
+                .AddColon()
+                .AddSlash()
+                .Build();
 
-            Assert.AreEqual(new Token(TokenType.IntegerLiteral, "1", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.IntegerLiteral, "-1", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.DecimalLiteral, "1.0", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.DecimalLiteral, "-1.0", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.DecimalLiteral, ".NaN", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.DecimalLiteral, ".Inf", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.DecimalLiteral, "-.Inf", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.HexIntLiteral, "0x1", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.StringLiteral, "\"1\"", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.True, "true", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.False, "false", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
+            Assert.AreEqual(new Token(TokenType.IntegerLiteral, "1", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.IntegerLiteral, "-1", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.DecimalLiteral, "1.0", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.DecimalLiteral, "-1.0", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.DecimalLiteral, ".NaN", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.DecimalLiteral, ".Inf", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.DecimalLiteral, "-.Inf", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.HexIntLiteral, "0x1", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.StringLiteral, "\"1\"", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.True, "true", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.False, "false", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
             Assert.AreEqual(new Token(TokenType.LBrace, "{", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
             Assert.AreEqual(new Token(TokenType.RBrace, "}", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.LBracket, "[", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.RBracket, "]", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
-            Assert.AreEqual(new Token(TokenType.EqualSign, "=", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
+            Assert.AreEqual(new Token(TokenType.LBracket, "[", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.RBracket, "]", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
+            Assert.AreEqual(new Token(TokenType.EqualSign, "=", new ParsingContext("TEST", 1, 1), "", ""),
+                provider.Pop());
             Assert.AreEqual(new Token(TokenType.Colon, ":", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
             Assert.AreEqual(new Token(TokenType.Slash, "/", new ParsingContext("TEST", 1, 1), "", ""), provider.Pop());
 
@@ -66,32 +79,32 @@ namespace GDDL.Tests
         [TestMethod]
         public void ParsesNullAsValue()
         {
-            ITokenProvider provider = LexerBuilder().AddInt().Build();
-            Parser parser = new Parser(provider);
+            var provider = LexerBuilder().AddInt().Build();
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(1), parser.Parse(false).Root);
         }
 
         [TestMethod]
         public void ParsesIntegerAsValue()
         {
-            ITokenProvider provider = LexerBuilder().AddInt().Build();
-            Parser parser = new Parser(provider);
+            var provider = LexerBuilder().AddInt().Build();
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(1), parser.Parse(false).Root);
         }
 
         [TestMethod]
         public void ParsesNegativeIntegerAsValue()
         {
-            ITokenProvider provider = LexerBuilder().AddNInt().Build();
-            Parser parser = new Parser(provider);
+            var provider = LexerBuilder().AddNInt().Build();
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(-1), parser.Parse(false).Root);
         }
 
         [TestMethod]
         public void ParsesHexIntegerAsValue()
         {
-            ITokenProvider provider = LexerBuilder().AddHexInt().Build();
-            Parser parser = new Parser(provider);
+            var provider = LexerBuilder().AddHexInt().Build();
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(1), parser.Parse(false).Root);
         }
 
@@ -99,7 +112,7 @@ namespace GDDL.Tests
         public void ParsesDoubleAsValue()
         {
             var provider = LexerBuilder().AddFloat().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(1.0), parser.Parse(false).Root);
         }
 
@@ -107,7 +120,7 @@ namespace GDDL.Tests
         public void ParsesNegativeDoubleAsValue()
         {
             var provider = LexerBuilder().AddNFloat().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(-1.0), parser.Parse(false).Root);
         }
 
@@ -115,7 +128,7 @@ namespace GDDL.Tests
         public void ParsesNaNAsValue()
         {
             var provider = LexerBuilder().AddNaN().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(double.NaN), parser.Parse(false).Root);
         }
 
@@ -123,7 +136,7 @@ namespace GDDL.Tests
         public void ParsesInfinityAsValue()
         {
             var provider = LexerBuilder().AddInf().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(double.PositiveInfinity), parser.Parse(false).Root);
         }
 
@@ -131,7 +144,7 @@ namespace GDDL.Tests
         public void ParsesNegativeInfinityAsValue()
         {
             var provider = LexerBuilder().AddNInf().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(double.NegativeInfinity), parser.Parse(false).Root);
         }
 
@@ -139,7 +152,7 @@ namespace GDDL.Tests
         public void ParsesStringAsValue()
         {
             var provider = LexerBuilder().AddString().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of("1"), parser.Parse(false).Root);
         }
 
@@ -147,7 +160,7 @@ namespace GDDL.Tests
         public void ParsesBooleanTrueAsValue()
         {
             var provider = LexerBuilder().AddBooleanTrue().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(true), parser.Parse(false).Root);
         }
 
@@ -155,7 +168,7 @@ namespace GDDL.Tests
         public void ParsesBooleanFalseAsValue()
         {
             var provider = LexerBuilder().AddBooleanFalse().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlValue.Of(false), parser.Parse(false).Root);
         }
 
@@ -163,7 +176,7 @@ namespace GDDL.Tests
         public void ParsesBracketsAsList()
         {
             var provider = LexerBuilder().AddLBracket().AddRBracket().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             var expected = GddlList.Empty();
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
@@ -172,7 +185,7 @@ namespace GDDL.Tests
         public void ParsesValueInsideList()
         {
             var provider = LexerBuilder().AddLBracket().AddInt().AddRBracket().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             var expected = GddlList.Of(GddlValue.Of(1));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
@@ -181,7 +194,7 @@ namespace GDDL.Tests
         public void ParsesMultipleValuesInsideList()
         {
             var provider = LexerBuilder().AddLBracket().AddInt().AddComma().AddInt().AddRBracket().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             var expected = GddlList.Of(GddlValue.Of(1), GddlValue.Of(1));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
@@ -190,8 +203,8 @@ namespace GDDL.Tests
         public void ParsesNestedList()
         {
             var provider = LexerBuilder().AddLBracket().AddLBracket().AddRBracket().AddRBracket().Build();
-            Parser parser = new Parser(provider);
-            GddlList expected = GddlList.Of(GddlList.Empty());
+            var parser = new Parser(provider);
+            var expected = GddlList.Of(GddlList.Empty());
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 
@@ -199,8 +212,8 @@ namespace GDDL.Tests
         public void CommaIsOptionalAfterNestedList()
         {
             var provider = LexerBuilder().AddLBracket().AddLBracket().AddRBracket().AddInt().AddRBracket().Build();
-            Parser parser = new Parser(provider);
-            GddlList expected = GddlList.Of(GddlList.Empty(), GddlValue.Of(1));
+            var parser = new Parser(provider);
+            var expected = GddlList.Of(GddlList.Empty(), GddlValue.Of(1));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 
@@ -208,7 +221,7 @@ namespace GDDL.Tests
         public void AcceptsTrailingCommaInList()
         {
             ITokenProvider provider = LexerBuilder().AddLBracket().AddInt().AddComma().AddRBracket().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             var expected = GddlList.Of(GddlValue.Of(1));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
@@ -217,7 +230,7 @@ namespace GDDL.Tests
         public void ParsesBracesAsMap()
         {
             var provider = LexerBuilder().AddLBrace().AddRBrace().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             Assert.AreEqual(GddlMap.Empty(), parser.Parse(false).Root);
         }
 
@@ -225,7 +238,7 @@ namespace GDDL.Tests
         public void ParsesTypedMap()
         {
             var provider = LexerBuilder().AddIdentifier("test").AddLBrace().AddRBrace().Build();
-            Parser parser = new Parser(provider);
+            var parser = new Parser(provider);
             var expected = GddlMap.Empty().WithTypeName("test");
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
@@ -234,52 +247,57 @@ namespace GDDL.Tests
         public void ParsesNamedValueInsideMap()
         {
             var provider = LexerBuilder().AddLBrace().AddString("\"a\"").AddEquals().AddInt().AddRBrace().Build();
-            Parser parser = new Parser(provider);
-            GddlMap expected = new GddlMap() { { "a", GddlValue.Of(1) } };
+            var parser = new Parser(provider);
+            var expected = new GddlMap() { { "a", GddlValue.Of(1) } };
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 
         [TestMethod]
         public void ParsesNamedTypedNestedMap()
         {
-            var provider = LexerBuilder().AddLBrace().AddString("\"n\"").AddEquals().AddIdentifier("a").AddLBrace().AddRBrace().AddRBrace().Build();
-            Parser parser = new Parser(provider);
-            GddlMap expected = new GddlMap() { { "n", GddlMap.Empty().WithTypeName("a") } };
+            var provider = LexerBuilder().AddLBrace().AddString("\"n\"").AddEquals().AddIdentifier("a").AddLBrace()
+                .AddRBrace().AddRBrace().Build();
+            var parser = new Parser(provider);
+            var expected = new GddlMap() { { "n", GddlMap.Empty().WithTypeName("a") } };
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 
         [TestMethod]
         public void ParsesReference()
         {
-            var provider = LexerBuilder().AddLBracket().AddIdentifier("a").AddColon().AddIdentifier("b").AddRBracket().Build();
-            Parser parser = new Parser(provider);
-            GddlList expected = GddlList.Of(GddlReference.Of(new Query().ByKey("a").ByKey("b")));
+            var provider = LexerBuilder().AddLBracket().AddIdentifier("a").AddColon().AddIdentifier("b").AddRBracket()
+                .Build();
+            var parser = new Parser(provider);
+            var expected = GddlList.Of(GddlReference.Of(new Query().ByKey("a").ByKey("b")));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 
         [TestMethod]
         public void ParsesRootedReference()
         {
-            var provider = LexerBuilder().AddLBracket().AddColon().AddIdentifier("a").AddColon().AddIdentifier("b").AddRBracket().Build();
-            Parser parser = new Parser(provider);
-            GddlList expected = GddlList.Of(GddlReference.Of(new Query().Absolute().ByKey("a").ByKey("b")));
+            var provider = LexerBuilder().AddLBracket().AddColon().AddIdentifier("a").AddColon().AddIdentifier("b")
+                .AddRBracket().Build();
+            var parser = new Parser(provider);
+            var expected = GddlList.Of(GddlReference.Of(new Query().Absolute().ByKey("a").ByKey("b")));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 
         [TestMethod]
         public void RejectsMixedDelimiterReference()
         {
-            var provider = LexerBuilder().AddLBracket().AddSlash().AddIdentifier("a").AddColon().AddIdentifier("b").AddRBracket().Build();
-            Parser parser = new Parser(provider);
+            var provider = LexerBuilder().AddLBracket().AddSlash().AddIdentifier("a").AddColon().AddIdentifier("b")
+                .AddRBracket().Build();
+            var parser = new Parser(provider);
             Assert.ThrowsException<ParserException>(() => parser.Parse(false));
         }
 
         [TestMethod]
         public void ParsesSlashReference()
         {
-            var provider = LexerBuilder().AddLBracket().AddSlash().AddIdentifier("a").AddSlash().AddIdentifier("b").AddRBracket().Build();
-            Parser parser = new Parser(provider);
-            GddlList expected = GddlList.Of(GddlReference.Of(new Queries.Query().Absolute().ByKey("a").ByKey("b")));
+            var provider = LexerBuilder().AddLBracket().AddSlash().AddIdentifier("a").AddSlash().AddIdentifier("b")
+                .AddRBracket().Build();
+            var parser = new Parser(provider);
+            var expected = GddlList.Of(GddlReference.Of(new Queries.Query().Absolute().ByKey("a").ByKey("b")));
             Assert.AreEqual(expected, parser.Parse(false).Root);
         }
 
@@ -293,7 +311,7 @@ namespace GDDL.Tests
 
         private class MockLexerBuilder
         {
-            private readonly List<Token> builder = new List<Token>();
+            private readonly List<Token> builder = new();
 
             public MockLexerBuilder AddEnd()
             {
@@ -369,6 +387,7 @@ namespace GDDL.Tests
             {
                 return Add(TokenType.RBrace, "}");
             }
+
             public MockLexerBuilder AddLBracket()
             {
                 return Add(TokenType.LBracket, "[");
@@ -413,8 +432,9 @@ namespace GDDL.Tests
             {
                 return Add(name, text, new ParsingContext("TEST", 1, 1));
             }
-            
-            public MockLexerBuilder Add(TokenType name, string text, ParsingContext context, string comment = "", string whitespace = "")
+
+            public MockLexerBuilder Add(TokenType name, string text, ParsingContext context, string comment = "",
+                string whitespace = "")
             {
                 builder.Add(new Token(name, text, context, comment, whitespace));
                 return this;

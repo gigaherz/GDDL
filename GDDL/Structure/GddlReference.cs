@@ -17,7 +17,7 @@ namespace GDDL.Structure
 
         public override bool IsReference => true;
         public override GddlReference AsReference => this;
-        
+
         public override bool IsResolved => resolvedValue != null;
         public override GddlElement ResolvedValue => resolvedValue;
 
@@ -29,17 +29,20 @@ namespace GDDL.Structure
         public bool IsAbsolute => path.IsAbsolute;
 
         public IReadOnlyList<QueryComponent> NameParts => path.PathComponents;
+
         #endregion
 
         #region Implementation
+
         private readonly Queries.Query path;
 
         private GddlElement resolvedValue;
+
         #endregion
 
         #region Element
 
-        public override GddlReference CopyInternal()
+        protected override GddlReference CopyInternal()
         {
             var reference = new GddlReference(path.Copy());
             CopyTo(reference);
@@ -88,18 +91,20 @@ namespace GDDL.Structure
                     if (resolvedValue != null)
                     {
                         if (ReferenceEquals(resolvedValue, this))
-                            throw new InvalidOperationException("Invalid cyclic reference: Reference resolves to itself.");
+                            throw new InvalidOperationException(
+                                "Invalid cyclic reference: Reference resolves to itself.");
 
                         while (parent != null)
                         {
                             if (ReferenceEquals(resolvedValue, parent))
-                                throw new InvalidOperationException("Invalid cyclic reference: Reference resolves to a parent of the current element.");
+                                throw new InvalidOperationException(
+                                    "Invalid cyclic reference: Reference resolves to a parent of the current element.");
                             parent = parent.Parent;
                         }
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new ResolutionException("Error resolving reference '" + this + "'", ex);
             }
@@ -111,8 +116,8 @@ namespace GDDL.Structure
                 return resolvedValue.Copy();
 
             return this;
-
         }
+
         #endregion
 
         #region Equality
@@ -134,7 +139,7 @@ namespace GDDL.Structure
         private bool EqualsImpl(GddlReference other)
         {
             return base.EqualsImpl(other) &&
-                Equals(path, other.path) /*&&
+                   Equals(path, other.path) /*&&
                 (IsResolved
                     ? other.IsResolved && Equals(ResolvedValue, other.ResolvedValue)
                     : !other.IsResolved)*/;
@@ -144,6 +149,7 @@ namespace GDDL.Structure
         {
             return HashCode.Combine(base.GetHashCode(), path);
         }
+
         #endregion
     }
 }

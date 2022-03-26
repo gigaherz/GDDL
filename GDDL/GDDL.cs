@@ -78,6 +78,5 @@ namespace GDDL
             var parser = new Parser(lexer);
             return parser.Parse();
         }
-
     }
 }

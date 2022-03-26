@@ -28,7 +28,8 @@ namespace GDDL.Queries
 
         public Query Absolute()
         {
-            if (PathComponents.Count > 0) throw new InvalidOperationException("Cannot set Absolute after path components have been added.");
+            if (PathComponents.Count > 0)
+                throw new InvalidOperationException("Cannot set Absolute after path components have been added.");
             absolute = true;
             return this;
         }
@@ -78,7 +79,7 @@ namespace GDDL.Queries
 
         public void CopyTo(Query other)
         {
-            foreach(var component in pathComponents)
+            foreach (var component in pathComponents)
             {
                 other.pathComponents.Add(component.Copy());
             }
@@ -112,7 +113,7 @@ namespace GDDL.Queries
     public abstract class QueryComponent
     {
         public abstract IEnumerable<GddlElement> Filter(IEnumerable<GddlElement> input);
-        
+
         public abstract string ToString(Formatter formatter);
 
         public abstract QueryComponent Copy();
@@ -201,36 +202,39 @@ namespace GDDL.Queries
                     var end = range.End.Value;
                     if (range.Start.IsFromEnd) start = m.Count - start;
                     if (range.End.IsFromEnd) end = m.Count - end;
-                    return m.Skip(start).Take(end-start);
+                    return m.Skip(start).Take(end - start);
                 });
         }
 
         public override string ToString(Formatter formatter)
         {
             var sb = new StringBuilder();
-            sb.Append("[");
+            sb.Append('[');
             var start = range.Start;
             var end = range.End;
             if (start.Value != 0 || start.IsFromEnd)
             {
-                if (start.IsFromEnd) sb.Append("^");
+                if (start.IsFromEnd) sb.Append('^');
                 sb.Append(start.Value);
                 if (end.IsFromEnd == start.IsFromEnd)
                 {
-                    if ((!start.IsFromEnd && (start.Value + 1 == end.Value)) || (start.IsFromEnd && (start.Value == end.Value + 1)))
+                    if ((!start.IsFromEnd && (start.Value + 1 == end.Value)) ||
+                        (start.IsFromEnd && (start.Value == end.Value + 1)))
                     {
-                        sb.Append("]");
+                        sb.Append(']');
                         return sb.ToString();
                     }
                 }
             }
+
             sb.Append("..");
             if (end.Value != 0 || end.IsFromEnd)
             {
-                if (end.IsFromEnd) sb.Append("^");
+                if (end.IsFromEnd) sb.Append('^');
                 sb.Append(end.Value);
             }
-            sb.Append("]");
+
+            sb.Append(']');
             return sb.ToString();
         }
 
@@ -263,7 +267,7 @@ namespace GDDL.Queries
             return range.GetHashCode();
         }
     }
-    
+
     public class SelfQueryComponent : QueryComponent
     {
         public static SelfQueryComponent Instance { get; } = new();

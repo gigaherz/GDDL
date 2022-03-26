@@ -12,10 +12,10 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void EqualsAndHashcodeWork()
         {
-            GddlValue vNull = GddlValue.Null();
-            GddlValue vSame1 = GddlValue.Of(1);
-            GddlValue vSame2 = GddlValue.Of(1);
-            GddlValue vDifferent = GddlValue.Of("s");
+            var vNull = GddlValue.Null();
+            var vSame1 = GddlValue.Of(1);
+            var vSame2 = GddlValue.Of(1);
+            var vDifferent = GddlValue.Of("s");
             Assert.AreEqual(vSame1, vSame2);
             Assert.AreEqual(vSame2, vSame1);
             Assert.AreNotEqual(vSame1, vNull);
@@ -29,7 +29,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void NullValueWorks()
         {
-            GddlValue v = GddlValue.Null();
+            var v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
             Assert.ThrowsException<NullReferenceException>(() => v.AsBoolean);
             Assert.ThrowsException<NullReferenceException>(() => v.AsInteger);
@@ -40,7 +40,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void OfBooleanTrueWorks()
         {
-            GddlValue v = GddlValue.Of(true);
+            var v = GddlValue.Of(true);
             Assert.IsFalse(v.IsNull);
             Assert.IsTrue(v.AsBoolean);
             Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
@@ -51,7 +51,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void OfBooleanFalseWorks()
         {
-            GddlValue v = GddlValue.Of(false);
+            var v = GddlValue.Of(false);
             Assert.IsFalse(v.IsNull);
             Assert.IsFalse(v.AsBoolean);
             Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
@@ -62,7 +62,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void OfLongWorks()
         {
-            GddlValue v = GddlValue.Of(1);
+            var v = GddlValue.Of(1);
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1L, v.AsInteger);
             Assert.ThrowsException<InvalidCastException>(() => v.AsBoolean);
@@ -73,7 +73,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void OfDoubleWorks()
         {
-            GddlValue v = GddlValue.Of(1.0);
+            var v = GddlValue.Of(1.0);
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1L, v.AsDouble, 1E-10);
             Assert.ThrowsException<InvalidCastException>(() => v.AsBoolean);
@@ -84,7 +84,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void OfStringWorks()
         {
-            GddlValue v = GddlValue.Of("1");
+            var v = GddlValue.Of("1");
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual("1", v.AsString);
             Assert.ThrowsException<InvalidCastException>(() => v.AsBoolean);
@@ -95,14 +95,14 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfNullWorks()
         {
-            GddlValue v = GddlValue.Null().Copy();
+            var v = GddlValue.Null().Copy();
             Assert.IsTrue(v.IsNull);
         }
 
         [TestMethod]
         public void CopyOfBooleanTrueWorks()
         {
-            GddlValue v = GddlValue.Of(true).Copy();
+            var v = GddlValue.Of(true).Copy();
             Assert.IsFalse(v.IsNull);
             Assert.IsTrue(v.AsBoolean);
         }
@@ -110,7 +110,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfBooleanFalseWorks()
         {
-            GddlValue v = GddlValue.Of(false).Copy();
+            var v = GddlValue.Of(false).Copy();
             Assert.IsFalse(v.IsNull);
             Assert.IsFalse(v.AsBoolean);
         }
@@ -118,7 +118,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfLongWorks()
         {
-            GddlValue v = GddlValue.Of(1).Copy();
+            var v = GddlValue.Of(1).Copy();
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1L, v.AsInteger);
         }
@@ -126,7 +126,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfDoubleWorks()
         {
-            GddlValue v = GddlValue.Of(1.0).Copy();
+            var v = GddlValue.Of(1.0).Copy();
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1L, v.AsDouble, 1E-10);
         }
@@ -134,7 +134,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void CopyOfStringWorks()
         {
-            GddlValue v = (GddlValue)GddlValue.Of("1").CopyInternal();
+            var v = GddlValue.Of("1").Copy();
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual("1", v.AsString);
         }
@@ -142,7 +142,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void SetNullWorks()
         {
-            GddlValue v = GddlValue.Of(1);
+            var v = GddlValue.Of(1);
             Assert.IsFalse(v.IsNull);
             v.SetNull();
             Assert.IsTrue(v.IsNull);
@@ -151,7 +151,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void SetBooleanWorks()
         {
-            GddlValue v = GddlValue.Null();
+            var v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
             v.SetBool(false);
             Assert.IsFalse(v.IsNull);
@@ -161,7 +161,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void SetLongWorks()
         {
-            GddlValue v = GddlValue.Null();
+            var v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
             v.SetInt(1);
             Assert.IsFalse(v.IsNull);
@@ -171,7 +171,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void SetDoubleWorks()
         {
-            GddlValue v = GddlValue.Null();
+            var v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
             v.SetDouble(1);
             Assert.IsFalse(v.IsNull);
@@ -181,7 +181,7 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void SetStringWorks()
         {
-            GddlValue v = GddlValue.Null();
+            var v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
             v.SetString("a");
             Assert.IsFalse(v.IsNull);

@@ -45,7 +45,8 @@ namespace GDDL.Util
         public void Add(TKey key, TValue value)
         {
             if (table.ContainsKey(key))
-                throw new ArgumentException("An element with the same key already exists in the dictionary.", nameof(key));
+                throw new ArgumentException("An element with the same key already exists in the dictionary.",
+                    nameof(key));
             var node = entries.AddLast(KeyValuePair.Create(key, value));
             table.Add(key, node);
         }
@@ -69,6 +70,7 @@ namespace GDDL.Util
             {
                 if (Equals(e.Value, value)) return true;
             }
+
             return false;
         }
 
@@ -78,6 +80,7 @@ namespace GDDL.Util
             {
                 entries.Remove(node);
             }
+
             return table.Remove(key);
         }
 
@@ -88,6 +91,7 @@ namespace GDDL.Util
                 value = node.Value.Value;
                 return true;
             }
+
             value = default;
             return false;
         }
@@ -105,7 +109,8 @@ namespace GDDL.Util
         public void Add(KeyValuePair<TKey, TValue> item)
         {
             if (table.ContainsKey(item.Key))
-                throw new ArgumentException("An element with the same key already exists in the dictionary.", nameof(item));
+                throw new ArgumentException("An element with the same key already exists in the dictionary.",
+                    nameof(item));
             var node = entries.AddLast(item);
             table.Add(item.Key, node);
         }
@@ -137,6 +142,7 @@ namespace GDDL.Util
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -186,7 +192,7 @@ namespace GDDL.Util
                 if (owner.Count > space)
                     throw new ArgumentOutOfRangeException(nameof(array), "The array is too small");
                 int i = arrayIndex;
-                foreach(var entry in owner.entries)
+                foreach (var entry in owner.entries)
                 {
                     array[i++] = entry.Key;
                 }

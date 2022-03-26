@@ -11,6 +11,7 @@ namespace GDDL.Serialization
     public class Formatter
     {
         #region API
+
         public static string FormatCompact(GddlDocument doc)
         {
             return Format(doc, FormatterOptions.Compact);
@@ -69,8 +70,11 @@ namespace GDDL.Serialization
             AppendIndent();
             FormatElement(element, false);
         }
+
         #endregion
+
         #region Implementation
+
         private static readonly Regex CommentLineSplitter = new("(?:(?:\n)|(?:\r\n))");
 
         private readonly Stack<int> indentLevels = new();
@@ -138,6 +142,7 @@ namespace GDDL.Serialization
                 while (lines[count - 1].Length == 0)
                     count--;
             }
+
             for (int i = 0; i < count; i++)
             {
                 AppendIndent();
@@ -151,20 +156,21 @@ namespace GDDL.Serialization
         {
             switch (element)
             {
-                case GddlValue v:
-                    FormatValue(v);
-                    break;
-                case GddlReference r:
-                    FormatReference(r);
-                    break;
-                case GddlMap m:
-                    FormatMap(m, hasNext);
-                    break;
-                case GddlList l:
-                    FormatList(l, hasNext);
-                    break;
-                default:
-                    throw new NotImplementedException("A new Element type has been added without updating Formatter#FormatElement.");
+            case GddlValue v:
+                FormatValue(v);
+                break;
+            case GddlReference r:
+                FormatReference(r);
+                break;
+            case GddlMap m:
+                FormatMap(m, hasNext);
+                break;
+            case GddlList l:
+                FormatList(l, hasNext);
+                break;
+            default:
+                throw new NotImplementedException(
+                    "A new Element type has been added without updating Formatter#FormatElement.");
             }
         }
 
@@ -192,7 +198,8 @@ namespace GDDL.Serialization
             }
             else
             {
-                throw new NotImplementedException("A new Value type has been added without updating Formatter#formatValue.");
+                throw new NotImplementedException(
+                    "A new Value type has been added without updating Formatter#formatValue.");
             }
         }
 
@@ -205,15 +212,15 @@ namespace GDDL.Serialization
         {
             switch (Options.floatFormattingStyle)
             {
-                case DoubleFormattingStyle.Decimal:
-                    FormatDoubleDecimal(value);
-                    break;
-                case DoubleFormattingStyle.Scientific:
-                    FormatDoubleScientific(value);
-                    break;
-                default:
-                    FormatDoubleAuto(value);
-                    break;
+            case DoubleFormattingStyle.Decimal:
+                FormatDoubleDecimal(value);
+                break;
+            case DoubleFormattingStyle.Scientific:
+                FormatDoubleScientific(value);
+                break;
+            default:
+                FormatDoubleAuto(value);
+                break;
             }
         }
 
@@ -301,15 +308,18 @@ namespace GDDL.Serialization
                 value -= digit;
                 temp.Add(digit);
             }
+
             if (temp.Count == 0)
             {
                 temp.Add(0);
             }
+
             int nonTrailingDigits = RoundDigits(temp, value);
             for (int i = 0; i < nonTrailingDigits; i++)
             {
                 builder.Append((char)('0' + temp[i]));
             }
+
             return nonTrailingDigits;
         }
 
@@ -323,16 +333,18 @@ namespace GDDL.Serialization
                 v++;
                 if (v >= 10)
                 {
-                    r = 1;
+                    //r = 1;
                     v -= 10;
                 }
                 else
                 {
                     r = 0;
                 }
+
                 temp[l] = v;
                 l--;
             }
+
             int firstTrailingZero = temp.Count;
             for (int i = temp.Count - 1; i >= 0; i--)
             {
@@ -342,6 +354,7 @@ namespace GDDL.Serialization
                     break;
                 }
             }
+
             return firstTrailingZero;
         }
 
@@ -410,6 +423,7 @@ namespace GDDL.Serialization
                 if (Options.lineBreaksBeforeOpeningBrace == 0)
                     builder.Append(' ');
             }
+
             if (oneElementPerLine && Options.lineBreaksBeforeOpeningBrace > 0)
             {
                 AppendMultiple('\n', Options.lineBreaksBeforeOpeningBrace);
@@ -419,6 +433,7 @@ namespace GDDL.Serialization
             {
                 AppendMultiple(' ', Options.spacesBeforeOpeningBrace);
             }
+
             builder.Append('{');
             if (c.Count == 0 && !oneElementPerLine)
             {
@@ -432,11 +447,12 @@ namespace GDDL.Serialization
             {
                 AppendMultiple(' ', Options.spacesAfterOpeningBrace);
             }
+
             PushIndent();
             IncIndent();
 
             bool first = true;
-            List<string> keys = new List<string>(c.Keys);
+            var keys = new List<string>(c.Keys);
             if (Options.sortMapKeys) keys.Sort(string.Compare);
             for (int i = 0; i < keys.Count; i++)
             {
@@ -488,19 +504,19 @@ namespace GDDL.Serialization
                 FormatComment(c.TrailingComment);
 
             PopIndent();
-            if (c.Count == 0 && !oneElementPerLine)
+            if (c.Count != 0 || oneElementPerLine) // Done on the open side
             {
-                // Done on the open side
+                if (oneElementPerLine && Options.lineBreaksBeforeClosingBrace > 0)
+                {
+                    AppendMultiple('\n', Options.lineBreaksBeforeClosingBrace);
+                    AppendIndent();
+                }
+                else if (Options.spacesBeforeClosingBrace > 0)
+                {
+                    AppendMultiple(' ', Options.spacesBeforeClosingBrace);
+                }
             }
-            else if (oneElementPerLine && Options.lineBreaksBeforeClosingBrace > 0)
-            {
-                AppendMultiple('\n', Options.lineBreaksBeforeClosingBrace);
-                AppendIndent();
-            }
-            else if (Options.spacesBeforeClosingBrace > 0)
-            {
-                AppendMultiple(' ', Options.spacesBeforeClosingBrace);
-            }
+
             builder.Append('}');
             if (!hasNext0 || Options.omitCommaAfterClosingBrace)
             {
@@ -532,6 +548,7 @@ namespace GDDL.Serialization
             {
                 AppendMultiple(' ', Options.spacesBeforeOpeningBrace);
             }
+
             builder.Append('[');
             if (oneElementPerLine && Options.lineBreaksAfterOpeningBrace > 0)
             {
@@ -541,6 +558,7 @@ namespace GDDL.Serialization
             {
                 AppendMultiple(' ', Options.spacesAfterOpeningBrace);
             }
+
             PushIndent();
             IncIndent();
 
@@ -598,6 +616,7 @@ namespace GDDL.Serialization
             {
                 AppendMultiple(' ', Options.spacesBeforeClosingBrace);
             }
+
             builder.Append(']');
             if (!hasNext0 || Options.omitCommaAfterClosingBrace)
             {
@@ -613,6 +632,7 @@ namespace GDDL.Serialization
 
             PopIndent();
         }
+
         #endregion
     }
 }

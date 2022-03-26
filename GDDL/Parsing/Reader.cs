@@ -9,12 +9,13 @@ namespace GDDL.Parsing
     public sealed class Reader : IContextProvider, IDisposable
     {
         #region API
+
         public Reader(TextReader source, string sourceName)
         {
             this.sourceName = sourceName;
             this.dataSource = source;
         }
-        
+
         /**
          * Returns the Nth character in the lookahead buffer, reading characters from the input reader as needed.
          * @param index The position in the lookahead buffer, starting at 0.
@@ -25,17 +26,6 @@ namespace GDDL.Parsing
             Require(index + 1);
 
             return unreadBuffer[index];
-        }
-
-        /**
-         * Removes the first character in the lookahead buffer, and returns it.
-         * @return The character, or -1 if end of file
-         */
-        public int Next()
-        {
-            Require(1);
-
-            return NextInternal();
         }
 
         /**
@@ -55,6 +45,7 @@ namespace GDDL.Parsing
                     throw new ReaderException(this, "Tried to Read beyond the end of the file.");
                 b.Append((char)ch);
             }
+
             return b.ToString();
         }
 
@@ -66,12 +57,13 @@ namespace GDDL.Parsing
         {
             Require(count);
             while (count-- > 0)
-                Next();
+                NextInternal();
         }
 
         #endregion
 
         #region Implementation
+
         private readonly ArrayQueue<int> unreadBuffer = new();
 
         private readonly TextReader dataSource;
@@ -132,24 +124,31 @@ namespace GDDL.Parsing
 
             return ch;
         }
+
         #endregion
 
         #region ToString
+
         public override string ToString()
         {
             return $"{{Reader ahead={string.Join("", unreadBuffer)}}}";
         }
+
         #endregion
 
         #region IContextProvider
+
         public ParsingContext ParsingContext => new(sourceName, line, column);
+
         #endregion
 
         #region IDisposable
+
         public void Dispose()
         {
             dataSource.Dispose();
         }
+
         #endregion
     }
 }

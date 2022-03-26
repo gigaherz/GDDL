@@ -85,35 +85,36 @@ namespace GDDL.Util
                 sb.Append('\\');
                 switch (c)
                 {
-                    case '\b':
-                        sb.Append('b');
-                        break;
-                    case '\t':
-                        sb.Append('t');
-                        break;
-                    case '\n':
-                        sb.Append('n');
-                        break;
-                    case '\f':
-                        sb.Append('f');
-                        break;
-                    case '\r':
-                        sb.Append('r');
-                        break;
-                    case '\"':
-                        sb.Append('\"');
-                        break;
-                    case '\\':
-                        sb.Append('\\');
-                        break;
-                    default:
-                        if (c > 0xFF)
-                            sb.Append($"u{(int)c:X4}");
-                        else
-                            sb.Append($"x{(int)c:X2}");
-                        break;
+                case '\b':
+                    sb.Append('b');
+                    break;
+                case '\t':
+                    sb.Append('t');
+                    break;
+                case '\n':
+                    sb.Append('n');
+                    break;
+                case '\f':
+                    sb.Append('f');
+                    break;
+                case '\r':
+                    sb.Append('r');
+                    break;
+                case '\"':
+                    sb.Append('\"');
+                    break;
+                case '\\':
+                    sb.Append('\\');
+                    break;
+                default:
+                    if (c > 0xFF)
+                        sb.Append($"u{(int)c:X4}");
+                    else
+                        sb.Append($"x{(int)c:X2}");
+                    break;
                 }
             }
+
             sb.Append(delimiter);
 
             return sb.ToString();
@@ -137,7 +138,7 @@ namespace GDDL.Util
          */
         public static string UnescapeString(string text)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             char startQuote = (char)0;
 
@@ -176,6 +177,7 @@ namespace GDDL.Util
                             sb.Append((char)escapeAcc);
                             inHexEscape = false;
                         }
+
                         escapeDigits++;
                     }
 
@@ -183,46 +185,47 @@ namespace GDDL.Util
                     {
                         switch (c)
                         {
-                            case '"':
-                                sb.Append('"');
-                                break;
-                            case '\'':
-                                sb.Append('\'');
-                                break;
-                            case '\\':
-                                sb.Append('\\');
-                                break;
-                            case '0':
-                                sb.Append('\0');
-                                break;
-                            case 'b':
-                                sb.Append('\b');
-                                break;
-                            case 't':
-                                sb.Append('\t');
-                                break;
-                            case 'n':
-                                sb.Append('\n');
-                                break;
-                            case 'f':
-                                sb.Append('\f');
-                                break;
-                            case 'r':
-                                sb.Append('\r');
-                                break;
-                            case 'x':
-                                inHexEscape = true;
-                                escapeAcc = 0;
-                                escapeDigits = 0;
-                                escapeMax = 2;
-                                break;
-                            case 'u':
-                                inHexEscape = true;
-                                escapeAcc = 0;
-                                escapeDigits = 0;
-                                escapeMax = 4;
-                                break;
+                        case '"':
+                            sb.Append('"');
+                            break;
+                        case '\'':
+                            sb.Append('\'');
+                            break;
+                        case '\\':
+                            sb.Append('\\');
+                            break;
+                        case '0':
+                            sb.Append('\0');
+                            break;
+                        case 'b':
+                            sb.Append('\b');
+                            break;
+                        case 't':
+                            sb.Append('\t');
+                            break;
+                        case 'n':
+                            sb.Append('\n');
+                            break;
+                        case 'f':
+                            sb.Append('\f');
+                            break;
+                        case 'r':
+                            sb.Append('\r');
+                            break;
+                        case 'x':
+                            inHexEscape = true;
+                            escapeAcc = 0;
+                            escapeDigits = 0;
+                            escapeMax = 2;
+                            break;
+                        case 'u':
+                            inHexEscape = true;
+                            escapeAcc = 0;
+                            escapeDigits = 0;
+                            escapeMax = 4;
+                            break;
                         }
+
                         inEscape = false;
                     }
                     else if (!inHexEscape)
@@ -243,15 +246,15 @@ namespace GDDL.Util
                 {
                     switch (c)
                     {
-                        case '"':
-                            startQuote = '"';
-                            break;
-                        case '\'':
-                            startQuote = '\'';
-                            break;
-                        default:
-                            sb.Append(c);
-                            break;
+                    case '"':
+                        startQuote = '"';
+                        break;
+                    case '\'':
+                        startQuote = '\'';
+                        break;
+                    default:
+                        sb.Append(c);
+                        break;
                     }
                 }
             }
@@ -260,12 +263,12 @@ namespace GDDL.Util
         }
 
         private const int NON_PRINTABLE =
-                        (1 << (int)UnicodeCategory.LineSeparator) |
-                        (1 << (int)UnicodeCategory.ParagraphSeparator) |
-                        (1 << (int)UnicodeCategory.Control) |
-                        (1 << (int)UnicodeCategory.PrivateUse) |
-                        (1 << (int)UnicodeCategory.Format) |
-                        (1 << (int)UnicodeCategory.Surrogate);
+            (1 << (int)UnicodeCategory.LineSeparator) |
+            (1 << (int)UnicodeCategory.ParagraphSeparator) |
+            (1 << (int)UnicodeCategory.Control) |
+            (1 << (int)UnicodeCategory.PrivateUse) |
+            (1 << (int)UnicodeCategory.Format) |
+            (1 << (int)UnicodeCategory.Surrogate);
 
         /**
          * Determines if a character is printable.

@@ -1,4 +1,3 @@
-
 namespace GDDL.Parsing
 {
     public enum TokenType

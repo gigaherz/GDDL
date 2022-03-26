@@ -1,32 +1,40 @@
-﻿
-namespace GDDL.Serialization
+﻿namespace GDDL.Serialization
 {
     public class FormatterOptions
     {
         public static readonly FormatterOptions Compact = new Builder().Build(); // Default
+
         public static readonly FormatterOptions Nice = new Builder()
-                .WriteComments(true)
-                .LineBreaksAfterOpeningBrace(1)
-                .LineBreaksBeforeClosingBrace(1)
-                .LineBreaksAfterClosingBrace(1)
-                .LineBreaksAfterValues(1)
-                .SpacesBeforeOpeningBrace(0)
-                .SpacesAfterOpeningBrace(1)
-                .SpacesBeforeClosingBrace(1)
-                .SpacesAfterClosingBrace(0)
-                .SpacesInEmptyCollection(1)
-                .SpacesAfterComma(1)
-                .SpacesBeforeEquals(1)
-                .SpacesAfterEquals(1)
-                .SpacesInEmptyCollection(1)
-                .OneElementPerLineThreshold(10)
-                .SpacesPerIndent(4)
-                .BlankLinesBeforeComment(1)
-                .Build();
-        public static readonly FormatterOptions CompactJson = new Builder(Compact).AlwaysUseStringLiterals(true).UseJsonDelimiters(true).Build();
-        public static readonly FormatterOptions NiceJson = new Builder(Nice).SpacesBeforeEquals(0).AlwaysUseStringLiterals(true).UseJsonDelimiters(true).Build();
-        public static readonly FormatterOptions CompactJson5 = new Builder(CompactJson).AlwaysUseStringLiterals(false).Build();
-        public static readonly FormatterOptions NiceJson5 = new Builder(NiceJson).AlwaysUseStringLiterals(false).Build();
+            .WriteComments(true)
+            .LineBreaksAfterOpeningBrace(1)
+            .LineBreaksBeforeClosingBrace(1)
+            .LineBreaksAfterClosingBrace(1)
+            .LineBreaksAfterValues(1)
+            .SpacesBeforeOpeningBrace(0)
+            .SpacesAfterOpeningBrace(1)
+            .SpacesBeforeClosingBrace(1)
+            .SpacesAfterClosingBrace(0)
+            .SpacesInEmptyCollection(1)
+            .SpacesAfterComma(1)
+            .SpacesBeforeEquals(1)
+            .SpacesAfterEquals(1)
+            .SpacesInEmptyCollection(1)
+            .OneElementPerLineThreshold(10)
+            .SpacesPerIndent(4)
+            .BlankLinesBeforeComment(1)
+            .Build();
+
+        public static readonly FormatterOptions CompactJson =
+            new Builder(Compact).AlwaysUseStringLiterals(true).UseJsonDelimiters(true).Build();
+
+        public static readonly FormatterOptions NiceJson = new Builder(Nice).SpacesBeforeEquals(0)
+            .AlwaysUseStringLiterals(true).UseJsonDelimiters(true).Build();
+
+        public static readonly FormatterOptions CompactJson5 =
+            new Builder(CompactJson).AlwaysUseStringLiterals(false).Build();
+
+        public static readonly FormatterOptions
+            NiceJson5 = new Builder(NiceJson).AlwaysUseStringLiterals(false).Build();
 
         // Collections
         public readonly int lineBreaksBeforeOpeningBrace;
@@ -368,5 +376,4 @@ namespace GDDL.Serialization
             }
         }
     }
-
 }

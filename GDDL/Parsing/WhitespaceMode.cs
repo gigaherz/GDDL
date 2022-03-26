@@ -1,5 +1,4 @@
-﻿
-namespace GDDL.Parsing
+﻿namespace GDDL.Parsing
 {
     public enum WhitespaceMode
     {

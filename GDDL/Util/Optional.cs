@@ -35,11 +35,9 @@ namespace GDDL.Util
 
     public class Optional<T> : IEnumerable<T>, IEquatable<Optional<T>>
     {
-        [NotNull]
-        public static Optional<T> Empty { get; } = new(false, default);
+        [NotNull] public static Optional<T> Empty { get; } = new(false, default);
 
-        [MaybeNull]
-        private readonly T _value;
+        [MaybeNull] private readonly T _value;
 
         public bool HasValue { get; }
 
@@ -104,7 +102,7 @@ namespace GDDL.Util
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(obj, this)) return true;
-            if (obj is null || !(obj is Optional<T> other)) return false;
+            if (obj is not Optional<T> other) return false;
             return Equals(other);
         }
 

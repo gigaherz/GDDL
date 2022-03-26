@@ -100,9 +100,11 @@ namespace GDDL.Structure
         {
             data = null;
         }
+
         #endregion
 
         #region Implementation
+
         private object data;
 
         private GddlValue()
@@ -134,7 +136,7 @@ namespace GDDL.Structure
 
         #region Element
 
-        public override GddlValue CopyInternal()
+        protected override GddlValue CopyInternal()
         {
             var value = new GddlValue();
             CopyTo(value);
@@ -146,6 +148,7 @@ namespace GDDL.Structure
             base.CopyTo(other);
             other.data = data;
         }
+
         #endregion
 
         #region Equals
@@ -173,6 +176,7 @@ namespace GDDL.Structure
         {
             return HashCode.Combine(base.GetHashCode(), data);
         }
+
         #endregion
     }
 }

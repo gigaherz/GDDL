@@ -54,9 +54,10 @@ namespace GDDL.Parsing
         private bool EqualsImpl(Token other)
         {
             return Type == other.Type &&
-                Text == other.Text &&
-                Equals(ParsingContext, other.ParsingContext) &&
-                ((string.IsNullOrEmpty(Comment) && string.IsNullOrEmpty(other.Comment)) || Equals(Comment, other.Comment));
+                   Text == other.Text &&
+                   Equals(ParsingContext, other.ParsingContext) &&
+                   ((string.IsNullOrEmpty(Comment) && string.IsNullOrEmpty(other.Comment)) ||
+                    Equals(Comment, other.Comment));
         }
 
         public override int GetHashCode()

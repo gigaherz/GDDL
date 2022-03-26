@@ -11,6 +11,7 @@ namespace GDDL.Parsing
     public sealed class Parser : IContextProvider, IDisposable
     {
         #region API
+
         public Parser(ITokenProvider lexer)
         {
             Lexer = lexer;
@@ -35,10 +36,8 @@ namespace GDDL.Parsing
                 ret = ret.Simplify();
             }
 
-            var doc = new GddlDocument(ret)
-            {
-                DanglingComment = danglingComment
-            };
+            var doc = GddlDocument.Create(ret);
+            doc.DanglingComment = danglingComment;
 
             return doc;
         }
@@ -47,9 +46,11 @@ namespace GDDL.Parsing
         {
             return QueryPath().path;
         }
+
         #endregion
 
         #region Implementation
+
         int prefixPos = -1;
         readonly Stack<int> prefixStack = new();
         private bool finishedWithRBrace;
@@ -61,7 +62,8 @@ namespace GDDL.Parsing
                 return Lexer.Pop();
 
             if (expected.Length != 1)
-                throw new ParserException(this, $"Unexpected token {current}. Expected one of: {string.Join(", ", expected)}.");
+                throw new ParserException(this,
+                    $"Unexpected token {current}. Expected one of: {string.Join(", ", expected)}.");
 
             throw new ParserException(this, $"Unexpected token {current}. Expected: {expected[0]}.");
         }
@@ -73,7 +75,8 @@ namespace GDDL.Parsing
                 return Lexer.Pop();
 
             if (expected.Length != 1)
-                throw new ParserException(this, $"Unexpected token {current}. Expected one of: {string.Join(", ", expected)}.");
+                throw new ParserException(this,
+                    $"Unexpected token {current}. Expected one of: {string.Join(", ", expected)}.");
 
             throw new ParserException(this, $"Unexpected token {current}. Expected: {expected[0]}.");
         }
@@ -98,9 +101,11 @@ namespace GDDL.Parsing
             var prefix = NextPrefix();
             return tokens.Any(t => prefix == t);
         }
+
         #endregion
 
         #region Parse Rules
+
         private (GddlElement, string) Root()
         {
             var e = Element();
@@ -132,7 +137,8 @@ namespace GDDL.Parsing
             if (PrefixList()) return List();
             if (PrefixReference()) return Reference();
 
-            throw new ParserException(this, $"Internal Error: Token {Lexer.Peek()} did not correspond to any code path.");
+            throw new ParserException(this,
+                $"Internal Error: Token {Lexer.Peek()} did not correspond to any code path.");
         }
 
         private Token Name()
@@ -143,7 +149,8 @@ namespace GDDL.Parsing
         private bool PrefixReference()
         {
             BeginPrefixScan();
-            var r = HasAny(TokenType.Colon, TokenType.Slash) && HasAny(TokenType.Identifier, TokenType.StringLiteral, TokenType.LBracket);
+            var r = HasAny(TokenType.Colon, TokenType.Slash) &&
+                    HasAny(TokenType.Identifier, TokenType.StringLiteral, TokenType.LBracket);
             EndPrefixScan();
 
             return r || PrefixIdentifier();
@@ -179,7 +186,8 @@ namespace GDDL.Parsing
             while (Lexer.Peek() == TokenType.Colon || Lexer.Peek() == TokenType.Slash)
             {
                 if (firstDelimiter.HasValue && Lexer.Peek() != firstDelimiter)
-                    throw new ParserException(this, $"Query must use consistent delimiters, expected {firstDelimiter}, found {Lexer.Peek()} instead");
+                    throw new ParserException(this,
+                        $"Query must use consistent delimiters, expected {firstDelimiter}, found {Lexer.Peek()} instead");
 
                 firstDelimiter = PopExpected(TokenType.Colon, TokenType.Slash).Type;
 
@@ -191,69 +199,72 @@ namespace GDDL.Parsing
 
         private Token PathComponent(ref Queries.Query path)
         {
-            var token = PopExpected(TokenType.Identifier, TokenType.StringLiteral, TokenType.Dot, TokenType.DoubleDot, TokenType.LBracket);
+            var token = PopExpected(TokenType.Identifier, TokenType.StringLiteral, TokenType.Dot, TokenType.DoubleDot,
+                TokenType.LBracket);
             switch (token.Type)
             {
-                case TokenType.Identifier:
-                    path = path.ByKey(token.Text);
-                    break;
-                case TokenType.StringLiteral:
-                    path = path.ByKey(UnescapeString(token));
-                    break;
-                case TokenType.Dot:
-                    path = path.Self();
-                    break;
-                case TokenType.DoubleDot:
-                    path = path.Parent();
-                    break;
-                case TokenType.LBracket:
+            case TokenType.Identifier:
+                path = path.ByKey(token.Text);
+                break;
+            case TokenType.StringLiteral:
+                path = path.ByKey(UnescapeString(token));
+                break;
+            case TokenType.Dot:
+                path = path.Self();
+                break;
+            case TokenType.DoubleDot:
+                path = path.Parent();
+                break;
+            case TokenType.LBracket:
+            {
+                var hasStart = false;
+                var start = Index.FromStart(0);
+
+                if (Lexer.Peek() == TokenType.Caret)
                 {
-                    var hasStart = false;
-                    var start = Index.FromStart(0);
+                    PopExpected(TokenType.Caret);
+                    start = Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
+                    hasStart = true;
+                }
+                else if (Lexer.Peek() == TokenType.IntegerLiteral)
+                {
+                    start = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
+                    hasStart = true;
+                }
 
-                    if (Lexer.Peek() == TokenType.Caret)
-                    {
-                        PopExpected(TokenType.Caret);
-                        start = Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
-                        hasStart = true;
-                    }
-                    else if (Lexer.Peek() == TokenType.IntegerLiteral)
-                    {
-                        start = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
-                        hasStart = true;
-                    }
-
-                    if (hasStart && Lexer.Peek() == TokenType.RBracket)
-                    {
-                        PopExpected(TokenType.RBracket);
-                        path = path.ByRange(new Range(start, start.Value + 1));
-                        break;
-                    }
-
-                    var inclusive = PopExpected(TokenType.DoubleDot, TokenType.TripleDot);
-                    
-                    var end = Index.FromEnd(0);
-
-                    if (Lexer.Peek() == TokenType.Caret)
-                    {
-                        PopExpected(TokenType.Caret);
-                        end =Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
-                    }
-                    else if (Lexer.Peek() == TokenType.IntegerLiteral)
-                    {
-                        end = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
-                        if (inclusive.Type == TokenType.TripleDot)
-                            end = end.Value + 1;
-                    }
-
+                if (hasStart && Lexer.Peek() == TokenType.RBracket)
+                {
                     PopExpected(TokenType.RBracket);
-
-                    path = path.ByRange(new Range(start, end));
+                    path = path.ByRange(new Range(start, start.Value + 1));
                     break;
                 }
-                default:
-                    throw new ParserException(Lexer, $"Internal Error: Unexpected token {token} found when parsing Reference path component");
+
+                var inclusive = PopExpected(TokenType.DoubleDot, TokenType.TripleDot);
+
+                var end = Index.FromEnd(0);
+
+                if (Lexer.Peek() == TokenType.Caret)
+                {
+                    PopExpected(TokenType.Caret);
+                    end = Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
+                }
+                else if (Lexer.Peek() == TokenType.IntegerLiteral)
+                {
+                    end = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
+                    if (inclusive.Type == TokenType.TripleDot)
+                        end = end.Value + 1;
+                }
+
+                PopExpected(TokenType.RBracket);
+
+                path = path.ByRange(new Range(start, end));
+                break;
             }
+            default:
+                throw new ParserException(Lexer,
+                    $"Internal Error: Unexpected token {token} found when parsing Reference path component");
+            }
+
             return token;
         }
 
@@ -406,23 +417,14 @@ namespace GDDL.Parsing
 
         public static GddlValue FloatValue(Token token)
         {
-            double value;
-            switch (token.Text)
+            var value = token.Text switch
             {
-                case ".NaN":
-                    value = double.NaN;
-                    break;
-                case ".Inf":
-                case "+.Inf":
-                    value = double.PositiveInfinity;
-                    break;
-                case "-.Inf":
-                    value = double.NegativeInfinity;
-                    break;
-                default:
-                    value = double.Parse(token.Text, CultureInfo.InvariantCulture);
-                    break;
-            }
+                ".NaN" => double.NaN,
+                ".Inf" => double.PositiveInfinity,
+                "+.Inf" => double.PositiveInfinity,
+                "-.Inf" => double.NegativeInfinity,
+                _ => double.Parse(token.Text, CultureInfo.InvariantCulture)
+            };
             var v = GddlValue.Of(value);
             v.Comment = token.Comment;
             return v;
@@ -446,9 +448,11 @@ namespace GDDL.Parsing
                 throw new ParserException(t, "Unescaping string", e);
             }
         }
+
         #endregion
 
         #region ToString
+
         public override string ToString()
         {
             return $"{{Parser lexer={Lexer}}}";
@@ -457,14 +461,18 @@ namespace GDDL.Parsing
         #endregion
 
         #region IContextProvider
+
         public ParsingContext ParsingContext => Lexer.ParsingContext;
+
         #endregion
 
         #region IDisposable
+
         public void Dispose()
         {
             Lexer.Dispose();
         }
+
         #endregion
     }
 }
