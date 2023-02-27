@@ -235,7 +235,7 @@ namespace GDDL.Parsing
                 if (hasStart && Lexer.Peek() == TokenType.RBracket)
                 {
                     PopExpected(TokenType.RBracket);
-                    path = path.ByRange(new Range(start, start.Value + 1));
+                    path = path.ByRange(new Range(start, start.IsFromEnd ? Index.FromEnd(start.Value - 1) : Index.FromStart(start.Value + 1)));
                     break;
                 }
 
@@ -252,7 +252,7 @@ namespace GDDL.Parsing
                 {
                     end = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
                     if (inclusive.Type == TokenType.TripleDot)
-                        end = end.Value + 1;
+                        end = end.IsFromEnd ? Index.FromEnd(end.Value - 1) : Index.FromStart(end.Value + 1);
                 }
 
                 PopExpected(TokenType.RBracket);
