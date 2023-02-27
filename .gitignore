@@ -4,6 +4,8 @@
 /GDDLTests/obj
 /GDDL.Demo/bin
 /GDDL.Demo/obj
+/GDDL.Dynamic/obj
+/GDDL.Dynamic/bin
 /.idea
 /.vs
 
@@ -14,3 +16,4 @@
 /Make Package.cmd
 /Output-Build.txt
 /nuget.exe
+
