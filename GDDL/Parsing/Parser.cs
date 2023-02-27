@@ -44,7 +44,9 @@ namespace GDDL.Parsing
 
         public Queries.Query ParseQuery()
         {
-            return QueryPath().path;
+            var result = QueryPath();
+            PopExpected(TokenType.End);
+            return result.path;
         }
 
         #endregion
@@ -183,13 +185,16 @@ namespace GDDL.Parsing
             var pathToken = PathComponent(ref path);
             firstToken ??= pathToken;
 
-            while (Lexer.Peek() == TokenType.Colon || Lexer.Peek() == TokenType.Slash)
+            while (Lexer.Peek() == TokenType.Colon || Lexer.Peek() == TokenType.Slash || Lexer.Peek() == TokenType.LBracket)
             {
-                if (firstDelimiter.HasValue && Lexer.Peek() != firstDelimiter)
-                    throw new ParserException(this,
-                        $"Query must use consistent delimiters, expected {firstDelimiter}, found {Lexer.Peek()} instead");
+                if (Lexer.Peek() != TokenType.LBracket)
+                {
+                    if (firstDelimiter.HasValue && Lexer.Peek() != firstDelimiter)
+                        throw new ParserException(this,
+                            $"Query must use consistent delimiters, expected {firstDelimiter}, found {Lexer.Peek()} instead");
 
-                firstDelimiter = PopExpected(TokenType.Colon, TokenType.Slash).Type;
+                    firstDelimiter = PopExpected(TokenType.Colon, TokenType.Slash).Type;
+                }
 
                 PathComponent(ref path);
             }

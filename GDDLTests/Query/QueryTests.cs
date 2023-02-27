@@ -55,6 +55,27 @@ namespace GDDL.Tests.Queries
             AssertListsEqual(Of(GddlValue.Of(1), GddlValue.Of(false)), Query.FromString("/[^2..^0]").Apply(list).ToList());
         }
 
+        [TestMethod]
+        public void QueryListInsideObject()
+        {
+            var list2 = GddlList.Of(
+                    GddlValue.Of(12345)
+            );
+            var list = GddlList.Of(
+                    GddlValue.Of("A"),
+                    GddlValue.Of(314),
+                    list2
+            );
+            var map = GddlMap.Of(
+                    new ("key1", GddlValue.Of("Text")),
+                    new ("key2", GddlValue.Of(1)),
+                    new ("key3", list)
+            );
+            AssertListsEqual(Of(GddlValue.Of(314)), Query.FromString("/key3/[1..^1]").Apply(map).ToList());
+            AssertListsEqual(Of(GddlValue.Of(314)), Query.FromString("/key3[1..^1]").Apply(map).ToList());
+            AssertListsEqual(Of(GddlValue.Of(12345)), Query.FromString("/key3[2][0]").Apply(map).ToList());
+        }
+
         private static List<GddlElement> Of(params GddlElement[] elements)
         {
             return elements.ToList();
