@@ -1,18 +1,13 @@
-using System;
 using System.Text;
 using GDDL.Exceptions;
 using GDDL.Util;
 
 namespace GDDL.Parsing
 {
-    public sealed class Lexer : ITokenProvider
+    public sealed class Lexer(Reader reader) : ITokenProvider
     {
-        #region API
 
-        public Lexer(Reader r)
-        {
-            reader = r;
-        }
+        #region API
 
         public WhitespaceMode WhitespaceMode { get; set; }
 
@@ -48,12 +43,9 @@ namespace GDDL.Parsing
 
         #region Implementation
 
-        private readonly ArrayQueue<Token> lookAhead = new();
+        private readonly ArrayQueue<Token> lookAhead = [];
         private readonly StringBuilder whitespaceBuilder = new();
         private readonly StringBuilder commentBuilder = new();
-
-        private readonly Reader reader;
-
         private bool seenEnd = false;
 
 

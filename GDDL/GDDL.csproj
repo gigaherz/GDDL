@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ProjectGuid>{9B3E6F96-D5CC-4284-A5FC-2D43485855F2}</ProjectGuid>
     <RootNamespace>GDDL</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

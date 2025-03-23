@@ -11,7 +11,7 @@ using GDDL.Util;
 
 namespace GDDL.Structure
 {
-    public abstract class GddlElement
+    public abstract class GddlElement : IConvertible
 #if DYNAMIC
         : DynamicObject
 #endif
@@ -199,6 +199,26 @@ namespace GDDL.Structure
             return HashCode.Combine(Comment);
         }
 
+        #endregion
+
+        #region IConvertible
+        object IConvertible.ToType(Type conversionType, IFormatProvider provider) => throw new NotImplementedException("Cannot convert this way, use a GddlSerializer.");
+        DateTime IConvertible.ToDateTime(IFormatProvider provider) => throw new InvalidCastException("Cannot convert to date.");
+        public virtual TypeCode GetTypeCode() => TypeCode.Object;
+        public virtual bool ToBoolean(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual byte ToByte(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual sbyte ToSByte(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual short ToInt16(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual ushort ToUInt16(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual int ToInt32(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual uint ToUInt32(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual long ToInt64(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual ulong ToUInt64(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual float ToSingle(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual double ToDouble(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual decimal ToDecimal(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual char ToChar(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
+        public virtual string ToString(IFormatProvider provider) => throw new InvalidCastException("This element is not a Value.");
         #endregion
 
         #region Implementation

@@ -5,30 +5,19 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace GDDL.Util
 {
-    public class MultiMap<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
+    public class MultiMap<TKey, TValue>(Func<IDictionary<TKey, ICollection<TValue>>> storageFactory,
+        Func<ICollection<TValue>> collectionFactory) : IEnumerable<KeyValuePair<TKey, TValue>>
     {
-        private readonly IDictionary<TKey, ICollection<TValue>> storage;
-        private readonly Func<ICollection<TValue>> collectionFactory;
+        private readonly IDictionary<TKey, ICollection<TValue>> storage = storageFactory();
 
         public MultiMap() : this(() => new Dictionary<TKey, ICollection<TValue>>(), () => new HashSet<TValue>())
         {
         }
 
-        public MultiMap(Func<IDictionary<TKey, ICollection<TValue>>> storageFactory,
-            Func<ICollection<TValue>> collectionFactory)
+        [return: MaybeNull]
+        private bool TryGetValues(TKey key, out ICollection<TValue> values)
         {
-            storage = storageFactory();
-            this.collectionFactory = collectionFactory;
-        }
-
-        private Optional<ICollection<TValue>> GetOrEmpty(TKey key)
-        {
-            if (!storage.TryGetValue(key, out ICollection<TValue> value))
-            {
-                return Optional<ICollection<TValue>>.Empty;
-            }
-
-            return Optional.Of(value);
+            return storage.TryGetValue(key, out values);
         }
 
         [return: MaybeNull]
@@ -43,19 +32,16 @@ namespace GDDL.Util
             return value;
         }
 
-        public ICollection<TValue> this[TKey key]
-        {
-            get { return GetOrEmpty(key).OrElseGet(() => new List<TValue>()); }
-        }
+        public ICollection<TValue> this[TKey key] => GetOrCreate(key);
 
         private bool Contains(TKey key, TValue value)
         {
-            return GetOrEmpty(key).Map(collection => collection.Contains(value)).OrElse(false);
+            return TryGetValues(key, out var collection) && collection.Contains(value);
         }
 
         public bool Remove(TKey key, TValue value)
         {
-            return GetOrEmpty(key).Map(collection => collection.Remove(value)).OrElse(false);
+            return TryGetValues(key, out var collection) && collection.Remove(value);
         }
 
         public void Add(TKey key, TValue value)
@@ -70,7 +56,12 @@ namespace GDDL.Util
             storage.Clear();
         }
 
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        public IEnumerator<KeyValuePair<TKey, ICollection<TValue>>> GetKeywiseEnumerator()
+        {
+            return storage.GetEnumerator();
+        }
+
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetValuewiseEnumerator()
         {
             foreach (var ks in storage)
             {
@@ -81,9 +72,8 @@ namespace GDDL.Util
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => GetValuewiseEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetValuewiseEnumerator();
     }
 }

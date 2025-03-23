@@ -8,18 +8,12 @@ using System.Linq;
 
 namespace GDDL.Parsing
 {
-    public sealed class Parser : IContextProvider, IDisposable
+    public sealed class Parser(ITokenProvider lexer) : IContextProvider, IDisposable
     {
+
         #region API
 
-        public Parser(ITokenProvider lexer)
-        {
-            Lexer = lexer;
-        }
-
-        private WhitespaceMode WhitespaceMode { get; set; }
-
-        public ITokenProvider Lexer { get; }
+        public ITokenProvider Lexer { get; } = lexer;
 
         /**
          * Parses the whole file and returns the resulting root element.
@@ -44,9 +38,9 @@ namespace GDDL.Parsing
 
         public Queries.Query ParseQuery()
         {
-            var result = QueryPath();
+            var (_, path) = QueryPath();
             PopExpected(TokenType.End);
-            return result.path;
+            return path;
         }
 
         #endregion
@@ -408,7 +402,7 @@ namespace GDDL.Parsing
             var s = token.Text;
             var p = 2;
             var sign = 1;
-            if (s.StartsWith("-"))
+            if (s.StartsWith('-'))
             {
                 p++;
                 sign = -1;

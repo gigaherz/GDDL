@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using GDDL.Exceptions;
 using GDDL.Queries;
+using Query = GDDL.Queries.Query;
 
 namespace GDDL.Structure
 {
-    public sealed class GddlReference : GddlElement<GddlReference>
+    public sealed class GddlReference(Query path) : GddlElement<GddlReference>
     {
         #region API
 
-        public static GddlReference Of(Queries.Query query)
+        public static GddlReference Of(Query query)
         {
             return new GddlReference(query);
         }
@@ -21,11 +22,6 @@ namespace GDDL.Structure
         public override bool IsResolved => resolvedValue != null;
         public override GddlElement ResolvedValue => resolvedValue;
 
-        public GddlReference(Queries.Query path)
-        {
-            this.path = path;
-        }
-
         public bool IsAbsolute => path.IsAbsolute;
 
         public IReadOnlyList<QueryComponent> NameParts => path.PathComponents;
@@ -34,7 +30,7 @@ namespace GDDL.Structure
 
         #region Implementation
 
-        private readonly Queries.Query path;
+        private readonly Query path = path;
 
         private GddlElement resolvedValue;
 

@@ -12,17 +12,17 @@ namespace GDDL.Structure
 
         public static GddlMap Empty()
         {
-            return new GddlMap();
+            return [];
         }
 
         public static GddlMap Of(params KeyValuePair<string, GddlElement>[] initial)
         {
-            return new GddlMap(initial);
+            return [.. initial];
         }
 
         public static GddlMap CopyOf(IEnumerable<KeyValuePair<string, GddlElement>> initial)
         {
-            return new GddlMap(initial);
+            return [.. initial];
         }
 
         public override bool IsMap => true;
@@ -163,7 +163,7 @@ namespace GDDL.Structure
             return contents.TryGetValue(key, out value);
         }
 
-        void ICollection<KeyValuePair<string, GddlElement>>.Add(KeyValuePair<string, GddlElement> item)
+        public void Add(KeyValuePair<string, GddlElement> item)
         {
             Add(item.Key, item.Value);
         }

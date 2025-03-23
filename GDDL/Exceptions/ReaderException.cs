@@ -2,11 +2,7 @@ using GDDL.Parsing;
 
 namespace GDDL.Exceptions
 {
-    public class ReaderException : LexerException
+    public class ReaderException(IContextProvider context, string message) : LexerException(context, message)
     {
-        public ReaderException(IContextProvider context, string message)
-            : base(context, message)
-        {
-        }
     }
 }

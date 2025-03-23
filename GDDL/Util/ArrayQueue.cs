@@ -18,8 +18,7 @@ namespace GDDL.Util
         {
             get
             {
-                if (index >= Count)
-                    throw new ArgumentOutOfRangeException(nameof(index));
+                ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
 
                 return buffer[ToBufferIndex(index)];
             }
@@ -32,10 +31,7 @@ namespace GDDL.Util
 
         public ArrayQueue(int capacity)
         {
-            if (capacity < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(capacity), "capacity is less than 0.");
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(capacity);
 
             GrowTo(capacity);
         }

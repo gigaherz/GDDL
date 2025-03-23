@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace GDDL.Serialization
 {
-    public class Formatter
+    public partial class Formatter(StringBuilder builder, FormatterOptions options)
     {
         #region API
 
@@ -48,13 +48,7 @@ namespace GDDL.Serialization
             return b.ToString();
         }
 
-        public Formatter(StringBuilder builder, FormatterOptions options)
-        {
-            this.builder = builder;
-            this.Options = options;
-        }
-
-        public FormatterOptions Options { get; }
+        public FormatterOptions Options => options;
 
         public void FormatDocument(GddlDocument doc)
         {
@@ -75,11 +69,12 @@ namespace GDDL.Serialization
 
         #region Implementation
 
-        private static readonly Regex CommentLineSplitter = new("(?:(?:\n)|(?:\r\n))");
+        [GeneratedRegex("(?:(?:\n)|(?:\r\n))")]
+        private static partial Regex CommentLineSplitterRegex();
+
+        private static readonly Regex CommentLineSplitter = CommentLineSplitterRegex();
 
         private readonly Stack<int> indentLevels = new();
-        private readonly StringBuilder builder;
-
         private int indentLevel = 0;
 
         private void PushIndent()

@@ -12,17 +12,17 @@ namespace GDDL.Structure
 
         public static GddlList Empty()
         {
-            return new GddlList();
+            return [];
         }
 
         public static GddlList Of(params GddlElement[] initial)
         {
-            return new GddlList(initial);
+            return [.. initial];
         }
 
         public static GddlList CopyOf(IEnumerable<GddlElement> initial)
         {
-            return new GddlList(initial);
+            return [.. initial];
         }
 
         public override bool IsList => true;
@@ -142,7 +142,7 @@ namespace GDDL.Structure
 
         #region Implementation
 
-        private readonly List<GddlElement> contents = new();
+        private readonly List<GddlElement> contents = [];
 
         private void OnAdd(GddlElement e)
         {

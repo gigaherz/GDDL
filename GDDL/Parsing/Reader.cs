@@ -6,15 +6,10 @@ using GDDL.Util;
 
 namespace GDDL.Parsing
 {
-    public sealed class Reader : IContextProvider, IDisposable
+    public sealed class Reader(TextReader dataSource, string sourceName) : IContextProvider, IDisposable
     {
-        #region API
 
-        public Reader(TextReader source, string sourceName)
-        {
-            this.sourceName = sourceName;
-            this.dataSource = source;
-        }
+        #region API
 
         /**
          * Returns the Nth character in the lookahead buffer, reading characters from the input reader as needed.
@@ -64,11 +59,7 @@ namespace GDDL.Parsing
 
         #region Implementation
 
-        private readonly ArrayQueue<int> unreadBuffer = new();
-
-        private readonly TextReader dataSource;
-        private readonly string sourceName;
-
+        private readonly ArrayQueue<int> unreadBuffer = [];
         private bool endQueued;
         private int line = 1;
         private int column = 1;

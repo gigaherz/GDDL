@@ -2,18 +2,11 @@ using System;
 
 namespace GDDL.Parsing
 {
-    public class ParsingContext : IEquatable<ParsingContext>, IContextProvider
+    public class ParsingContext(string filename, int line, int column) : IEquatable<ParsingContext>, IContextProvider
     {
-        public readonly string Filename;
-        public readonly int Line;
-        public readonly int Column;
-
-        public ParsingContext(string f, int l, int c)
-        {
-            Filename = f;
-            Line = l;
-            Column = c;
-        }
+        public string Filename => filename;
+        public int Line => line;
+        public int Column => column;
 
         public override bool Equals(object other)
         {

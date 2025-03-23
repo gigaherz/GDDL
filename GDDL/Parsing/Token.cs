@@ -2,24 +2,15 @@ using System;
 
 namespace GDDL.Parsing
 {
-    public class Token : IContextProvider, IEquatable<Token>
+    public class Token(TokenType name, string text, IContextProvider context, string comment, string whitespace) : IContextProvider, IEquatable<Token>
     {
-        public readonly string Whitespace;
-        public readonly string Comment;
-        public readonly TokenType Type;
-        public readonly string Text;
-        public ParsingContext ParsingContext { get; }
+        public string Whitespace => whitespace;
+        public string Comment => comment;
+        public TokenType Type => name;
+        public string Text => text;
+        public ParsingContext ParsingContext { get; } = context.ParsingContext;
 
         public Token Parent { get; set; }
-
-        public Token(TokenType name, string text, IContextProvider context, string comment, string whitespace)
-        {
-            Comment = comment;
-            Whitespace = whitespace;
-            Type = name;
-            Text = text;
-            ParsingContext = context.ParsingContext;
-        }
 
         public Token Specialize(TokenType child)
         {

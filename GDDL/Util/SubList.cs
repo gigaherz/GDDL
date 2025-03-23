@@ -5,18 +5,11 @@ using System.Linq;
 
 namespace GDDL.Util
 {
-    public class SubList<T> : IReadOnlyList<T>
+    public sealed class SubList<T>(List<T> parent, int start, int count) : IReadOnlyList<T>
     {
-        public List<T> Parent { get; }
-        public int Start { get; }
-        public int Count { get; }
-
-        public SubList(List<T> contents, int start, int count)
-        {
-            Parent = contents;
-            Start = start;
-            Count = count;
-        }
+        public List<T> Parent => parent;
+        public int Start => start;
+        public int Count => count;
 
         public IEnumerator<T> GetEnumerator()
         {

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
+using System.Globalization;
 using GDDL.Serialization;
-using GDDL.Structure;
 
 namespace GDDL.Demo
 {
@@ -23,6 +20,8 @@ namespace GDDL.Demo
 
             var v3 = doc.Root.Query("'named list'/[0..^0]");
             Console.WriteLine("[" + string.Join(",", v3) + "]");
+
+            Console.WriteLine((1).ToString("000,000,000", new CultureInfo("es-ES")));
         }
     }
 }

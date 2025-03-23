@@ -147,19 +147,12 @@ namespace GDDL.Util
         }
 
         private readonly LinkedList<KeyValuePair<TKey, TValue>> entries = new();
-        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> table = new();
+        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> table = [];
 
-        private class KeyView : ICollection<TKey>, IReadOnlyCollection<TKey>
+        private class KeyView(LinkedDictionary<TKey, TValue> owner) : ICollection<TKey>, IReadOnlyCollection<TKey>
         {
-            private readonly LinkedDictionary<TKey, TValue> owner;
-
             public int Count => owner.entries.Count;
             public bool IsReadOnly => true;
-
-            public KeyView(LinkedDictionary<TKey, TValue> owner)
-            {
-                this.owner = owner;
-            }
 
             public IEnumerator<TKey> GetEnumerator()
             {
@@ -204,17 +197,10 @@ namespace GDDL.Util
             }
         }
 
-        private class ValueView : ICollection<TValue>, IReadOnlyCollection<TValue>
+        private class ValueView(LinkedDictionary<TKey, TValue> owner) : ICollection<TValue>, IReadOnlyCollection<TValue>
         {
-            private readonly LinkedDictionary<TKey, TValue> owner;
-
             public int Count => owner.entries.Count;
             public bool IsReadOnly => true;
-
-            public ValueView(LinkedDictionary<TKey, TValue> owner)
-            {
-                this.owner = owner;
-            }
 
             public IEnumerator<TValue> GetEnumerator()
             {

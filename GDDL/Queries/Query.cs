@@ -21,7 +21,7 @@ namespace GDDL.Queries
         }
 
         private bool absolute = false;
-        private readonly List<QueryComponent> pathComponents = new();
+        private readonly List<QueryComponent> pathComponents = [];
 
         public bool IsAbsolute => absolute;
         public IReadOnlyList<QueryComponent> PathComponents => pathComponents.AsReadOnly();
@@ -123,14 +123,9 @@ namespace GDDL.Queries
         public abstract override int GetHashCode();
     }
 
-    public class MapQueryComponent : QueryComponent, IEquatable<MapQueryComponent>
+    public class MapQueryComponent(string name) : QueryComponent, IEquatable<MapQueryComponent>
     {
-        public string Name { get; }
-
-        public MapQueryComponent(string name)
-        {
-            Name = name;
-        }
+        public string Name => name;
 
         public override IEnumerable<GddlElement> Filter(IEnumerable<GddlElement> input)
         {
