@@ -1,6 +1,5 @@
 ﻿using GDDL.Structure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 
 namespace GDDL.Tests.Structure
 {
@@ -13,7 +12,7 @@ namespace GDDL.Tests.Structure
             var collection = GddlMap.Empty();
             Assert.AreEqual(0, collection.Count);
         }
-        
+
         [TestMethod]
         public void MapOfAddsNames()
         {

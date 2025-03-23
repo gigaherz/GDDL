@@ -1,5 +1,5 @@
-﻿using System;
-using GDDL.Serialization;
+﻿using GDDL.Serialization;
+using System;
 
 namespace GDDL.Structure
 {

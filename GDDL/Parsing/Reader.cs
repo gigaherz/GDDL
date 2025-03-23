@@ -1,8 +1,8 @@
+using GDDL.Exceptions;
+using GDDL.Util;
 using System;
 using System.IO;
 using System.Text;
-using GDDL.Exceptions;
-using GDDL.Util;
 
 namespace GDDL.Parsing
 {

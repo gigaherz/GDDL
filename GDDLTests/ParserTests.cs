@@ -1,10 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using GDDL.Exceptions;
+﻿using GDDL.Exceptions;
 using GDDL.Parsing;
 using GDDL.Queries;
 using GDDL.Structure;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
 
 namespace GDDL.Tests
 {

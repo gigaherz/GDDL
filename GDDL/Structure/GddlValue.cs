@@ -1,5 +1,5 @@
-using System;
 using GDDL.Util;
+using System;
 
 namespace GDDL.Structure
 {
@@ -104,7 +104,7 @@ namespace GDDL.Structure
         #endregion
 
         #region IConvertible
-        public override TypeCode GetTypeCode() 
+        public override TypeCode GetTypeCode()
         {
             return data is IConvertible ic ? ic.GetTypeCode() : TypeCode.Object;
         }

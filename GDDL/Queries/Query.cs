@@ -1,12 +1,12 @@
-﻿using System;
+﻿using GDDL.Parsing;
+using GDDL.Serialization;
+using GDDL.Structure;
+using GDDL.Util;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using GDDL.Parsing;
-using GDDL.Serialization;
-using GDDL.Structure;
-using GDDL.Util;
 
 namespace GDDL.Queries
 {

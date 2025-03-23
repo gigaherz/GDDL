@@ -202,66 +202,66 @@ namespace GDDL.Parsing
                 TokenType.LBracket);
             switch (token.Type)
             {
-            case TokenType.Identifier:
-                path = path.ByKey(token.Text);
-                break;
-            case TokenType.StringLiteral:
-                path = path.ByKey(UnescapeString(token));
-                break;
-            case TokenType.Dot:
-                path = path.Self();
-                break;
-            case TokenType.DoubleDot:
-                path = path.Parent();
-                break;
-            case TokenType.LBracket:
-            {
-                var hasStart = false;
-                var start = Index.FromStart(0);
+                case TokenType.Identifier:
+                    path = path.ByKey(token.Text);
+                    break;
+                case TokenType.StringLiteral:
+                    path = path.ByKey(UnescapeString(token));
+                    break;
+                case TokenType.Dot:
+                    path = path.Self();
+                    break;
+                case TokenType.DoubleDot:
+                    path = path.Parent();
+                    break;
+                case TokenType.LBracket:
+                {
+                    var hasStart = false;
+                    var start = Index.FromStart(0);
 
-                if (Lexer.Peek() == TokenType.Caret)
-                {
-                    PopExpected(TokenType.Caret);
-                    start = Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
-                    hasStart = true;
-                }
-                else if (Lexer.Peek() == TokenType.IntegerLiteral)
-                {
-                    start = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
-                    hasStart = true;
-                }
+                    if (Lexer.Peek() == TokenType.Caret)
+                    {
+                        PopExpected(TokenType.Caret);
+                        start = Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
+                        hasStart = true;
+                    }
+                    else if (Lexer.Peek() == TokenType.IntegerLiteral)
+                    {
+                        start = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
+                        hasStart = true;
+                    }
 
-                if (hasStart && Lexer.Peek() == TokenType.RBracket)
-                {
+                    if (hasStart && Lexer.Peek() == TokenType.RBracket)
+                    {
+                        PopExpected(TokenType.RBracket);
+                        path = path.ByRange(new Range(start, start.IsFromEnd ? Index.FromEnd(start.Value - 1) : Index.FromStart(start.Value + 1)));
+                        break;
+                    }
+
+                    var inclusive = PopExpected(TokenType.DoubleDot, TokenType.TripleDot);
+
+                    var end = Index.FromEnd(0);
+
+                    if (Lexer.Peek() == TokenType.Caret)
+                    {
+                        PopExpected(TokenType.Caret);
+                        end = Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
+                    }
+                    else if (Lexer.Peek() == TokenType.IntegerLiteral)
+                    {
+                        end = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
+                        if (inclusive.Type == TokenType.TripleDot)
+                            end = end.IsFromEnd ? Index.FromEnd(end.Value - 1) : Index.FromStart(end.Value + 1);
+                    }
+
                     PopExpected(TokenType.RBracket);
-                    path = path.ByRange(new Range(start, start.IsFromEnd ? Index.FromEnd(start.Value - 1) : Index.FromStart(start.Value + 1)));
+
+                    path = path.ByRange(new Range(start, end));
                     break;
                 }
-
-                var inclusive = PopExpected(TokenType.DoubleDot, TokenType.TripleDot);
-
-                var end = Index.FromEnd(0);
-
-                if (Lexer.Peek() == TokenType.Caret)
-                {
-                    PopExpected(TokenType.Caret);
-                    end = Index.FromEnd((int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger);
-                }
-                else if (Lexer.Peek() == TokenType.IntegerLiteral)
-                {
-                    end = (int)IntValue(PopExpected(TokenType.IntegerLiteral)).AsInteger;
-                    if (inclusive.Type == TokenType.TripleDot)
-                        end = end.IsFromEnd ? Index.FromEnd(end.Value - 1) : Index.FromStart(end.Value + 1);
-                }
-
-                PopExpected(TokenType.RBracket);
-
-                path = path.ByRange(new Range(start, end));
-                break;
-            }
-            default:
-                throw new ParserException(Lexer,
-                    $"Internal Error: Unexpected token {token} found when parsing Reference path component");
+                default:
+                    throw new ParserException(Lexer,
+                        $"Internal Error: Unexpected token {token} found when parsing Reference path component");
             }
 
             return token;

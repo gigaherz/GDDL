@@ -1,5 +1,5 @@
-using System;
 using GDDL.Parsing;
+using System;
 
 namespace GDDL.Exceptions
 {

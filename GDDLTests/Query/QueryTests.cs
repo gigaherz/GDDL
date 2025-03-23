@@ -12,10 +12,10 @@ namespace GDDL.Tests.Queries
     {
         [TestMethod]
         public void QueryObjectReturnsElement()
-            {
+        {
             var map = GddlMap.Of(
-                   new ("key1", GddlValue.Of("Text")),
-                   new ( "key2", GddlValue.Of(1) )
+                   new("key1", GddlValue.Of("Text")),
+                   new("key2", GddlValue.Of(1))
             );
             AssertListsEqual([GddlValue.Of("Text")], Query.FromString("/key1").Apply(map).ToList());
             AssertListsEqual([GddlValue.Of(1)], Query.FromString("/key2").Apply(map).ToList());
@@ -65,9 +65,9 @@ namespace GDDL.Tests.Queries
                     list2
             );
             var map = GddlMap.Of(
-                    new ("key1", GddlValue.Of("Text")),
-                    new ("key2", GddlValue.Of(1)),
-                    new ("key3", list)
+                    new("key1", GddlValue.Of("Text")),
+                    new("key2", GddlValue.Of(1)),
+                    new("key3", list)
             );
             AssertListsEqual([GddlValue.Of(314)], Query.FromString("/key3/[1..^1]").Apply(map).ToList());
             AssertListsEqual([GddlValue.Of(314)], Query.FromString("/key3[1..^1]").Apply(map).ToList());

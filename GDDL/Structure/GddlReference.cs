@@ -1,8 +1,8 @@
+using GDDL.Exceptions;
+using GDDL.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GDDL.Exceptions;
-using GDDL.Queries;
 using Query = GDDL.Queries.Query;
 
 namespace GDDL.Structure

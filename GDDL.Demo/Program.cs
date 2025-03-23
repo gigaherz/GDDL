@@ -1,6 +1,6 @@
-﻿using System;
+﻿using GDDL.Serialization;
+using System;
 using System.Globalization;
-using GDDL.Serialization;
 
 namespace GDDL.Demo
 {

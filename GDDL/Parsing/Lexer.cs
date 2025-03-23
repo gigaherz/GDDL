@@ -1,6 +1,6 @@
-using System.Text;
 using GDDL.Exceptions;
 using GDDL.Util;
+using System.Text;
 
 namespace GDDL.Parsing
 {
@@ -82,16 +82,16 @@ namespace GDDL.Parsing
 
             switch (ich)
             {
-            case '{': return new Token(TokenType.LBrace, reader.Read(1), startContext, comment, whitespace);
-            case '}': return new Token(TokenType.RBrace, reader.Read(1), startContext, comment, whitespace);
-            case '[': return new Token(TokenType.LBracket, reader.Read(1), startContext, comment, whitespace);
-            case ']': return new Token(TokenType.RBracket, reader.Read(1), startContext, comment, whitespace);
-            case ',': return new Token(TokenType.Comma, reader.Read(1), startContext, comment, whitespace);
-            case ':': return new Token(TokenType.Colon, reader.Read(1), startContext, comment, whitespace);
-            case '/': return new Token(TokenType.Slash, reader.Read(1), startContext, comment, whitespace);
-            case '=': return new Token(TokenType.EqualSign, reader.Read(1), startContext, comment, whitespace);
-            case '%': return new Token(TokenType.Percent, reader.Read(1), startContext, comment, whitespace);
-            case '^': return new Token(TokenType.Caret, reader.Read(1), startContext, comment, whitespace);
+                case '{': return new Token(TokenType.LBrace, reader.Read(1), startContext, comment, whitespace);
+                case '}': return new Token(TokenType.RBrace, reader.Read(1), startContext, comment, whitespace);
+                case '[': return new Token(TokenType.LBracket, reader.Read(1), startContext, comment, whitespace);
+                case ']': return new Token(TokenType.RBracket, reader.Read(1), startContext, comment, whitespace);
+                case ',': return new Token(TokenType.Comma, reader.Read(1), startContext, comment, whitespace);
+                case ':': return new Token(TokenType.Colon, reader.Read(1), startContext, comment, whitespace);
+                case '/': return new Token(TokenType.Slash, reader.Read(1), startContext, comment, whitespace);
+                case '=': return new Token(TokenType.EqualSign, reader.Read(1), startContext, comment, whitespace);
+                case '%': return new Token(TokenType.Percent, reader.Read(1), startContext, comment, whitespace);
+                case '^': return new Token(TokenType.Caret, reader.Read(1), startContext, comment, whitespace);
             }
 
             if (Utility.IsLetter(ich) || ich == '_')
@@ -137,21 +137,21 @@ namespace GDDL.Parsing
                 {
                     switch (ich)
                     {
-                    case '\\':
-                        number = CountEscapeSeq(number);
-                        break;
-                    case '\r':
-                        number++;
-                        ich = reader.Peek(number);
-                        if (ich == '\n')
-                        {
+                        case '\\':
+                            number = CountEscapeSeq(number);
+                            break;
+                        case '\r':
                             number++;
-                        }
+                            ich = reader.Peek(number);
+                            if (ich == '\n')
+                            {
+                                number++;
+                            }
 
-                        break;
-                    default:
-                        number++;
-                        break;
+                            break;
+                        default:
+                            number++;
+                            break;
                     }
 
                     ich = reader.Peek(number);
@@ -317,73 +317,73 @@ namespace GDDL.Parsing
 
                 switch (ich)
                 {
-                case ' ':
-                case '\t':
-                {
-                    char cch = (char)ich;
-                    whitespaceBuilder.Append(cch);
-                    if (commentStarted)
-                        commentBuilder.Append(cch);
-                    reader.Skip(1);
-                    ich = reader.Peek();
-                    break;
-                }
-                case '\r':
-                case '\n':
-                {
-                    char cch = (char)ich;
-                    whitespaceBuilder.Append(cch);
-                    if (commentStarted)
-                        commentBuilder.Append(cch);
-                    reader.Skip(1);
-                    ich = reader.Peek();
-                    if (cch == '\r' && ich == '\n')
+                    case ' ':
+                    case '\t':
                     {
-                        cch = (char)ich;
+                        char cch = (char)ich;
                         whitespaceBuilder.Append(cch);
                         if (commentStarted)
                             commentBuilder.Append(cch);
                         reader.Skip(1);
                         ich = reader.Peek();
+                        break;
                     }
-
-                    commentStarted = false;
-                    break;
-                }
-                case '#':
-                {
-                    char cch = (char)ich;
-                    whitespaceBuilder.Append(cch);
-                    if (!commentStarted)
-                    {
-                        commentStarted = true;
-                    }
-                    else
-                    {
-                        commentBuilder.Append(cch);
-                    }
-
-                    reader.Skip(1);
-                    ich = reader.Peek();
-                    break;
-                }
-                default:
-                {
-                    if (!commentStarted)
-                    {
-                        return;
-                    }
-                    else
+                    case '\r':
+                    case '\n':
                     {
                         char cch = (char)ich;
                         whitespaceBuilder.Append(cch);
-                        commentBuilder.Append(cch);
+                        if (commentStarted)
+                            commentBuilder.Append(cch);
                         reader.Skip(1);
                         ich = reader.Peek();
-                    }
+                        if (cch == '\r' && ich == '\n')
+                        {
+                            cch = (char)ich;
+                            whitespaceBuilder.Append(cch);
+                            if (commentStarted)
+                                commentBuilder.Append(cch);
+                            reader.Skip(1);
+                            ich = reader.Peek();
+                        }
 
-                    break;
-                }
+                        commentStarted = false;
+                        break;
+                    }
+                    case '#':
+                    {
+                        char cch = (char)ich;
+                        whitespaceBuilder.Append(cch);
+                        if (!commentStarted)
+                        {
+                            commentStarted = true;
+                        }
+                        else
+                        {
+                            commentBuilder.Append(cch);
+                        }
+
+                        reader.Skip(1);
+                        ich = reader.Peek();
+                        break;
+                    }
+                    default:
+                    {
+                        if (!commentStarted)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            char cch = (char)ich;
+                            whitespaceBuilder.Append(cch);
+                            commentBuilder.Append(cch);
+                            reader.Skip(1);
+                            ich = reader.Peek();
+                        }
+
+                        break;
+                    }
                 }
             }
         }
@@ -431,16 +431,16 @@ namespace GDDL.Parsing
             ich = reader.Peek(number);
             switch (ich)
             {
-            case '0':
-            case 'b':
-            case 'f':
-            case 'n':
-            case 'r':
-            case 't':
-            case '"':
-            case '\'':
-            case '\\':
-                return ++number;
+                case '0':
+                case 'b':
+                case 'f':
+                case 'n':
+                case 'r':
+                case 't':
+                case '"':
+                case '\'':
+                case '\\':
+                    return ++number;
             }
 
             if (ich == 'x' || ich == 'u')

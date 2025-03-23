@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using GDDL.Parsing;
+using GDDL.Structure;
 using System.IO;
 using System.Text;
-using GDDL.Parsing;
-using GDDL.Structure;
 
 namespace GDDL
 {
