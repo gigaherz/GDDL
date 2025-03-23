@@ -1,5 +1,6 @@
 ﻿using GDDL.Structure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 
 namespace GDDL.Tests.Structure
 {
@@ -9,8 +10,18 @@ namespace GDDL.Tests.Structure
         [TestMethod]
         public void EmptyMapContainsNoItems()
         {
-            GddlMap collection = GddlMap.Empty();
+            var collection = GddlMap.Empty();
             Assert.AreEqual(0, collection.Count);
+        }
+        
+        [TestMethod]
+        public void MapOfAddsNames()
+        {
+            var element = GddlValue.Of(true);
+            var collection = new GddlMap() { { "test", element } };
+            var value = collection["test"];
+            Assert.IsNotNull(value);
+            Assert.AreEqual(element, value);
         }
     }
 }

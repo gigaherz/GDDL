@@ -297,8 +297,19 @@ namespace GDDL.Tests
             var provider = LexerBuilder().AddLBracket().AddSlash().AddIdentifier("a").AddSlash().AddIdentifier("b")
                 .AddRBracket().Build();
             var parser = new Parser(provider);
-            var expected = GddlList.Of(GddlReference.Of(new GDDL.Queries.Query().Absolute().ByKey("a").ByKey("b")));
+            var expected = GddlList.Of(GddlReference.Of(new Query().Absolute().ByKey("a").ByKey("b")));
             Assert.AreEqual(expected, parser.Parse(false).Root);
+        }
+
+        [TestMethod]
+        public void ParsesRootedSlashReference()
+        {
+            var provider = LexerBuilder().AddLBracket().AddSlash().AddIdentifier("a").AddSlash().AddIdentifier("b").AddRBracket().Build();
+            Parser parser = new(provider);
+            var expected = new GddlList() { GddlReference.Of(new Query().Absolute().ByKey("a").ByKey("b")) };
+            var doc = parser.Parse(false);
+            var actual = doc.Root;
+            Assert.AreEqual(expected, actual);
         }
 
         // HARNESS BELOW

@@ -54,7 +54,7 @@ namespace GDDL.Serialization
         {
             FormatElement(doc.Root);
 
-            if (doc.HasDanglingComment && Options.writeComments)
+            if (doc.HasDanglingComment && options.writeComments)
                 FormatComment(doc.DanglingComment);
         }
 
@@ -75,6 +75,7 @@ namespace GDDL.Serialization
         private static readonly Regex CommentLineSplitter = CommentLineSplitterRegex();
 
         private readonly Stack<int> indentLevels = new();
+
         private int indentLevel = 0;
 
         private void PushIndent()
@@ -108,20 +109,20 @@ namespace GDDL.Serialization
             int tabsToGen = indentLevel;
             for (int i = 0; i < tabsToGen; i++)
             {
-                if (Options.indentUsingTabs)
+                if (options.indentUsingTabs)
                 {
                     builder.Append('\t');
                 }
                 else
                 {
-                    AppendMultiple(' ', Options.spacesPerIndent);
+                    AppendMultiple(' ', options.spacesPerIndent);
                 }
             }
         }
 
         protected void FormatComment(GddlElement e)
         {
-            if (e.HasComment && Options.writeComments)
+            if (e.HasComment && options.writeComments)
             {
                 FormatComment(e.Comment);
             }
@@ -129,10 +130,10 @@ namespace GDDL.Serialization
 
         private void FormatComment(string comment)
         {
-            AppendMultiple('\n', Options.blankLinesBeforeComment);
+            AppendMultiple('\n', options.blankLinesBeforeComment);
             string[] lines = CommentLineSplitter.Split(comment);
             int count = lines.Length;
-            if (count > 0 && Options.trimCommentLines)
+            if (count > 0 && options.trimCommentLines)
             {
                 while (lines[count - 1].Length == 0)
                     count--;
@@ -151,25 +152,25 @@ namespace GDDL.Serialization
         {
             switch (element)
             {
-            case GddlValue v:
-                FormatValue(v);
-                break;
-            case GddlReference r:
-                FormatReference(r);
-                break;
-            case GddlMap m:
-                FormatMap(m, hasNext);
-                break;
-            case GddlList l:
-                FormatList(l, hasNext);
-                break;
-            default:
-                throw new NotImplementedException(
-                    "A new Element type has been added without updating Formatter#FormatElement.");
+                case GddlValue v:
+                    FormatValue(v);
+                    break;
+                case GddlReference r:
+                    FormatReference(r);
+                    break;
+                case GddlMap m:
+                    FormatMap(m, hasNext);
+                    break;
+                case GddlList l:
+                    FormatList(l, hasNext);
+                    break;
+                default:
+                    throw new NotImplementedException(
+                        "A new Element type has been added without updating Formatter#FormatElement.");
             }
         }
 
-        protected void FormatValue(GddlValue v)
+        private void FormatValue(GddlValue v)
         {
             if (v.IsNull)
             {
@@ -205,17 +206,17 @@ namespace GDDL.Serialization
 
         protected void FormatDoubleCustom(double value)
         {
-            switch (Options.floatFormattingStyle)
+            switch (options.floatFormattingStyle)
             {
-            case DoubleFormattingStyle.Decimal:
-                FormatDoubleDecimal(value);
-                break;
-            case DoubleFormattingStyle.Scientific:
-                FormatDoubleScientific(value);
-                break;
-            default:
-                FormatDoubleAuto(value);
-                break;
+                case DoubleFormattingStyle.Decimal:
+                    FormatDoubleDecimal(value);
+                    break;
+                case DoubleFormattingStyle.Scientific:
+                    FormatDoubleScientific(value);
+                    break;
+                default:
+                    FormatDoubleAuto(value);
+                    break;
             }
         }
 
@@ -225,7 +226,7 @@ namespace GDDL.Serialization
                 return;
 
             int exp = (int)Math.Floor(Math.Log10(Math.Abs(value)));
-            if (exp >= Options.autoScientificNotationUpper || exp < Options.autoScientificNotationLower)
+            if (exp >= options.autoScientificNotationUpper || exp < options.autoScientificNotationLower)
             {
                 FormatDoubleScientific(value);
             }
@@ -244,7 +245,7 @@ namespace GDDL.Serialization
             double adjusted = value / Math.Pow(10, exp);
             FormatDoubleDecimal(adjusted);
             builder.Append('e');
-            if (Options.alwaysShowExponentSign)
+            if (options.alwaysShowExponentSign)
                 FormatSign(exp);
             else
                 FormatNegative(exp);
@@ -253,7 +254,7 @@ namespace GDDL.Serialization
 
         protected void FormatDoubleDecimal(double value)
         {
-            if (Options.alwaysShowNumberSign)
+            if (options.alwaysShowNumberSign)
                 FormatSign(value);
             else
                 FormatNegative(value);
@@ -262,38 +263,49 @@ namespace GDDL.Serialization
             double integral = Math.Floor(value);
             double fractional = value - integral;
 
-            var temp = new List<int>();
+            int exp = integral > 0 ? (int)Math.Floor(Math.Log10(integral) + 1) : 0;
 
-            int intDigits = FormatIntegral(integral, temp);
+            var digits = new List<int>();
+            double leftovers = GetDigitsForRounding(digits, (options.floatSignificantFigures - exp), fractional);
+
+            int nonTrailingDigits = RoundDigits(digits, leftovers);
+            if (nonTrailingDigits < 0)
+            {
+                nonTrailingDigits = ~nonTrailingDigits;
+                integral += 1;
+            }
+
+            FormatIntegral(integral, exp);
 
             builder.Append('.');
 
-            FormatFractional(fractional, intDigits, temp);
+            FormatFractional(digits, nonTrailingDigits);
         }
 
-        internal int FormatIntegral(double integral, List<int> temp)
+        internal void FormatIntegral(double integral, int exp)
         {
             if (!(integral > 0))
             {
                 builder.Append('0');
-                return 0;
+                return;
             }
 
-            int exp = (int)Math.Ceiling(Math.Log10(integral));
             double value = integral / Math.Pow(10, exp);
 
-            int nonTrailingDigits = FormatDigits(temp, Math.Min(exp, Options.floatSignificantFigures), value);
+            List<int> temp = [];
+            double leftovers = GetDigitsForRounding(temp, Math.Min(exp, options.floatSignificantFigures), value);
+            int nonTrailingDigits1 = RoundDigits(temp, leftovers);
+            int nonTrailingDigits = FormatDigitsAfterRounding(temp, nonTrailingDigits1);
 
             AppendMultiple('0', exp - nonTrailingDigits);
-            return exp;
         }
 
-        internal void FormatFractional(double fractional, int intDigits, List<int> temp)
+        internal void FormatFractional(List<int> temp, int nonTrailingDigits)
         {
-            FormatDigits(temp, (Options.floatSignificantFigures - intDigits), fractional);
+            FormatDigitsAfterRounding(temp, nonTrailingDigits);
         }
 
-        private int FormatDigits(List<int> temp, int exp, double value)
+        private static double GetDigitsForRounding(List<int> temp, int exp, double value)
         {
             temp.Clear();
             while (value > 0 && temp.Count < exp)
@@ -303,25 +315,26 @@ namespace GDDL.Serialization
                 value -= digit;
                 temp.Add(digit);
             }
-
             if (temp.Count == 0)
             {
                 temp.Add(0);
             }
+            return value;
+        }
 
-            int nonTrailingDigits = RoundDigits(temp, value);
+        private int FormatDigitsAfterRounding(List<int> temp, int nonTrailingDigits)
+        {
             for (int i = 0; i < nonTrailingDigits; i++)
             {
                 builder.Append((char)('0' + temp[i]));
             }
-
             return nonTrailingDigits;
         }
 
-        private static int RoundDigits(List<int> temp, double value)
+        private static int RoundDigits(List<int> temp, double leftovers)
         {
             int l = temp.Count - 1;
-            int r = value >= 0.5 ? 1 : 0;
+            int r = leftovers >= 0.5 ? 1 : 0;
             while (r > 0 && l >= 0) // round up
             {
                 int v = temp[l];
@@ -340,7 +353,7 @@ namespace GDDL.Serialization
                 l--;
             }
 
-            int firstTrailingZero = temp.Count;
+            int firstTrailingZero = 1;
             for (int i = temp.Count - 1; i >= 0; i--)
             {
                 if (temp[i] != 0)
@@ -349,8 +362,7 @@ namespace GDDL.Serialization
                     break;
                 }
             }
-
-            return firstTrailingZero;
+            return r > 0 ? ~firstTrailingZero : firstTrailingZero;
         }
 
         private bool FormatSpecial(double value)
@@ -363,7 +375,7 @@ namespace GDDL.Serialization
 
             if (!double.IsFinite(value))
             {
-                if (Options.alwaysShowNumberSign)
+                if (options.alwaysShowNumberSign)
                     FormatSign(value);
                 else
                     FormatNegative(value);
@@ -392,55 +404,46 @@ namespace GDDL.Serialization
             foreach (var it in r.NameParts)
             {
                 if (count++ > 0)
-                    builder.Append(Options.useJsonDelimiters ? '/' : ':');
+                    builder.Append(options.useJsonDelimiters ? '/' : ':');
                 builder.Append(it.ToString(this));
             }
-
-            /*if (r.IsResolved)
-            {
-                builder.Append('=');
-                if (r.ResolvedValue == null)
-                    builder.Append("NULL");
-                else
-                    builder.Append(r.ResolvedValue);
-            }*/
         }
 
         internal void FormatMap(GddlMap c, bool hasNext0)
         {
             PushIndent();
 
-            bool oneElementPerLine = c.GetFormattingComplexity() > Options.oneElementPerLineThreshold;
+            bool oneElementPerLine = c.GetFormattingComplexity() > options.oneElementPerLineThreshold;
 
             if (c.HasTypeName)
             {
                 builder.Append(c.TypeName);
-                if (Options.lineBreaksBeforeOpeningBrace == 0)
+                if (options.lineBreaksBeforeOpeningBrace == 0)
                     builder.Append(' ');
             }
 
-            if (oneElementPerLine && Options.lineBreaksBeforeOpeningBrace > 0)
+            if (oneElementPerLine && options.lineBreaksBeforeOpeningBrace > 0)
             {
-                AppendMultiple('\n', Options.lineBreaksBeforeOpeningBrace);
+                AppendMultiple('\n', options.lineBreaksBeforeOpeningBrace);
                 AppendIndent();
             }
-            else if (Options.spacesBeforeOpeningBrace > 0)
+            else if (options.spacesBeforeOpeningBrace > 0)
             {
-                AppendMultiple(' ', Options.spacesBeforeOpeningBrace);
+                AppendMultiple(' ', options.spacesBeforeOpeningBrace);
             }
 
             builder.Append('{');
             if (c.Count == 0 && !oneElementPerLine)
             {
-                AppendMultiple(' ', Options.spacesInEmptyCollection);
+                AppendMultiple(' ', options.spacesInEmptyCollection);
             }
-            else if (oneElementPerLine && Options.lineBreaksAfterOpeningBrace > 0)
+            else if (oneElementPerLine && options.lineBreaksAfterOpeningBrace > 0)
             {
-                AppendMultiple('\n', Options.lineBreaksAfterOpeningBrace);
+                AppendMultiple('\n', options.lineBreaksAfterOpeningBrace);
             }
-            else if (Options.spacesAfterOpeningBrace > 0)
+            else if (options.spacesAfterOpeningBrace > 0)
             {
-                AppendMultiple(' ', Options.spacesAfterOpeningBrace);
+                AppendMultiple(' ', options.spacesAfterOpeningBrace);
             }
 
             PushIndent();
@@ -448,14 +451,14 @@ namespace GDDL.Serialization
 
             bool first = true;
             var keys = new List<string>(c.Keys);
-            if (Options.sortMapKeys) keys.Sort(string.Compare);
+            if (options.sortMapKeys) keys.Sort(string.Compare);
             for (int i = 0; i < keys.Count; i++)
             {
                 string key = keys[i];
                 var e = c[key];
                 PushIndent();
 
-                if (first && (!oneElementPerLine || Options.lineBreaksAfterOpeningBrace == 0))
+                if (first && (!oneElementPerLine || options.lineBreaksAfterOpeningBrace == 0))
                 {
                     ClearIndent();
                 }
@@ -467,7 +470,7 @@ namespace GDDL.Serialization
                     }
                     else
                     {
-                        AppendMultiple(' ', Options.spacesAfterComma);
+                        AppendMultiple(' ', options.spacesAfterComma);
                     }
 
                     if (!oneElementPerLine)
@@ -478,16 +481,17 @@ namespace GDDL.Serialization
 
                 FormatComment(e);
                 AppendIndent();
-                if (Options.alwaysUseStringLiterals || !Utility.IsValidIdentifier(key))
+                if (options.alwaysUseStringLiterals || !Utility.IsValidIdentifier(key))
                     key = Utility.EscapeString(key);
                 builder.Append(key);
-                AppendMultiple(' ', Options.spacesBeforeEquals);
-                builder.Append(Options.useJsonDelimiters ? ':' : '=');
-                AppendMultiple(' ', Options.spacesAfterEquals);
+                AppendMultiple(' ', options.spacesBeforeEquals);
+                builder.Append(options.useJsonDelimiters ? ':' : '=');
+                AppendMultiple(' ', options.spacesAfterEquals);
                 FormatElement(e, hasNext1);
-                if (hasNext1 && (!e.IsCollection || !Options.omitCommaAfterClosingBrace))
+
+                if (hasNext1 && (!e.IsCollection || !options.omitCommaAfterClosingBrace))
                 {
-                    AppendMultiple(' ', Options.spacesBeforeComma);
+                    AppendMultiple(' ', options.spacesBeforeComma);
                     builder.Append(',');
                 }
 
@@ -495,33 +499,33 @@ namespace GDDL.Serialization
                 PopIndent();
             }
 
-            if (c.HasTrailingComment && Options.writeComments)
+            if (c.HasTrailingComment && options.writeComments)
                 FormatComment(c.TrailingComment);
 
             PopIndent();
             if (c.Count != 0 || oneElementPerLine) // Done on the open side
             {
-                if (oneElementPerLine && Options.lineBreaksBeforeClosingBrace > 0)
+                if (oneElementPerLine && options.lineBreaksBeforeClosingBrace > 0)
                 {
-                    AppendMultiple('\n', Options.lineBreaksBeforeClosingBrace);
+                    AppendMultiple('\n', options.lineBreaksBeforeClosingBrace);
                     AppendIndent();
                 }
-                else if (Options.spacesBeforeClosingBrace > 0)
+                else if (options.spacesBeforeClosingBrace > 0)
                 {
-                    AppendMultiple(' ', Options.spacesBeforeClosingBrace);
+                    AppendMultiple(' ', options.spacesBeforeClosingBrace);
                 }
             }
 
             builder.Append('}');
-            if (!hasNext0 || Options.omitCommaAfterClosingBrace)
+            if (!hasNext0 || options.omitCommaAfterClosingBrace)
             {
-                if (oneElementPerLine && Options.lineBreaksAfterClosingBrace > 0)
+                if (oneElementPerLine && options.lineBreaksAfterClosingBrace > 0)
                 {
-                    AppendMultiple('\n', Options.lineBreaksAfterClosingBrace);
+                    AppendMultiple('\n', options.lineBreaksAfterClosingBrace);
                 }
-                else if (Options.spacesAfterClosingBrace > 0)
+                else if (options.spacesAfterClosingBrace > 0)
                 {
-                    AppendMultiple(' ', Options.spacesAfterClosingBrace);
+                    AppendMultiple(' ', options.spacesAfterClosingBrace);
                 }
             }
 
@@ -532,26 +536,26 @@ namespace GDDL.Serialization
         {
             PushIndent();
 
-            bool oneElementPerLine = !c.IsSimple || c.Count > Options.oneElementPerLineThreshold;
+            bool oneElementPerLine = c.GetFormattingComplexity() > options.oneElementPerLineThreshold;
 
-            if (oneElementPerLine && Options.lineBreaksBeforeOpeningBrace > 0)
+            if (oneElementPerLine && options.lineBreaksBeforeOpeningBrace > 0)
             {
-                AppendMultiple('\n', Options.lineBreaksBeforeOpeningBrace);
+                AppendMultiple('\n', options.lineBreaksBeforeOpeningBrace);
                 AppendIndent();
             }
-            else if (Options.spacesBeforeOpeningBrace > 0)
+            else if (options.spacesBeforeOpeningBrace > 0)
             {
-                AppendMultiple(' ', Options.spacesBeforeOpeningBrace);
+                AppendMultiple(' ', options.spacesBeforeOpeningBrace);
             }
 
             builder.Append('[');
-            if (oneElementPerLine && Options.lineBreaksAfterOpeningBrace > 0)
+            if (oneElementPerLine && options.lineBreaksAfterOpeningBrace > 0)
             {
-                AppendMultiple('\n', Options.lineBreaksAfterOpeningBrace);
+                AppendMultiple('\n', options.lineBreaksAfterOpeningBrace);
             }
-            else if (Options.spacesAfterOpeningBrace > 0)
+            else if (options.spacesAfterOpeningBrace > 0)
             {
-                AppendMultiple(' ', Options.spacesAfterOpeningBrace);
+                AppendMultiple(' ', options.spacesAfterOpeningBrace);
             }
 
             PushIndent();
@@ -563,7 +567,7 @@ namespace GDDL.Serialization
                 GddlElement e = c[i];
                 PushIndent();
 
-                if (first && (!oneElementPerLine || Options.lineBreaksAfterOpeningBrace == 0))
+                if (first && (!oneElementPerLine || options.lineBreaksAfterOpeningBrace == 0))
                 {
                     ClearIndent();
                 }
@@ -573,9 +577,9 @@ namespace GDDL.Serialization
                     {
                         builder.Append('\n');
                     }
-                    else if (Options.spacesAfterComma > 0)
+                    else if (options.spacesAfterComma > 0)
                     {
-                        AppendMultiple(' ', Options.spacesAfterComma);
+                        AppendMultiple(' ', options.spacesAfterComma);
                     }
 
                     if (!oneElementPerLine)
@@ -588,9 +592,9 @@ namespace GDDL.Serialization
                 AppendIndent();
                 FormatElement(e, hasNext1);
 
-                if (hasNext1 && (!e.IsCollection || !Options.omitCommaAfterClosingBrace))
+                if (hasNext1 && (!e.IsCollection || !options.omitCommaAfterClosingBrace))
                 {
-                    AppendMultiple(' ', Options.spacesBeforeComma);
+                    AppendMultiple(' ', options.spacesBeforeComma);
                     builder.Append(',');
                 }
 
@@ -598,30 +602,30 @@ namespace GDDL.Serialization
                 PopIndent();
             }
 
-            if (c.HasTrailingComment && Options.writeComments)
+            if (c.HasTrailingComment && options.writeComments)
                 FormatComment(c.TrailingComment);
 
             PopIndent();
-            if (oneElementPerLine && Options.lineBreaksBeforeClosingBrace > 0)
+            if (oneElementPerLine && options.lineBreaksBeforeClosingBrace > 0)
             {
-                AppendMultiple('\n', Options.lineBreaksBeforeClosingBrace);
+                AppendMultiple('\n', options.lineBreaksBeforeClosingBrace);
                 AppendIndent();
             }
-            else if (Options.spacesBeforeClosingBrace > 0)
+            else if (options.spacesBeforeClosingBrace > 0)
             {
-                AppendMultiple(' ', Options.spacesBeforeClosingBrace);
+                AppendMultiple(' ', options.spacesBeforeClosingBrace);
             }
 
             builder.Append(']');
-            if (!hasNext0 || Options.omitCommaAfterClosingBrace)
+            if (!hasNext0 || options.omitCommaAfterClosingBrace)
             {
-                if (oneElementPerLine && Options.lineBreaksAfterClosingBrace > 0)
+                if (oneElementPerLine && options.lineBreaksAfterClosingBrace > 0)
                 {
-                    AppendMultiple('\n', Options.lineBreaksAfterClosingBrace);
+                    AppendMultiple('\n', options.lineBreaksAfterClosingBrace);
                 }
-                else if (Options.spacesAfterClosingBrace > 0)
+                else if (options.spacesAfterClosingBrace > 0)
                 {
-                    AppendMultiple(' ', Options.spacesAfterClosingBrace);
+                    AppendMultiple(' ', options.spacesAfterClosingBrace);
                 }
             }
 

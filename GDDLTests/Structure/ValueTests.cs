@@ -1,8 +1,6 @@
 ﻿using GDDL.Structure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GDDL.Tests.Structure
 {
@@ -31,10 +29,10 @@ namespace GDDL.Tests.Structure
         {
             var v = GddlValue.Null();
             Assert.IsTrue(v.IsNull);
-            Assert.ThrowsException<NullReferenceException>(() => v.AsBoolean);
-            Assert.ThrowsException<NullReferenceException>(() => v.AsInteger);
-            Assert.ThrowsException<NullReferenceException>(() => v.AsDouble);
-            Assert.ThrowsException<NullReferenceException>(() => v.AsString);
+            Assert.ThrowsExactly<NullReferenceException>(() => _ = v.AsBoolean);
+            Assert.ThrowsExactly<NullReferenceException>(() => _ = v.AsInteger);
+            Assert.ThrowsExactly<NullReferenceException>(() => _ = v.AsDouble);
+            Assert.ThrowsExactly<NullReferenceException>(() => _ = v.AsString);
         }
 
         [TestMethod]
@@ -43,9 +41,9 @@ namespace GDDL.Tests.Structure
             var v = GddlValue.Of(true);
             Assert.IsFalse(v.IsNull);
             Assert.IsTrue(v.AsBoolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsDouble);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsString);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsInteger);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsDouble);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsString);
         }
 
         [TestMethod]
@@ -54,9 +52,9 @@ namespace GDDL.Tests.Structure
             var v = GddlValue.Of(false);
             Assert.IsFalse(v.IsNull);
             Assert.IsFalse(v.AsBoolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsDouble);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsString);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsInteger);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsDouble);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsString);
         }
 
         [TestMethod]
@@ -65,9 +63,9 @@ namespace GDDL.Tests.Structure
             var v = GddlValue.Of(1);
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1L, v.AsInteger);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsBoolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsDouble);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsString);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsBoolean);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsDouble);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsString);
         }
 
         [TestMethod]
@@ -76,9 +74,9 @@ namespace GDDL.Tests.Structure
             var v = GddlValue.Of(1.0);
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual(1L, v.AsDouble, 1E-10);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsBoolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsString);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsBoolean);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsInteger);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsString);
         }
 
         [TestMethod]
@@ -87,9 +85,9 @@ namespace GDDL.Tests.Structure
             var v = GddlValue.Of("1");
             Assert.IsFalse(v.IsNull);
             Assert.AreEqual("1", v.AsString);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsBoolean);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsInteger);
-            Assert.ThrowsException<InvalidCastException>(() => v.AsDouble);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsBoolean);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsInteger);
+            Assert.ThrowsExactly<InvalidCastException>(() => _ = v.AsDouble);
         }
 
         [TestMethod]

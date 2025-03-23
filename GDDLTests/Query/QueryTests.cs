@@ -4,8 +4,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GDDL.Tests.Queries
 {
@@ -19,9 +17,9 @@ namespace GDDL.Tests.Queries
                    new ("key1", GddlValue.Of("Text")),
                    new ( "key2", GddlValue.Of(1) )
             );
-            AssertListsEqual(Of(GddlValue.Of("Text")), Query.FromString("/key1").Apply(map).ToList());
-            AssertListsEqual(Of(GddlValue.Of(1)), Query.FromString("/key2").Apply(map).ToList());
-            AssertListsEqual(Of(), Query.FromString("/key3").Apply(map).ToList());
+            AssertListsEqual([GddlValue.Of("Text")], Query.FromString("/key1").Apply(map).ToList());
+            AssertListsEqual([GddlValue.Of(1)], Query.FromString("/key2").Apply(map).ToList());
+            AssertListsEqual([], Query.FromString("/key3").Apply(map).ToList());
         }
 
         [TestMethod]
@@ -31,11 +29,11 @@ namespace GDDL.Tests.Queries
                     GddlValue.Of("Text"),
                     GddlValue.Of(1)
             );
-            AssertListsEqual(Of(GddlValue.Of("Text")), Query.FromString("/[0]").Apply(list).ToList());
-            AssertListsEqual(Of(GddlValue.Of(1)), Query.FromString("/[1]").Apply(list).ToList());
-            AssertListsEqual(Of(), Query.FromString("/[2]").Apply(list).ToList());
-            AssertListsEqual(Of(GddlValue.Of(1)), Query.FromString("/[^1]").Apply(list).ToList());
-            AssertListsEqual(Of(GddlValue.Of("Text")), Query.FromString("/[^2]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of("Text")], Query.FromString("/[0]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of(1)], Query.FromString("/[1]").Apply(list).ToList());
+            AssertListsEqual([], Query.FromString("/[2]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of(1)], Query.FromString("/[^1]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of("Text")], Query.FromString("/[^2]").Apply(list).ToList());
             Assert.ThrowsException<ArgumentOutOfRangeException>(() => Query.FromString("/[-1]").Apply(list).ToList());
         }
 
@@ -47,12 +45,12 @@ namespace GDDL.Tests.Queries
                     GddlValue.Of(1),
                     GddlValue.Of(false)
             );
-            AssertListsEqual(Of(GddlValue.Of("Text")), Query.FromString("/[0..1]").Apply(list).ToList());
-            AssertListsEqual(Of(GddlValue.Of("Text"), GddlValue.Of(1)), Query.FromString("/[0...1]").Apply(list).ToList());
-            AssertListsEqual(Of(GddlValue.Of("Text")), Query.FromString("/[..1]").Apply(list).ToList());
-            AssertListsEqual(Of(GddlValue.Of("Text"), GddlValue.Of(1)), Query.FromString("/[..^1]").Apply(list).ToList());
-            AssertListsEqual(Of(GddlValue.Of("Text"), GddlValue.Of(1), GddlValue.Of(false)), Query.FromString("/[0..^0]").Apply(list).ToList());
-            AssertListsEqual(Of(GddlValue.Of(1), GddlValue.Of(false)), Query.FromString("/[^2..^0]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of("Text")], Query.FromString("/[0..1]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of("Text"), GddlValue.Of(1)], Query.FromString("/[0...1]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of("Text")], Query.FromString("/[..1]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of("Text"), GddlValue.Of(1)], Query.FromString("/[..^1]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of("Text"), GddlValue.Of(1), GddlValue.Of(false)], Query.FromString("/[0..^0]").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of(1), GddlValue.Of(false)], Query.FromString("/[^2..^0]").Apply(list).ToList());
         }
 
         [TestMethod]
@@ -71,14 +69,27 @@ namespace GDDL.Tests.Queries
                     new ("key2", GddlValue.Of(1)),
                     new ("key3", list)
             );
-            AssertListsEqual(Of(GddlValue.Of(314)), Query.FromString("/key3/[1..^1]").Apply(map).ToList());
-            AssertListsEqual(Of(GddlValue.Of(314)), Query.FromString("/key3[1..^1]").Apply(map).ToList());
-            AssertListsEqual(Of(GddlValue.Of(12345)), Query.FromString("/key3[2][0]").Apply(map).ToList());
+            AssertListsEqual([GddlValue.Of(314)], Query.FromString("/key3/[1..^1]").Apply(map).ToList());
+            AssertListsEqual([GddlValue.Of(314)], Query.FromString("/key3[1..^1]").Apply(map).ToList());
+            AssertListsEqual([GddlValue.Of(12345)], Query.FromString("/key3[2][0]").Apply(map).ToList());
         }
 
-        private static List<GddlElement> Of(params GddlElement[] elements)
+
+
+        [TestMethod]
+        public void QueryObjectInsideList()
         {
-            return elements.ToList();
+            var map1 = new GddlMap() {
+                   { "key1", GddlValue.Of("Text")},
+                   { "key2", GddlValue.Of(1) }
+            };
+            var list = new GddlList() {
+                    GddlValue.Of("A"),
+                    GddlValue.Of(314),
+                    map1
+            };
+            AssertListsEqual([GddlValue.Of("Text")], Query.FromString("/[2]/key1").Apply(list).ToList());
+            AssertListsEqual([GddlValue.Of(1)], Query.FromString("/[2]/key2").Apply(list).ToList());
         }
 
         private static void AssertListsEqual<T>(List<T> expected, List<T> actual)

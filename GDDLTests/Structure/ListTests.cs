@@ -34,7 +34,7 @@ namespace GDDL.Tests.Structure
         {
             GddlList collection = GddlList.Empty();
             Assert.AreEqual(0, collection.Count);
-            collection.AddRange(new GddlElement[] { GddlValue.Of(1), GddlValue.Of(2), GddlValue.Of(3) });
+            collection.AddRange([GddlValue.Of(1), GddlValue.Of(2), GddlValue.Of(3)]);
             Assert.AreEqual(3, collection.Count);
         }
 

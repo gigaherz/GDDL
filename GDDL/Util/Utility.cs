@@ -85,33 +85,33 @@ namespace GDDL.Util
                 sb.Append('\\');
                 switch (c)
                 {
-                case '\b':
-                    sb.Append('b');
-                    break;
-                case '\t':
-                    sb.Append('t');
-                    break;
-                case '\n':
-                    sb.Append('n');
-                    break;
-                case '\f':
-                    sb.Append('f');
-                    break;
-                case '\r':
-                    sb.Append('r');
-                    break;
-                case '\"':
-                    sb.Append('\"');
-                    break;
-                case '\\':
-                    sb.Append('\\');
-                    break;
-                default:
-                    if (c > 0xFF)
-                        sb.Append($"u{(int)c:X4}");
-                    else
-                        sb.Append($"x{(int)c:X2}");
-                    break;
+                    case '\b':
+                        sb.Append('b');
+                        break;
+                    case '\t':
+                        sb.Append('t');
+                        break;
+                    case '\n':
+                        sb.Append('n');
+                        break;
+                    case '\f':
+                        sb.Append('f');
+                        break;
+                    case '\r':
+                        sb.Append('r');
+                        break;
+                    case '\"':
+                        sb.Append('\"');
+                        break;
+                    case '\\':
+                        sb.Append('\\');
+                        break;
+                    default:
+                        if (c > 0xFF)
+                            sb.Append($"u{(int)c:X4}");
+                        else
+                            sb.Append($"x{(int)c:X2}");
+                        break;
                 }
             }
 
@@ -131,6 +131,7 @@ namespace GDDL.Util
             return IsPrintable(c) && !IsControl(c) && c != delimiter && c != '\\';
         }
 
+
         /**
          * Processes any escape sequences in the string, replacing them with the codepoints those sequences represent.
          * @param text The text to unescape
@@ -138,13 +139,17 @@ namespace GDDL.Util
          */
         public static string UnescapeString(string text)
         {
+            const int UE_QUOTE = 1;
+            const int UE_ESCAPE = 2;
+            const int UE_ESCAPE_LB = 3;
+            const int UE_ESCAPE_HEX = 5;
+            const int UE_ESCAPE_END = 6;
+
             var sb = new StringBuilder();
 
             char startQuote = (char)0;
 
-            bool inEscape = false;
-
-            bool inHexEscape = false;
+            int state = UE_QUOTE;
             int escapeAcc = 0;
             int escapeDigits = 0;
             int escapeMax = 0;
@@ -153,12 +158,12 @@ namespace GDDL.Util
             {
                 if (startQuote != 0)
                 {
-                    if (inHexEscape)
+                    if (state == UE_ESCAPE_HEX)
                     {
                         if (escapeDigits == escapeMax)
                         {
                             sb.Append((char)escapeAcc);
-                            inHexEscape = false;
+                            state = UE_QUOTE;
                         }
                         else if (Utility.IsDigit(c))
                         {
@@ -175,66 +180,93 @@ namespace GDDL.Util
                         else
                         {
                             sb.Append((char)escapeAcc);
-                            inHexEscape = false;
+                            state = UE_QUOTE;
                         }
-
                         escapeDigits++;
                     }
 
-                    if (inEscape)
+                    if (state == UE_ESCAPE_LB)
+                    {
+                        if (c == '\n')
+                        {
+                            sb.Append('\n');
+                            state = UE_ESCAPE_END;
+                        }
+                        else
+                            state = UE_QUOTE;
+                    }
+                    else if (state == UE_ESCAPE_END)
+                    {
+                        state = UE_QUOTE;
+                    }
+
+                    if (state == UE_ESCAPE)
                     {
                         switch (c)
                         {
-                        case '"':
-                            sb.Append('"');
-                            break;
-                        case '\'':
-                            sb.Append('\'');
-                            break;
-                        case '\\':
-                            sb.Append('\\');
-                            break;
-                        case '0':
-                            sb.Append('\0');
-                            break;
-                        case 'b':
-                            sb.Append('\b');
-                            break;
-                        case 't':
-                            sb.Append('\t');
-                            break;
-                        case 'n':
-                            sb.Append('\n');
-                            break;
-                        case 'f':
-                            sb.Append('\f');
-                            break;
-                        case 'r':
-                            sb.Append('\r');
-                            break;
-                        case 'x':
-                            inHexEscape = true;
-                            escapeAcc = 0;
-                            escapeDigits = 0;
-                            escapeMax = 2;
-                            break;
-                        case 'u':
-                            inHexEscape = true;
-                            escapeAcc = 0;
-                            escapeDigits = 0;
-                            escapeMax = 4;
-                            break;
+                            case '"':
+                                sb.Append('"');
+                                state = UE_ESCAPE_END;
+                                break;
+                            case '\'':
+                                sb.Append('\'');
+                                state = UE_ESCAPE_END;
+                                break;
+                            case '\\':
+                                sb.Append('\\');
+                                state = UE_ESCAPE_END;
+                                break;
+                            case '0':
+                                sb.Append('\0');
+                                state = UE_ESCAPE_END;
+                                break;
+                            case 'b':
+                                sb.Append('\b');
+                                state = UE_ESCAPE_END;
+                                break;
+                            case 't':
+                                sb.Append('\t');
+                                state = UE_ESCAPE_END;
+                                break;
+                            case 'f':
+                                sb.Append('\f');
+                                state = UE_ESCAPE_END;
+                                break;
+                            case 'r':
+                                sb.Append('\r');
+                                state = UE_ESCAPE_END;
+                                break;
+                            case 'n':
+                            case '\n':
+                                sb.Append('\n');
+                                state = UE_ESCAPE_END;
+                                break;
+                            case '\r':
+                                sb.Append('\r');
+                                state = UE_ESCAPE_LB;
+                                break;
+                            case 'x':
+                                state = UE_ESCAPE_HEX;
+                                escapeAcc = 0;
+                                escapeDigits = 0;
+                                escapeMax = 2;
+                                break;
+                            case 'u':
+                                state = UE_ESCAPE_HEX;
+                                escapeAcc = 0;
+                                escapeDigits = 0;
+                                escapeMax = 4;
+                                break;
                         }
-
-                        inEscape = false;
                     }
-                    else if (!inHexEscape)
+
+                    if (state == UE_QUOTE)
                     {
                         if (c == startQuote)
                             return sb.ToString();
                         if (c == '\\')
                         {
-                            inEscape = true;
+                            state = UE_ESCAPE;
                         }
                         else
                         {
@@ -246,15 +278,15 @@ namespace GDDL.Util
                 {
                     switch (c)
                     {
-                    case '"':
-                        startQuote = '"';
-                        break;
-                    case '\'':
-                        startQuote = '\'';
-                        break;
-                    default:
-                        sb.Append(c);
-                        break;
+                        case '"':
+                            startQuote = '"';
+                            break;
+                        case '\'':
+                            startQuote = '\'';
+                            break;
+                        default:
+                            sb.Append(c);
+                            break;
                     }
                 }
             }
